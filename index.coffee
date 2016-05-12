@@ -1,1 +1,1 @@
-module.exports = require "./src/babel_bridge/parser"
+module.exports = require "./src/babel_bridge"

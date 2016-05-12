@@ -3,4 +3,8 @@
 
 (module.exports = require './namespace')
 .addModules
-  Parser: require './parser'
+  Parser:         require './parser'
+  PatternElement: require './pattern_element'
+  Rule:           require './rule'
+  RuleVariant:    require './rule_variant'
+require './nodes'
