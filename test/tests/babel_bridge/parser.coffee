@@ -9,7 +9,7 @@ suite "BabelBridge.Parser.basic parsing", ->
 
   test "match 'foo'", ->
     class MyParser extends Parser
-      @rule "foo", "foo"
+      @rule foo: "foo"
 
     myParser = new MyParser
     myParser.parse "foo"
@@ -20,7 +20,7 @@ suite "BabelBridge.Parser.basic parsing", ->
 
   test "match /[0-9]+/", ->
     class MyParser extends Parser
-      @rule "foo", /[0-9]+/
+      @rule foo: /[0-9]+/
 
     promises = for source in sources = wordsArray "0 1 10 123 1001"
       (new MyParser).parse source
