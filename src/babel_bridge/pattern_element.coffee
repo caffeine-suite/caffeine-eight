@@ -39,10 +39,6 @@ module.exports = class PatternElement extends BaseObject
 
     @_parser = (parentNode) ->
       pattern.lastIndex = offset = parentNode.nextOffset
-      log PatternElement_parser:
-        pattern: pattern
-        offset: offset
-        source: parentNode.source
       if match = pattern.exec parentNode.source
         new TerminalNode parentNode,
           offset

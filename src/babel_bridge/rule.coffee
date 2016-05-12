@@ -32,24 +32,11 @@ module.exports = class Rule extends BaseObject
     nodeClassName: -> "#{@_upperCamelCaseName}Node"
     newNodeClass: ->
       {nodeClassName} = @
-      k = class _RuleNode extends RuleNode
+      class _RuleNode extends RuleNode
         @_name: nodeClassName
-
-      log
-        newNodeClass: objectName k
-        getName: k.getName()
-        nodeClassName: @nodeClassName
-      k
 
     newVariantNodeClass: ->
       {nodeClassName} = @
       number = @_variants.length + 1
-      k = class VariantNode extends @NodeClass
+      class VariantNode extends @NodeClass
         @_name: nodeClassName + "Variant#{number}"
-
-      log
-        newVariantNodeClass: objectName k
-        getName: k.getName()
-        nodeClassName: @nodeClassName
-        number: number
-      k

@@ -5,12 +5,10 @@ module.exports = class RuleVariant extends BaseObject
 
   constructor: ({@pattern, @rule, @VariantNodeClass}) ->
     throw new Error "missing options" unless @pattern && @rule && @VariantNodeClass
-    log pattern: @pattern
 
   @getter
     patternElements: ->
       @_patternElements ||= for match in @pattern
-        log "new PE #{match}"
         new PatternElement match,
           ruleVariant: @
           patternElement: true
