@@ -20,6 +20,7 @@ module.exports = class Parser extends BaseObject
       @getRules()[@_rootRuleName]
 
   @addRule: (name, options) ->
+    # log addRule: name:name, options:options
     rule = @getRules()[name] ||= new Rule name, @
     @_rootRuleName ||= name
 
@@ -46,4 +47,8 @@ module.exports = class Parser extends BaseObject
     startRule = rules[ruleName]
     throw new Error "Could not find rule: #{rule}" unless startRule
 
-    Promise.resolve startRule.parse rootNode = new RootNode @
+
+    if result = startRule.parse rootNode = new RootNode @
+      Promise.resolve result
+    else
+      Promise.reject "parse failed"

@@ -2,14 +2,11 @@ Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser} = require 'babel-bridge'
 
-newParser = (f) ->
-  class TestParser extends Parser
-
 suite "BabelBridge.Parser.basic parsing", ->
 
-  test "match 'foo'", ->
+  test "basic regex /foo/", ->
     class MyParser extends Parser
-      @rule foo: "foo"
+      @rule foo: /foo/
 
     myParser = new MyParser
     myParser.parse "foo"
@@ -18,7 +15,31 @@ suite "BabelBridge.Parser.basic parsing", ->
       assert.eq result.matchLength, 3
       assert.eq result.text, "foo"
 
-  test "match /[0-9]+/", ->
+  test "two regex sequence /foo/, /bar/", ->
+    class MyParser extends Parser
+      @rule foo: [/foo/, /bar/]
+
+    myParser = new MyParser
+    myParser.parse "foobar"
+    .then (result) ->
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
+
+  test "regex and rule /foo/, 'bar'", ->
+    class MyParser extends Parser
+      @rule
+        foo: [/foo/, "bar"]
+        bar: /bar/
+
+    myParser = new MyParser
+    myParser.parse "foobar"
+    .then (result) ->
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
+
+  test "dynamic regex /[0-9]+/", ->
     class MyParser extends Parser
       @rule foo: /[0-9]+/
 
@@ -31,3 +52,13 @@ suite "BabelBridge.Parser.basic parsing", ->
         assert.eq result.offset, 0
         assert.eq result.matchLength, source.length
         assert.eq result.text, source
+
+  test "match /[0-9]+/ -- doesn't match if not at the start of the string", ->
+    class MyParser extends Parser
+      @rule foo: /[0-9]+/
+
+    (new MyParser).parse " 0123"
+    .then ->
+      throw new Error "shouldn't succeed"
+    , ->
+      "should fail"

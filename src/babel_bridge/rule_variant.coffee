@@ -3,7 +3,7 @@ PatternElement = require './pattern_element'
 {BaseObject, log} = Foundation
 module.exports = class RuleVariant extends BaseObject
 
-  constructor: ({@pattern, @rule, @VariantNodeClass}) ->
+  constructor: ({@pattern, @rule, @VariantNodeClass, @parserClass}) ->
     throw new Error "missing options" unless @pattern && @rule && @VariantNodeClass
 
   @getter

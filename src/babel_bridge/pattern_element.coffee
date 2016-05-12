@@ -2,17 +2,16 @@ Foundation = require 'art-foundation'
 {TerminalNode} = require './nodes'
 {BaseObject, isPlainArray, isString, isRegExp, inspect, log} = Foundation
 
-escapeRegExp = (str) ->
-  str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
-
 module.exports = class PatternElement extends BaseObject
   constructor: (@match, @options = {}) ->
-    # {@ruleVariant} = @options
-    # throw new Error "bad args" unless @ruleVariant
+    {@ruleVariant} = @options
+    throw new Error "bad args" unless @ruleVariant
     @_terminal = false
     @_init()
 
-  @getter "name"
+  @getter "name",
+    parserClass: -> @ruleVariant.parserClass
+    rules: -> @parserClass.getRules()
 
   parse: (parentNode) ->
     @_parser parentNode
@@ -25,17 +24,22 @@ module.exports = class PatternElement extends BaseObject
         match = match[0]
       else
         @_initArray match
-    else if isString(match) ||isRegExp(match) then @_initRegExp match
+    else if isString match then @_initRule match
+    else if isRegExp match then @_initRegExp match
     # when Symbol then    init_rule match
     # when PatternElementHash then      init_hash match
     else throw new Error "invalid pattern type: #{inspect match}"
 
+  _initRule: (ruleName) ->
+    console.error _initRule: ruleName, rules: @rules
+    matchRule = @rules[ruleName]
+    throw new Error "no rule for #{ruleName}" unless matchRule
+    @_parser = (parentNode) ->
+      matchRule.parse parentNode
+
   _initRegExp: (pattern) ->
     @_terminal = true
-    pattern = if isString pattern
-      ///#{escapeRegExp pattern}///y
-    else
-      ///#{pattern.source}///y
+    pattern = ///#{pattern.source}///y
 
     @_parser = (parentNode) ->
       pattern.lastIndex = offset = parentNode.nextOffset
