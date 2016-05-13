@@ -52,6 +52,6 @@ module.exports = class Parser extends BaseObject
       if result.matchLength == @_source.length
         Promise.resolve result
       else
-        Promise.reject "parse didn't match the whole input"
+        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters"
     else
       Promise.reject "parse failed"

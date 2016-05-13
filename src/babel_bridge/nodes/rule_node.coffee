@@ -11,11 +11,7 @@ module.exports = class RuleNode extends require './node'
     matches: -> @_matches ||= []
     lastMatch: -> peek @_matches
 
-  match: (patternElement) ->
-    if result = patternElement.parse @
-      @addMatch result, patternElement.getName()
-
-  addMatch: (match, name) ->
+  addMatch: (name, match) ->
     return unless match
     return match if match == @
 

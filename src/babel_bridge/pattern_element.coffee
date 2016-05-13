@@ -14,9 +14,15 @@ module.exports = class PatternElement extends BaseObject
     parserClass: -> @ruleVariant.parserClass
     rules: -> @parserClass.getRules()
 
+  # IN: parentNode
+  # OUT: Node instance or false if no match was found
+  parse: (parentNode) -> throw new Error "should be overridden"
+
+  # IN: parentNode
+  # OUT: true if parsing was successful
+  # EFFECT: if successful, one or more chlidren nodes have been added to parentNode
   parseInto: (parentNode) ->
-    if match = @parse parentNode
-      parentNode.addMatch match, @name
+    !!parentNode.addMatch @name, @parse parentNode
 
   _applyParseFlags: ->
     singleParser = @parse
@@ -34,14 +40,19 @@ module.exports = class PatternElement extends BaseObject
         else
           new EmptyNode parentNode
 
+    if @_zeroOrMore
+      @parseInto = (parentNode) =>
+        matchCount = 0
+        matchCount++ while parentNode.addMatch @name, singleParser parentNode
+
+        parentNode.addMatch new EmptyNode parentNode if matchCount == 0
+        true
+
     if @_oneOrMore
-      @parse = (parentNode) ->
-        matched = while match = singleParser parentNode
-          match
-        if matched.length == 0
-          null
-        else
-          matched
+      @parseInto = (parentNode) =>
+        matchCount = 0
+        matchCount++ while parentNode.addMatch @name, singleParser parentNode
+        matchCount > 0
 
   # initialize PatternElement based on the type of: match
   _init: ->
@@ -62,14 +73,14 @@ module.exports = class PatternElement extends BaseObject
 
   _initRule: (ruleName) ->
     console.error _initRule: ruleName, rules: @rules
-    [_, prefix, ruleName, postfix] = ruleName.match /^([!])?([a-zA-Z0-9]+)([?*+])?$/
+    [_, prefix, ruleName, suffix] = ruleName.match /^([!])?([a-zA-Z0-9]+)([?*+])?$/
+    throw new Error "pattern can only have one prefix: ! or one suffix: ?/+/*" if prefix && suffix
     @_negative = !!prefix
-    switch postfix
+    switch suffix
       when "?" then @_optional = true
       when "+" then @_oneOrMore = true
       when "*" then @_zeroOrMore = true
 
-    throw new Error "can't be ! and ?" if @_negative && @_optional
     matchRule = @rules[ruleName]
     throw new Error "no rule for #{ruleName}" unless matchRule
     @parse = (parentNode) ->
