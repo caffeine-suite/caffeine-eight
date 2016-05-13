@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{TerminalNode} = require './nodes'
+{TerminalNode, EmptyNode} = require './nodes'
 {BaseObject, isPlainArray, isString, isRegExp, inspect, log} = Foundation
 
 module.exports = class PatternElement extends BaseObject
@@ -7,14 +7,24 @@ module.exports = class PatternElement extends BaseObject
     {@ruleVariant} = @options
     throw new Error "bad args" unless @ruleVariant
     @_terminal = false
+    @_optional = @_negative = false
     @_init()
 
-  @getter "name",
+  @getter "name optional negative",
     parserClass: -> @ruleVariant.parserClass
     rules: -> @parserClass.getRules()
 
   parse: (parentNode) ->
-    @_parser parentNode
+    match = @_parser parentNode
+
+    # Negative patterns
+    if @negative
+      match = if match then null else new EmptyNode parentNode
+
+    # Optional patterns
+    match = new EmptyNode parentNode if !match && @optional
+
+    match
 
   # initialize PatternElement based on the type of: match
   _init: ->
@@ -32,6 +42,8 @@ module.exports = class PatternElement extends BaseObject
 
   _initRule: (ruleName) ->
     console.error _initRule: ruleName, rules: @rules
+    [_, @_negative, ruleName, @_optional] = ruleName.match /^([!])?([a-zA-Z0-9]+)(\?)?$/
+    throw new Error "can't be ! and ?" if @_negative && @_optional
     matchRule = @rules[ruleName]
     throw new Error "no rule for #{ruleName}" unless matchRule
     @_parser = (parentNode) ->

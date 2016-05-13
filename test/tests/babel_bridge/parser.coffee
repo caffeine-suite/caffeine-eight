@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser} = require 'babel-bridge'
 
-suite "BabelBridge.Parser.basic parsing", ->
+suite "BabelBridge.Parser.terminal parsing", ->
 
   test "basic regex /foo/", ->
     class MyParser extends Parser
@@ -14,6 +14,32 @@ suite "BabelBridge.Parser.basic parsing", ->
       assert.eq result.offset, 0
       assert.eq result.matchLength, 3
       assert.eq result.text, "foo"
+
+  test "dynamic regex /[0-9]+/", ->
+    class MyParser extends Parser
+      @rule foo: /[0-9]+/
+
+    promises = for source in sources = wordsArray "0 1 10 123 1001"
+      (new MyParser).parse source
+    Promise.all(promises)
+    .then (results) ->
+      for result, i in results
+        source = sources[i]
+        assert.eq result.offset, 0
+        assert.eq result.matchLength, source.length
+        assert.eq result.text, source
+
+  test "match /[0-9]+/ -- doesn't match if not at the start of the string", ->
+    class MyParser extends Parser
+      @rule foo: /[0-9]+/
+
+    (new MyParser).parse " 0123"
+    .then ->
+      throw new Error "shouldn't succeed"
+    , ->
+      "should fail"
+
+suite "BabelBridge.Parser.sequence parsing", ->
 
   test "two regex sequence /foo/, /bar/", ->
     class MyParser extends Parser
@@ -39,26 +65,31 @@ suite "BabelBridge.Parser.basic parsing", ->
       assert.eq result.matchLength, 6
       assert.eq result.text, "foobar"
 
-  test "dynamic regex /[0-9]+/", ->
+suite "BabelBridge.Parser.conditional parsing", ->
+
+  test "regex and rule /foo/, 'bar'", ->
     class MyParser extends Parser
-      @rule foo: /[0-9]+/
+      @rule
+        main: ['foo?', 'bar']
+        bar: /bar/
+        foo: /foo/
 
-    promises = for source in sources = wordsArray "0 1 10 123 1001"
-      (new MyParser).parse source
-    Promise.all(promises)
-    .then (results) ->
-      for result, i in results
-        source = sources[i]
-        assert.eq result.offset, 0
-        assert.eq result.matchLength, source.length
-        assert.eq result.text, source
+    Promise.all [
+      (new MyParser).parse "bar"
+      (new MyParser).parse "foobar"
+    ]
 
-  test "match /[0-9]+/ -- doesn't match if not at the start of the string", ->
+suite "BabelBridge.Parser.negative parsing", ->
+
+  test "!boo anything", ->
     class MyParser extends Parser
-      @rule foo: /[0-9]+/
+      @rule
+        main: ['!boo', 'anything']
+        boo: /boo/
+        anything: /.*/
 
-    (new MyParser).parse " 0123"
-    .then ->
-      throw new Error "shouldn't succeed"
-    , ->
-      "should fail"
+    Promise.all [
+      (new MyParser).parse("boo").then (-> throw "should not have parsed"), ->
+      (new MyParser).parse("boobat").then (-> throw "should not have parsed"), ->
+      (new MyParser).parse("bobat")
+    ]

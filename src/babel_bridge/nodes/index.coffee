@@ -3,6 +3,7 @@
 
 (module.exports = require './namespace')
 .addModules
+  EmptyNode:       require './empty_node'
   Node:            require './node'
   NonTerminalNode: require './non_terminal_node'
   RootNode:        require './root_node'
