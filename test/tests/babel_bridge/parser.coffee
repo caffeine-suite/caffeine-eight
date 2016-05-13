@@ -94,6 +94,17 @@ suite "BabelBridge.Parser.negative parsing", ->
       (new MyParser).parse("bobat")
     ]
 
+suite "BabelBridge.Parser.rule variants", ->
+  test "two variants", ->
+    class MyParser extends Parser
+      @rule main: /boo/
+      @rule main: /foo/
+
+    Promise.all [
+      (new MyParser).parse "boo"
+      (new MyParser).parse "foo"
+    ]
+
 suite "BabelBridge.Parser.many parsing", ->
 
   test "boo*", ->
