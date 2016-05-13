@@ -18,6 +18,6 @@ module.exports = class RuleVariant extends BaseObject
     node = new @VariantNodeClass parentNode
 
     for pe in @patternElements
-      return unless node.match pe
+      return unless pe.parseInto node #.match pe
 
     node

@@ -49,6 +49,9 @@ module.exports = class Parser extends BaseObject
 
 
     if result = startRule.parse rootNode = new RootNode @
-      Promise.resolve result
+      if result.matchLength == @_source.length
+        Promise.resolve result
+      else
+        Promise.reject "parse didn't match the whole input"
     else
       Promise.reject "parse failed"

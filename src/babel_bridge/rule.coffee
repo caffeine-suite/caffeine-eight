@@ -18,9 +18,9 @@ module.exports = class Rule extends BaseObject
       parserClass: @_parserClass
     v
 
-  parse: (node) ->
+  parse: (parentNode) ->
     for v in @_variants
-      if match = v.parse node
+      if match = v.parse parentNode
         return match
 
     null

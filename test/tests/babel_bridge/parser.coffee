@@ -93,3 +93,17 @@ suite "BabelBridge.Parser.negative parsing", ->
       (new MyParser).parse("boobat").then (-> throw "should not have parsed"), ->
       (new MyParser).parse("bobat")
     ]
+
+# suite "BabelBridge.Parser.oneOrMore parsing", ->
+
+#   test "boo+", ->
+#     class MyParser extends Parser
+#       @rule
+#         main: 'boo+'
+#         boo: /boo/
+
+#     Promise.all [
+#       (new MyParser).parse "boo"
+#       (new MyParser).parse "booboo"
+#     ]
+
