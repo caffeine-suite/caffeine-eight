@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 {TerminalNode, EmptyNode} = require './nodes'
-{BaseObject, isPlainArray, isString, isRegExp, inspect, log} = Foundation
+{BaseObject, isPlainObject, isString, isRegExp, inspect, log} = Foundation
 
 
 module.exports = class PatternElement extends BaseObject
@@ -85,22 +85,12 @@ module.exports = class PatternElement extends BaseObject
   # initialize PatternElement based on the type of: match
   _init: ->
     {pattern} = @
-    if isPlainArray pattern
-      if pattern.length == 1
-        pattern = pattern[0]
-      else
-        @_initArray pattern
-
+    if isPlainObject pattern
+      @_initPlainObject pattern
     else if isString pattern
       [_, label, prefix, ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
-      # log
-      #   pattern: pattern
-      #   res: res
-      #   prefix: prefix
-      #   ruleName: ruleName
-      #   regExp: regExp
-      #   suffix: suffix
       throw new Error "pattern can only have one prefix: ! or one suffix: ?/+/*" if prefix && suffix
+
       @negative = !!prefix
       @label = label || ruleName
       switch suffix
@@ -108,30 +98,30 @@ module.exports = class PatternElement extends BaseObject
         when "+" then @oneOrMore = true
         when "*" then @zeroOrMore = true
 
-      # log
-      #   label: @label
-      #   ruleName: ruleName
-      #   regExp: regExp
-      #   stringMatch: singleQuotedString || doubleQuotedString
-      #   negative: @negative
-      #   optional: @optional
-      #   oneOrMore: @oneOrMore
-      #   zeroOrMore: @zeroOrMore
+      string = singleQuotedString || doubleQuotedString
 
-      if ruleName
-        @_initRule ruleName
-      else if regExp
-        @_initRegExp new RegExp regExp
-      else if string = singleQuotedString || doubleQuotedString
-        @_initRegExp new RegExp escapeRegExp string
-      else
-        throw new Error "invalid pattern: #{pattern}"
+      if ruleName    then @_initRule ruleName
+      else if regExp then @_initRegExp new RegExp regExp
+      else if string then @_initRegExp new RegExp escapeRegExp string
+      else throw new Error "invalid pattern: #{pattern}"
 
     else if isRegExp pattern then @_initRegExp pattern
 
     else throw new Error "invalid pattern type: #{inspect pattern}"
 
     @_applyParseFlags()
+
+  _initPlainObject: (object)->
+    {
+      @negative
+      @oneOrMore
+      @zeroOrMore
+      @optional
+      @parse
+      parseInto
+    } = object
+    @parseInto = parseInto if parseInto
+    throw new Error "plain-object pattern definition requires 'parse' or 'parseInto'" unless @parse || parseInto
 
   _initRule: (ruleName) ->
     matchRule = @rules[ruleName]

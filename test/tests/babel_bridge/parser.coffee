@@ -1,6 +1,7 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
-{Parser} = require 'babel-bridge'
+{Parser, Nodes} = require 'babel-bridge'
+{TerminalNode} = Nodes
 
 suite "BabelBridge.Parser.terminal parsing", ->
 
@@ -205,6 +206,28 @@ suite "BabelBridge.Parser.labels", ->
     ((new MyParser).parse "ehcee")
     .then (mainNode) ->
       assert.eq mainNode.result(), a: "cee", "matches.a": ["eh", "cee"]
+
+suite "BabelBridge.Parser.custom parser", ->
+  test "with oneOrMore", ->
+    class MyParser extends Parser
+      @rule
+        main:
+          pattern:
+            oneOrMore: true
+            parse: (parentNode) ->
+              {nextOffset, source} = parentNode
+              if source[nextOffset]?.match /[a-z]/
+                new TerminalNode parentNode,
+                  nextOffset
+                  1
+                  "custom"
+
+    ((new MyParser).parse "abc")
+    .then (mainNode) ->
+      ((new MyParser).parse "A")
+      .then (mainNode) ->
+        throw new Error "shouldn't match"
+      , ->
 
 suite "BabelBridge.Parser.custom node classes", ->
 
