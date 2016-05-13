@@ -1,31 +1,29 @@
 Foundation = require 'art-foundation'
-{peek} = Foundation
+{peek, log} = Foundation
 
 module.exports = class RuleNode extends require './node'
   constructor: ->
     super
+    @_lastMatch = null
+    @_allMatches = null
     @_matches = null
-    @_matchLength = 0
+    @_match = null
 
-  @getter "matchLength",
-    matches: -> @_matches ||= []
-    lastMatch: -> peek @_matches
+  @getter
+    match: -> @_match ||= {}
+    matches: -> @_matches ||= {}
+    allMatches: -> @_allMatches ||= []
+    matchLength: -> @nextOffset - @offset
+    nextOffset: -> @_lastMatch?.nextOffset || @offset
 
-  addMatch: (name, match) ->
+  addMatch: (label, match) ->
     return unless match
-    return match if match == @
 
-    @matches.push match
-    @_updateMatchLength()
+    @allMatches.push @_lastMatch = match
+    @addLabeledMatch label, match
 
-    @addMatchName match, name if name
-
+  addLabeledMatch: (label, match) ->
+    if label && match.matchLength > 0
+      (@matches[label] ||= []).push match
+      @[label] = match unless @__proto__[label]
     match
-
-  addMatchName: (match, name) ->
-
-  ##################
-  # PRIVATE
-  ##################
-  _updateMatchLength: ->
-    @_matchLength = @lastMatch?.getNextOffset() - @offset || 0

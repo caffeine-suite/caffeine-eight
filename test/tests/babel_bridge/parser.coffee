@@ -4,7 +4,18 @@ Foundation = require 'art-foundation'
 
 suite "BabelBridge.Parser.terminal parsing", ->
 
-  test "basic regex /foo/", ->
+  test "\"'foo'\"", ->
+    class MyParser extends Parser
+      @rule foo: "'foo'"
+
+    myParser = new MyParser
+    myParser.parse "foo"
+    .then (result) ->
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 3
+      assert.eq result.text, "foo"
+
+  test "/foo/", ->
     class MyParser extends Parser
       @rule foo: /foo/
 
@@ -15,7 +26,7 @@ suite "BabelBridge.Parser.terminal parsing", ->
       assert.eq result.matchLength, 3
       assert.eq result.text, "foo"
 
-  test "dynamic regex /[0-9]+/", ->
+  test "/[0-9]+/", ->
     class MyParser extends Parser
       @rule foo: /[0-9]+/
 
@@ -41,9 +52,9 @@ suite "BabelBridge.Parser.terminal parsing", ->
 
 suite "BabelBridge.Parser.sequence parsing", ->
 
-  test "two regex sequence /foo/, /bar/", ->
+  test "'foo' /bar/", ->
     class MyParser extends Parser
-      @rule foo: [/foo/, /bar/]
+      @rule foo: "'foo' /bar/"
 
     myParser = new MyParser
     myParser.parse "foobar"
@@ -52,10 +63,22 @@ suite "BabelBridge.Parser.sequence parsing", ->
       assert.eq result.matchLength, 6
       assert.eq result.text, "foobar"
 
-  test "regex and rule /foo/, 'bar'", ->
+
+  test "/foo/ /bar/", ->
+    class MyParser extends Parser
+      @rule foo: "/foo/ /bar/"
+
+    myParser = new MyParser
+    myParser.parse "foobar"
+    .then (result) ->
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
+
+  test "/foo/ bar", ->
     class MyParser extends Parser
       @rule
-        foo: [/foo/, "bar"]
+        foo: '/foo/ bar'
         bar: /bar/
 
     myParser = new MyParser
@@ -67,12 +90,23 @@ suite "BabelBridge.Parser.sequence parsing", ->
 
 suite "BabelBridge.Parser.conditional parsing", ->
 
-  test "regex and rule /foo/, 'bar'", ->
+  test "conditional rule 'foo? bar'", ->
     class MyParser extends Parser
       @rule
-        main: ['foo?', 'bar']
+        main: "foo? bar"
         bar: /bar/
         foo: /foo/
+
+    Promise.all [
+      (new MyParser).parse "bar"
+      (new MyParser).parse "foobar"
+    ]
+
+  test "conditional regExp '/foo/? bar'", ->
+    class MyParser extends Parser
+      @rule
+        main: "/foo/? bar"
+        bar: /bar/
 
     Promise.all [
       (new MyParser).parse "bar"
@@ -131,3 +165,74 @@ suite "BabelBridge.Parser.many parsing", ->
       (new MyParser).parse "booboo"
     ]
 
+suite "BabelBridge.Parser.labels", ->
+
+  test "three different labels", ->
+    class MyParser extends Parser
+      @rule
+        main:
+          pattern: """
+            a:'eh'?
+            b:'bee'?
+            c:'cee'?
+            """
+          node:
+            result: ->
+              log
+                a: @a?.text
+                b: @b?.text
+                c: @c?.text
+
+    ((new MyParser).parse "ehcee")
+    .then (mainNode) ->
+      assert.eq mainNode.result(), a: "eh", b: undefined, c: "cee"
+
+  test "three same labels", ->
+    class MyParser extends Parser
+      @rule
+        main:
+          pattern: """
+            a:'eh'?
+            a:'bee'?
+            a:'cee'?
+            """
+          node:
+            result: ->
+              log
+                a: @a.text
+                "matches.a": (match.text for match in @matches.a)
+
+    ((new MyParser).parse "ehcee")
+    .then (mainNode) ->
+      assert.eq mainNode.result(), a: "cee", "matches.a": ["eh", "cee"]
+
+suite "BabelBridge.Parser.custom node classes", ->
+
+  test "one node with custom node class", ->
+    class MyParser extends Parser
+      @rule
+        main:
+          pattern: /boo/
+          node:
+            myMember: -> 123
+
+    ((new MyParser).parse "boo")
+    .then (mainNode) ->
+      assert.eq mainNode.myMember(), 123
+
+  test "simple math", ->
+    class MyParser extends Parser
+      @rule expression:
+        pattern: "n:number '+' expression"
+        node: compute: -> @n.compute() + @expression.compute()
+
+      @rule expression:
+        pattern: "number"
+        node: compute: -> @number.compute()
+
+      @rule number:
+        pattern: /[0-9]+/
+        node: compute: -> @text | 0
+
+    ((new MyParser).parse "123+321+111")
+    .then (mainNode) -> assert.eq mainNode.compute(), 555

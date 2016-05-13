@@ -9,11 +9,13 @@ module.exports = class Rule extends BaseObject
   constructor: (@_name, @_parserClass)->
     @_upperCamelCaseName = upperCamelCase @_name
     @_variants = []
-    @NodeClass = @newNodeClass
+    @_nodeClassName = "#{upperCamelCase @_name}Node"
+
+  @getter "nodeClassName"
 
   addVariant: (options, block) ->
     @_variants.push v = new RuleVariant merge options,
-      VariantNodeClass: @newVariantNodeClass
+      variantNumber: @_variants.length
       rule: @
       parserClass: @_parserClass
     v
@@ -24,20 +26,3 @@ module.exports = class Rule extends BaseObject
         return match
 
     null
-
-  ##################
-  # PRIVATE
-  ##################
-
-  @getter
-    nodeClassName: -> "#{@_upperCamelCaseName}Node"
-    newNodeClass: ->
-      {nodeClassName} = @
-      class _RuleNode extends RuleNode
-        @_name: nodeClassName
-
-    newVariantNodeClass: ->
-      {nodeClassName} = @
-      number = @_variants.length + 1
-      class VariantNode extends @NodeClass
-        @_name: nodeClassName + "Variant#{number}"

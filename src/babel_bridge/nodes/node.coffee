@@ -3,12 +3,11 @@ Foundation = require 'art-foundation'
 
 module.exports = class Node extends BaseObject
   constructor: (@_parent) ->
-    @_matchLength = 0
     {@_parser} = @_parent
     @_offset = @_parent.getNextOffset()
 
   @getter "parent parser offset"
   @getter
-    text: -> if @_matchLength == 0 then "" else @source.slice @_offset, @_offset + @_matchLength
+    text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
     source: -> @_parser.source
-    nextOffset: -> @_offset + @_matchLength
+    nextOffset: -> @_offset

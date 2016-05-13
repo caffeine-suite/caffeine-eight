@@ -9,3 +9,6 @@ module.exports = class TerminalNode extends Node
     @_offset = offset
     @_matchLength = matchLength
     @_pattern = pattern
+
+  @getter "matchLength pattern",
+    nextOffset: -> @_offset + @_matchLength
