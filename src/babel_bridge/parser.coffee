@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 Nodes = require './nodes'
 Rule = require './rule'
 
-{BaseObject, isFunction, peek, log, isPlainObject, isPlainArray} = Foundation
+{BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge} = Foundation
 {RootNode} = Nodes
 
 module.exports = class Parser extends BaseObject
@@ -25,7 +25,7 @@ module.exports = class Parser extends BaseObject
     @_rootRuleName ||= name
 
     options = pattern: options unless isPlainObject options
-    options.pattern = [options.pattern] unless isPlainArray options.pattern
+
     rule.addVariant options
 
   @rule: (rules)->

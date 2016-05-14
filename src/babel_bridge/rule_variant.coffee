@@ -8,6 +8,7 @@ module.exports = class RuleVariant extends BaseObject
 
   constructor: (options) ->
     {@pattern, @rule, @parserClass} = options
+    @pattern ||= options
     @_initVariantNodeClass options
 
   @getter
@@ -15,12 +16,12 @@ module.exports = class RuleVariant extends BaseObject
       @_patternElements ||= @_generatePatternElements()
 
   _generatePatternElements: ->
-    pes = for patternPart in @pattern
-      if isString patternPart
-        for part in patternPart.match allPatternElementsRegExp
+    pes =
+      if isString @pattern
+        for part in @pattern.match allPatternElementsRegExp
           new PatternElement part, ruleVariant: @
       else
-        new PatternElement patternPart, ruleVariant: @
+        [new PatternElement @pattern, ruleVariant: @]
 
     compactFlatten pes
 

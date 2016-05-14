@@ -119,7 +119,7 @@ suite "BabelBridge.Parser.negative parsing", ->
   test "!boo anything", ->
     class MyParser extends Parser
       @rule
-        main: ['!boo', 'anything']
+        main: "!boo anything"
         boo: /boo/
         anything: /.*/
 
@@ -179,10 +179,9 @@ suite "BabelBridge.Parser.labels", ->
             """
           node:
             result: ->
-              log
-                a: @a?.text
-                b: @b?.text
-                c: @c?.text
+              a: @a?.text
+              b: @b?.text
+              c: @c?.text
 
     ((new MyParser).parse "ehcee")
     .then (mainNode) ->
@@ -199,9 +198,8 @@ suite "BabelBridge.Parser.labels", ->
             """
           node:
             result: ->
-              log
-                a: @a.text
-                "matches.a": (match.text for match in @matches.a)
+              a: @a.text
+              "matches.a": (match.text for match in @matches.a)
 
     ((new MyParser).parse "ehcee")
     .then (mainNode) ->
@@ -212,15 +210,14 @@ suite "BabelBridge.Parser.custom parser", ->
     class MyParser extends Parser
       @rule
         main:
-          pattern:
-            oneOrMore: true
-            parse: (parentNode) ->
-              {nextOffset, source} = parentNode
-              if source[nextOffset]?.match /[a-z]/
-                new TerminalNode parentNode,
-                  nextOffset
-                  1
-                  "custom"
+          oneOrMore: true
+          parse: (parentNode) ->
+            {nextOffset, source} = parentNode
+            if source[nextOffset]?.match /[a-z]/
+              new TerminalNode parentNode,
+                nextOffset
+                1
+                "custom"
 
     ((new MyParser).parse "abc")
     .then (mainNode) ->
