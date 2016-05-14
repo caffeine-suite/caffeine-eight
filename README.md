@@ -5,6 +5,7 @@ It's Babel-Bridge for JavaScript / CoffeeScript!
 ## Examples
 
 ```coffeescript
+  BabelBridge = require 'babel-bridge'
   class MyParser extends BabelBridge.Parser
     @rule foo: /foo/
 
