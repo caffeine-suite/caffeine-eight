@@ -10,6 +10,9 @@ module.exports = class Parser extends BaseObject
   constructor: ->
     @_parser = @
 
+  @parse: (@_source, options = {})->
+    (new @).parse @_source, options
+
   @classGetter
     rules: ->
       @getPrototypePropertyExtendedByInheritance "_rules", {}
@@ -50,8 +53,8 @@ module.exports = class Parser extends BaseObject
 
     if result = startRule.parse rootNode = new RootNode @
       if result.matchLength == @_source.length
-        Promise.resolve result
+        result
       else
         throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters"
     else
-      Promise.reject "parse failed"
+      throw new Error "parse failed"
