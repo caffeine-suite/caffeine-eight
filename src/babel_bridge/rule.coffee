@@ -7,15 +7,15 @@ RuleVariant = require './rule_variant'
 module.exports = class Rule extends BaseObject
 
   constructor: (@_name, @_parserClass)->
-    @_upperCamelCaseName = upperCamelCase @_name
     @_variants = []
     @_nodeClassName = "#{upperCamelCase @_name}Node"
 
-  @getter "nodeClassName"
+  @getter "nodeClassName name",
+    numVariants: -> @_variants.length
 
   addVariant: (options, block) ->
     @_variants.push v = new RuleVariant merge options,
-      variantNumber: @_variants.length
+      variantNumber: @_variants.length + 1
       rule: @
       parserClass: @_parserClass
     v

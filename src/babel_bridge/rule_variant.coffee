@@ -1,17 +1,18 @@
 Foundation = require 'art-foundation'
 PatternElement = require './pattern_element'
 {Node, RuleNode} = require './nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten, inspect} = Foundation
+{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad} = Foundation
 {allPatternElementsRegExp} = PatternElement
 
 module.exports = class RuleVariant extends BaseObject
 
   constructor: (options) ->
-    {@pattern, @rule, @parserClass} = options
+    {@pattern, @rule, @parserClass, @variantNumber} = options
     @pattern ||= options
     @_initVariantNodeClass options
 
   @getter
+    numVariants: -> @rule.numVariants
     patternElements: ->
       @_patternElements ||= @_generatePatternElements()
 
@@ -27,13 +28,22 @@ module.exports = class RuleVariant extends BaseObject
 
     compactFlatten pes
 
+  inspect: ->
+    {numVariants}  = @
+    numVariantsStr = "#{numVariants}"
+    variantString = "(variant #{pad @variantNumber, numVariantsStr.length, ' '}/#{numVariantsStr})"
+
+    "rule #{@rule.name}#{variantString}: #{@pattern}"
+
+  toString: ->
+    "rule #{@rule.name}: #{@pattern}"
 
   parse: (parentNode) ->
     node = new @VariantNodeClass parentNode
 
     for pe in @patternElements
       unless pe.parseInto node #.match pe
-        parentNode.parser._logParsingFailure parentNode.nextOffset, pattern: @pattern, node: parentNode
+        parentNode.parser._logParsingFailure parentNode.nextOffset, ruleVariant: @, parentNode: parentNode
         return
 
     node

@@ -1,8 +1,12 @@
 Foundation = require 'art-foundation'
 Nodes = require './nodes'
 Rule = require './rule'
+{getLineColumn} = require './tools'
 
-{BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect} = Foundation
+{
+  BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
+  inspectLean
+} = Foundation
 {RootNode} = Nodes
 
 module.exports = class Parser extends BaseObject
@@ -68,7 +72,7 @@ module.exports = class Parser extends BaseObject
     return unless @_source
     out = compactFlatten [
       """
-      Parsing error at offset #{@_failureIndex}
+      Parsing error at offset #{inspectLean getLineColumn @_source, @_failureIndex}
 
       Source:
       ...
@@ -84,10 +88,13 @@ module.exports = class Parser extends BaseObject
     log getExpectingInfo: @_expectingList
     return null unless objectLength(@_expectingList) > 0
 
+    sortedKeys = Object.keys(@_expectingList).sort()
+
     [
-      "Expecting one of these patterns:"
-      for k, {pattern, node} of @_expectingList
-        "  #{k}             (#{node.class.getName()})"
+      "Could continue if one of these rules matched:"
+      for k in sortedKeys
+        {ruleVariant} = @_expectingList[k]
+        "  #{k}"
     ]
 
   ##################
@@ -108,12 +115,15 @@ module.exports = class Parser extends BaseObject
     f()
     @_matchingNegativeDepth--
 
+  ###
+    expecting: {ruleVariant, parentNode}
+  ###
   _logParsingFailure: (index, expecting) ->
-    log _logParsingFailure: index:index, expecting: expecting
     return if @matchingNegative
 
     if index >= @_failureIndex
       if index > @_failureIndex
         @_failureIndex = index
         @_expectingList = {}
-      @_expectingList[expecting.pattern] = expecting
+      log _logParsingFailure: index:index, expecting: expecting
+      @_expectingList[expecting.ruleVariant.toString()] = expecting

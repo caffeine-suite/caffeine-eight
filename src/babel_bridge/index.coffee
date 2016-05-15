@@ -7,4 +7,5 @@
   PatternElement: require './pattern_element'
   Rule:           require './rule'
   RuleVariant:    require './rule_variant'
+  Tools:          require './tools'
 require './nodes'
