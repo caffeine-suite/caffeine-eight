@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 PatternElement = require './pattern_element'
 {Node, RuleNode} = require './nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten} = Foundation
+{BaseObject, log, isPlainObject, isString, compactFlatten, inspect} = Foundation
 {allPatternElementsRegExp} = PatternElement
 
 module.exports = class RuleVariant extends BaseObject
@@ -18,7 +18,9 @@ module.exports = class RuleVariant extends BaseObject
   _generatePatternElements: ->
     pes =
       if isString @pattern
-        for part in @pattern.match allPatternElementsRegExp
+        parts = @pattern.match allPatternElementsRegExp
+        throw new Error "no pattern-parts found in: #{inspect @pattern}" unless parts
+        for part in parts
           new PatternElement part, ruleVariant: @
       else
         [new PatternElement @pattern, ruleVariant: @]
@@ -30,7 +32,9 @@ module.exports = class RuleVariant extends BaseObject
     node = new @VariantNodeClass parentNode
 
     for pe in @patternElements
-      return unless pe.parseInto node #.match pe
+      unless pe.parseInto node #.match pe
+        parentNode.parser._logParsingFailure parentNode.nextOffset, pattern: @pattern, node: parentNode
+        return
 
     node
 
