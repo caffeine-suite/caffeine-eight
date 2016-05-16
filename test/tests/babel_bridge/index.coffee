@@ -5,4 +5,5 @@
 .addModules
   CustomNodes:  require './custom_nodes'
   IndentBlocks: require './indent_blocks'
+  Labels:       require './labels'
   Parser:       require './parser'

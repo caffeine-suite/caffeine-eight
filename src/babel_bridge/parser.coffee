@@ -1,5 +1,4 @@
 Foundation = require 'art-foundation'
-Nodes = require './nodes'
 Rule = require './rule'
 {getLineColumn} = require './tools'
 
@@ -7,7 +6,6 @@ Rule = require './rule'
   BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
   inspectLean
 } = Foundation
-{RootNode} = Nodes
 
 module.exports = class Parser extends BaseObject
 

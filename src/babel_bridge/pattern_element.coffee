@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{TerminalNode, EmptyNode} = require './nodes'
+{TerminalNode, EmptyNode, EmptyOptionalNode} = require './nodes'
 {BaseObject, isPlainObject, isString, isRegExp, inspect, log} = Foundation
 
 
@@ -51,7 +51,6 @@ module.exports = class PatternElement extends BaseObject
   # OUT: true if parsing was successful
   # EFFECT: if successful, one or more chlidren nodes have been added to parentNode
   parseInto: (parentNode) ->
-    console.error "parseInto", parentNode
     !!parentNode.addMatch @label, @parse parentNode
 
   _applyParseFlags: ->
@@ -61,7 +60,7 @@ module.exports = class PatternElement extends BaseObject
         if match = singleParser parentNode
           match
         else
-          new EmptyNode parentNode
+          new EmptyOptionalNode parentNode
 
     if @_negative
       @parse = (parentNode) ->

@@ -1,5 +1,6 @@
 Foundation = require 'art-foundation'
-{peek, log} = Foundation
+{peek, log, push} = Foundation
+EmptyOptionalNode = require './empty_optional_node'
 
 module.exports = class RuleNode extends require './node'
   constructor: ->
@@ -7,23 +8,36 @@ module.exports = class RuleNode extends require './node'
     @_lastMatch = null
     @_allMatches = null
     @_matches = null
-    @_match = null
+    @_nextOffset = @offset
 
-  @getter
-    match: -> @_match ||= {}
+  @getter "allMatches",
     matches: -> @_matches ||= {}
-    allMatches: -> @_allMatches ||= []
-    matchLength: -> @nextOffset - @offset
-    nextOffset: -> @_lastMatch?.nextOffset || @offset
 
+  ###
+  IN: match - instanceof Node
+  OUT: true if match was added
+  ###
   addMatch: (label, match) ->
-    return unless match
+    return false unless match
 
-    @allMatches.push @_lastMatch = match
-    @addLabeledMatch label, match
+    @_allMatches = push @_allMatches, @_lastMatch = match
+    if label && match.class != EmptyOptionalNode
+      @_bindToLabelLists label, match
+      @_bindToSingleLabels label, match
 
-  addLabeledMatch: (label, match) ->
-    if label && match.matchLength > 0
-      (@matches[label] ||= []).push match
-      @[label] = match unless @__proto__[label]
-    match
+    @_matchLength = match.nextOffset - @offset
+    true
+
+  #################
+  # PRIVATE
+  #################
+
+  # add to appropriate list in @matches
+  _bindToLabelLists: (label, match) ->
+    {matches} = @
+    matches[label] = push matches[label], match
+
+  # keep most recent match directly as node property
+  # IFF the prototype doesn't already have a property of that name
+  _bindToSingleLabels: (label, match) ->
+    @[label] = match unless @__proto__[label]
