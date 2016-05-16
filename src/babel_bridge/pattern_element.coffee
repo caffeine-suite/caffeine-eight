@@ -30,6 +30,9 @@ module.exports = class PatternElement extends BaseObject
     @_terminal = false
     @_init()
 
+  toString: ->
+    "PatternElement(#{@pattern})"
+
   @property
     label: null
     optional: false
@@ -64,10 +67,11 @@ module.exports = class PatternElement extends BaseObject
 
     if @_negative
       @parse = (parentNode) ->
-        if match = singleParser parentNode
-          null
-        else
-          new EmptyNode parentNode
+        parentNode.parser._matchNegative ->
+          if match = singleParser parentNode
+            null
+          else
+            new EmptyNode parentNode
 
     if @couldMatch
       @parse = (parentNode) ->

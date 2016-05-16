@@ -20,6 +20,8 @@ module.exports = class RuleNode extends require './node'
   addMatch: (label, match) ->
     return false unless match
 
+    @parser._addToMatchedNodeList match
+
     @_allMatches = push @_allMatches, @_lastMatch = match
     if label && match.class != EmptyOptionalNode
       @_bindToLabelLists label, match

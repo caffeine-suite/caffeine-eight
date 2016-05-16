@@ -44,10 +44,10 @@ module.exports = class RuleVariant extends BaseObject
   parse: (parentNode) ->
     node = new @VariantNodeClass parentNode
 
-    for pe in @patternElements
-      unless pe.parseInto node
-        parentNode.parser._logParsingFailure parentNode.nextOffset, ruleVariant: @, parentNode: parentNode
-        return
+    {parser} = parentNode
+    for patternElement in @patternElements
+      unless parser.tryPatternElement patternElement, node, @
+        return false
 
     node
 
