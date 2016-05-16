@@ -22,10 +22,18 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
         blockLine: "samedent statement _?"
 
+      class IndentNode extends TerminalNode
+
       @rule
-        indent: /\n  /
-        samedent: /\n  /
-        outdent: /\n(\n|$)/
+        indent:
+          pattern: /\n  /
+          node: IndentNode
+        samedent:
+          pattern: /\n  /
+          node: IndentNode
+        outdent:
+          pattern: /$|\n(\n|$)/
+          node: IndentNode
 
     MyParser.parse """
       if true

@@ -20,6 +20,17 @@ module.exports = class Rule extends BaseObject
       parserClass: @_parserClass
     v
 
+  ###
+  IN:
+    parentNode: node instance
+      This provides critical info:
+        parentNode.source:      the source string
+        parentNode.nextOffset:  the index in the source where parsing starts
+        parentNode.parser:      access to the parser object
+
+  EFFECT: If returning a new Node, it is expected that node's parent is already set to parentNode
+  OUT: Node instance if parsing was successful
+  ###
   parse: (parentNode) ->
     for v in @_variants
       if match = v.parse parentNode

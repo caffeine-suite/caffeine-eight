@@ -48,10 +48,11 @@ module.exports = class Parser extends BaseObject
     @_source = null
     @_resetParserTracking()
 
-  # OUT: promise
+  ###
+  OUT: on success, root Node of the parse tree, else null
+  ###
   parse: (@_source, options = {})->
     @_resetParserTracking()
-    log source: @_source
 
     ruleName = options.rule || @rootRuleName
     {rules} = @
@@ -60,7 +61,7 @@ module.exports = class Parser extends BaseObject
     throw new Error "Could not find rule: #{rule}" unless startRule
 
 
-    if result = startRule.parse rootNode = new RootNode @
+    if result = startRule.parse @
       if result.matchLength == @_source.length
         result
       else
@@ -70,13 +71,17 @@ module.exports = class Parser extends BaseObject
 
   getParseFailureInfo: ->
     return unless @_source
+
+    sourceBefore = @_source.slice 0, @_failureIndex
+    sourceAfter = @_source.slice @_failureIndex
+
     out = compactFlatten [
       """
       Parsing error at offset #{inspectLean getLineColumn @_source, @_failureIndex}
 
       Source:
       ...
-      #{@source}
+      #{sourceBefore}<HERE>#{sourceAfter}
       ...
 
       """
@@ -85,7 +90,6 @@ module.exports = class Parser extends BaseObject
     out.join "\n"
 
   getExpectingInfo: ->
-    log getExpectingInfo: @_expectingList
     return null unless objectLength(@_expectingList) > 0
 
     sortedKeys = Object.keys(@_expectingList).sort()
@@ -125,5 +129,5 @@ module.exports = class Parser extends BaseObject
       if index > @_failureIndex
         @_failureIndex = index
         @_expectingList = {}
-      log _logParsingFailure: index:index, expecting: expecting
+      # log _logParsingFailure: index:index, expecting: expecting
       @_expectingList[expecting.ruleVariant.toString()] = expecting

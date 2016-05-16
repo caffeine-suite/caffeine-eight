@@ -38,11 +38,14 @@ module.exports = class RuleVariant extends BaseObject
   toString: ->
     "rule #{@rule.name}: #{@pattern}"
 
+  ###
+  see: BabelBridge.Rule#parse
+  ###
   parse: (parentNode) ->
     node = new @VariantNodeClass parentNode
 
     for pe in @patternElements
-      unless pe.parseInto node #.match pe
+      unless pe.parseInto node
         parentNode.parser._logParsingFailure parentNode.nextOffset, ruleVariant: @, parentNode: parentNode
         return
 

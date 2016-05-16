@@ -13,7 +13,7 @@ module.exports = class PatternElement extends BaseObject
   @labelRegExp: /([a-zA-Z0-9_]+)\:/
   @patternElementRegExp: ///
     (?:#{@labelRegExp.source})?
-    ([!])?
+    ([!&])?
     (?:
       #{@ruleRegExp.source} |
       #{@regExpRegExp.source} |
@@ -37,6 +37,7 @@ module.exports = class PatternElement extends BaseObject
     zeroOrMore: false
     oneOrMore: false
     pattern: null
+    couldMatch: false
 
   @getter
     parserClass: -> @ruleVariant.parserClass
@@ -50,6 +51,7 @@ module.exports = class PatternElement extends BaseObject
   # OUT: true if parsing was successful
   # EFFECT: if successful, one or more chlidren nodes have been added to parentNode
   parseInto: (parentNode) ->
+    console.error "parseInto", parentNode
     !!parentNode.addMatch @label, @parse parentNode
 
   _applyParseFlags: ->
@@ -66,6 +68,11 @@ module.exports = class PatternElement extends BaseObject
         if match = singleParser parentNode
           null
         else
+          new EmptyNode parentNode
+
+    if @couldMatch
+      @parse = (parentNode) ->
+        if singleParser parentNode
           new EmptyNode parentNode
 
     if @_zeroOrMore
@@ -89,9 +96,11 @@ module.exports = class PatternElement extends BaseObject
       @_initPlainObject pattern
     else if isString pattern
       [_, label, prefix, ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
-      throw new Error "pattern can only have one prefix: ! or one suffix: ?/+/*" if prefix && suffix
+      throw new Error "pattern can only have one prefix: !/& or one suffix: ?/+/*" if prefix && suffix
 
-      @negative = !!prefix
+      switch prefix
+        when "!" then @negative = true
+        when "&" then @couldMatch = true
       @label = label || ruleName
       switch suffix
         when "?" then @optional = true

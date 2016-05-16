@@ -110,6 +110,19 @@ suite "BabelBridge.Parser.negative parsing", ->
      assert.throws -> MyParser.parse "boobat"
      MyParser.parse "bobat"
 
+suite "BabelBridge.Parser.couldMatch parsing", ->
+
+  test "!boo anything", ->
+    class MyParser extends Parser
+      @rule
+        main: "boo &foo rest"
+        boo: /boo/
+        foo: /foo/
+        rest: /fo[a-z]+/
+
+     MyParser.parse "boofoo"
+     assert.throws -> MyParser.parse "boofoa"
+
 suite "BabelBridge.Parser.rule variants", ->
   test "two variants", ->
     class MyParser extends Parser
