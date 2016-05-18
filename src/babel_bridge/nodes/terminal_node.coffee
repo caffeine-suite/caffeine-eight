@@ -12,3 +12,4 @@ module.exports = class TerminalNode extends Node
 
   @getter "pattern",
     nextOffset: -> @_offset + @_matchLength
+    plainObjects: -> text: @text, offset: @offset, length: @matchLength

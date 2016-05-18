@@ -5,6 +5,7 @@ Rule = require './rule'
 {
   BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
   inspectLean
+  pluralize
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -30,8 +31,18 @@ module.exports = class Parser extends BaseObject
 
     rule.addVariant options
 
-  @rule: (rules)->
+  ###
+  IN:
+    rules: plain object mapping rule-names to definitions
+    nodeClass: optional, must extend BabelBridge.Node or be a plain object
+  ###
+  @rule: (rules, nodeClass = @baseNodeType)->
+
     for rule, definition of rules
+      if isPlainObject definition
+        definition = merge node: nodeClass, definition
+      else
+        definition = pattern: definition, node: nodeClass
       @addRule rule, definition
 
   @getter "source parser",
@@ -45,6 +56,10 @@ module.exports = class Parser extends BaseObject
     @_parser = @
     @_source = null
     @_resetParserTracking()
+    @_pluralNames = {}
+
+  pluralize: (name) ->
+    @_pluralNames[name] ||= pluralize name
 
   ###
   OUT: on success, root Node of the parse tree, else null
@@ -70,6 +85,8 @@ module.exports = class Parser extends BaseObject
 
   ###
   IN: f: (node) -> continue? true/false
+
+  NOTE: Nodes are effectively sorted by their nextOffset value, parents come AFTER children.
   ###
   reverseEachMatchedNodeSoFar: (f) ->
     for i in [@_matchedNodeListLength-1..0] by -1

@@ -13,7 +13,7 @@ module.exports = class Rule extends BaseObject
   @getter "nodeClassName name",
     numVariants: -> @_variants.length
 
-  addVariant: (options, block) ->
+  addVariant: (options) ->
     @_variants.push v = new RuleVariant merge options,
       variantNumber: @_variants.length + 1
       rule: @

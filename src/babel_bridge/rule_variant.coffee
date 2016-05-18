@@ -52,7 +52,8 @@ module.exports = class RuleVariant extends BaseObject
     node
 
   _initVariantNodeClass: ({variantNumber, node, rule}) ->
-    @VariantNodeClass = if node instanceof Node
+    self.node ||= node
+    @VariantNodeClass = if node?.prototype instanceof Node
       node
     else
       class VariantNode extends RuleNode

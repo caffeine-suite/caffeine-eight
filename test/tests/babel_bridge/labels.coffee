@@ -35,7 +35,7 @@ suite "BabelBridge.Parser.labels", ->
           node:
             result: ->
               a: @a.text
-              "matches.a": (match.text for match in @matches.a)
+              "matches.a": (match.text for match in @as)
 
     mainNode = MyParser.parse "ehcee"
     assert.eq mainNode.result(), a: "cee", "matches.a": ["eh", "cee"]
