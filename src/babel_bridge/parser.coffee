@@ -76,22 +76,11 @@ module.exports = class Parser extends BaseObject
 
     if result = startRule.parse @
       if result.matchLength == @_source.length
-        @_cleanUpMatchedNodeList()
         result
       else
         throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters"
     else
       throw new Error @getParseFailureInfo()
-
-  ###
-  IN: f: (node) -> continue? true/false
-
-  NOTE: Nodes are effectively sorted by their nextOffset value, parents come AFTER children.
-  ###
-  reverseEachMatchedNodeSoFar: (f) ->
-    for i in [@_matchedNodeListLength-1..0] by -1
-      break unless f @_matchedNodeList[i]
-    null
 
   getParseFailureInfo: ->
     return unless @_source
@@ -126,11 +115,9 @@ module.exports = class Parser extends BaseObject
     ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
-    currentMatchedNodeListLength = @_matchedNodeListLength
     if patternElement.parseInto parseIntoNode
       true
     else
-      @_matchedNodeListLength = currentMatchedNodeListLength
       @_logParsingFailure parseIntoNode.offset,
         ruleVariant: ruleVariant
         parentNode: parseIntoNode.parent
@@ -145,16 +132,6 @@ module.exports = class Parser extends BaseObject
     @_failureIndex = 0
     @_expectingList = {}
     @_parseCache = {}
-    @_matchedNodeList = []
-    @_matchedNodeListLength = 0
-
-  _addToMatchedNodeList: (node) ->
-    @_matchedNodeList[@_matchedNodeListLength++] = node
-
-  _cleanUpMatchedNodeList: ->
-    if @_matchedNodeList.length > @_matchedNodeListLength
-      @_matchedNodeList = @_matchedNodeList.slice 0, @_matchedNodeListLength
-    null
 
   @getter
     isMatchingNegative: -> @_matchingNegativeDepth > 0

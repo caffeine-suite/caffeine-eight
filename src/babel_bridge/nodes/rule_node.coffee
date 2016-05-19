@@ -23,7 +23,6 @@ module.exports = class RuleNode extends require './node'
     return false unless match
 
     match._parent = @
-    @parser._addToMatchedNodeList match
 
     @_matches = push @_matches, @_lastMatch = match
     if label && match.class != EmptyOptionalNode
