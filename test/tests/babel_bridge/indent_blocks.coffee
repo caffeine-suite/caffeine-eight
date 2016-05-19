@@ -60,19 +60,17 @@ suite "BabelBridge.Parser.indent block parsing", ->
         blockStack = [new BlockNode @parser]
 
         for line in @matches
-          log "line #{line.offset}:#{line.text}"
           indentLength = line.indent.matchLength
+          line.matches = [line.expression]
+          line.indent = line.eol = null
 
           while indentLength < peek(blockStack).indentLength
-            log "extractBlocks #{indentLength} < #{peek(blockStack).indentLength} "
             block = blockStack.pop()
             peek(blockStack).matches.push block
 
           if indentLength == peek(blockStack).indentLength
-            log "extractBlocks #{peek(blockStack).indentLength} == #{indentLength}"
             peek(blockStack).addMatch null, line
           else
-            log "extractBlocks #{indentLength} > #{peek(blockStack).indentLength} "
             blockStack.push new BlockNode peek(blockStack), indentLength, line
 
         while blockStack.length > 1
