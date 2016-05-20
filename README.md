@@ -8,6 +8,7 @@
 
 ```coffeescript
   BabelBridge = require 'babel-bridge'
+
   class MyParser extends BabelBridge.Parser
     @rule foo: "/foo/ bar?"
     @rule bar: /bar/
