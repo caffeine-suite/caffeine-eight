@@ -23,7 +23,7 @@ module.exports = class Node extends BaseObject
       if @_matches?.length > 0
         ret = ret.concat (match.plainObjects for match in @matches)
       else
-        ret = text: @text, offset: @offset, length: @matchLength
+        ret = text: @text #, offset: @offset, length: @matchLength
       ret
 
   ###

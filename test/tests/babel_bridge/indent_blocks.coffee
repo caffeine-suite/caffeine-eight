@@ -37,19 +37,14 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
 
       collectFirstBlock: (lineStack) ->
-        log "collectFirstBlock"
         if peek(lineStack) instanceof Block
           @block = lineStack.pop()
 
       collectLastBlock: (lineStack) ->
-        console.error "here"
-        log "collectLastBlock lineStack.length: #{lineStack.length}", lineStack
         otherBlocks = []
         while peek(lineStack) instanceof Block
-          log "collectLastBlock1"
           otherBlocks.push @block if @block
           @matches.push @block = lineStack.pop()
-        log "collectLastBlock2 otherBlocks.length = #{otherBlocks.length}", @block?.plainObjects
 
         # restore otherBlocks
         while otherBlocks.length > 0
@@ -61,17 +56,15 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
         for line in @matches
           indentLength = line.indent.matchLength
-          line.matches = [line.expression]
-          line.indent = line.eol = null
 
           while indentLength < peek(blockStack).indentLength
             block = blockStack.pop()
             peek(blockStack).matches.push block
 
           if indentLength == peek(blockStack).indentLength
-            peek(blockStack).addMatch null, line
+            peek(blockStack).addMatch null, line.expression
           else
-            blockStack.push new Block peek(blockStack), indentLength, line
+            blockStack.push new Block peek(blockStack), indentLength, line.expression
 
         while blockStack.length > 1
           block = blockStack.pop()
@@ -99,8 +92,8 @@ suite "BabelBridge.Parser.indent block parsing", ->
       @rule expression: "/if/ _ expression", IfRuleNode
 
       @rule expression: /true|false/
-      @rule _: / +/
-      @rule eol: pattern: /[ ]*(\n|$)/, variantNodeClassName: "EolRule"
+      @rule _: pattern: / +/, variantNodeClassName: "Whitespace"
+      @rule eol: pattern: /[ ]*(\n|$)/, variantNodeClassName: "Eol"
 
       @rule indent: / */
 
