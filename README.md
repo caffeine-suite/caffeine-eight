@@ -26,7 +26,7 @@
 * Reasonably fast
 * No globals - each parser instance parses in its own space
 
-This is NOT a parser-generator. There is no pre-compile step. BB enables you to *create and extend* parsers at runtime.
+This is NOT a parser-generator. There is no pre-compile step. Unlike other PEG libraries, BB enables you to *create and extend parsers at runtime*.
 
 ## Features
 
