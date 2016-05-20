@@ -1,18 +1,18 @@
 Foundation = require 'art-foundation'
 {log, wordsArray, peek} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
-{TerminalNode, RuleNode} = Nodes
+{Node} = Nodes
 
 suite "BabelBridge.Parser.indent block parsing", ->
 
   test "blocks with intent parsing", ->
-    class IndentBlocksBaseNodeType extends RuleNode
+    class IndentBlocksNode extends Node
 
       collectLines: (lineStack) ->
         for match in @matches
           match.collectLines? lineStack
 
-    class BlockNode extends RuleNode
+    class Block extends Node
       constructor: (_, @indentLength = 0, firstMatch)->
         super
         @addMatch null, firstMatch
@@ -26,7 +26,7 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
         @_matches = newLines
 
-    class CouldHaveBlockNode extends IndentBlocksBaseNodeType
+    class CouldHaveBlockNode extends IndentBlocksNode
 
       collectLines: (lineStack) ->
         @collectLastBlock lineStack if @collectBlock == "lastBlock"
@@ -38,14 +38,14 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
       collectFirstBlock: (lineStack) ->
         log "collectFirstBlock"
-        if peek(lineStack) instanceof BlockNode
+        if peek(lineStack) instanceof Block
           @block = lineStack.pop()
 
       collectLastBlock: (lineStack) ->
         console.error "here"
         log "collectLastBlock lineStack.length: #{lineStack.length}", lineStack
         otherBlocks = []
-        while peek(lineStack) instanceof BlockNode
+        while peek(lineStack) instanceof Block
           log "collectLastBlock1"
           otherBlocks.push @block if @block
           @matches.push @block = lineStack.pop()
@@ -55,9 +55,9 @@ suite "BabelBridge.Parser.indent block parsing", ->
         while otherBlocks.length > 0
           lineStack.push otherBlocks.pop()
 
-    class LinesNode extends BlockNode
+    class LinesNode extends Block
       extractBlocks: ->
-        blockStack = [new BlockNode @parser]
+        blockStack = [new Block @parser]
 
         for line in @matches
           indentLength = line.indent.matchLength
@@ -71,7 +71,7 @@ suite "BabelBridge.Parser.indent block parsing", ->
           if indentLength == peek(blockStack).indentLength
             peek(blockStack).addMatch null, line
           else
-            blockStack.push new BlockNode peek(blockStack), indentLength, line
+            blockStack.push new Block peek(blockStack), indentLength, line
 
         while blockStack.length > 1
           block = blockStack.pop()
@@ -92,7 +92,7 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
     class MyParser extends Parser
       # need to be able to declare the base non-ternal node type for all nodes
-      @baseNodeType: IndentBlocksBaseNodeType
+      @nodeBaseClass: IndentBlocksNode
       @rule lines: "line+", LinesNode
       @rule line: "indent expression eol"
 
@@ -100,7 +100,7 @@ suite "BabelBridge.Parser.indent block parsing", ->
 
       @rule expression: /true|false/
       @rule _: / +/
-      @rule eol: /[ ]*(\n|$)/
+      @rule eol: pattern: /[ ]*(\n|$)/, variantNodeClassName: "EolRule"
 
       @rule indent: / */
 

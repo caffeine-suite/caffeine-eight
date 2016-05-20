@@ -6,5 +6,3 @@
   EmptyNode:         require './empty_node'
   EmptyOptionalNode: require './empty_optional_node'
   Node:              require './node'
-  RuleNode:          require './rule_node'
-  TerminalNode:      require './terminal_node'

@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
-{TerminalNode} = Nodes
+{Node} = Nodes
 
 suite "BabelBridge.Parser.terminal parsing", ->
 
@@ -163,7 +163,7 @@ suite "BabelBridge.Parser.custom parser", ->
           parse: (parentNode) ->
             {nextOffset, source} = parentNode
             if source[nextOffset]?.match /[a-z]/
-              new TerminalNode parentNode,
+              new Node parentNode,
                 nextOffset
                 1
                 "custom"

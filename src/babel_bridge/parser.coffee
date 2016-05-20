@@ -36,13 +36,13 @@ module.exports = class Parser extends BaseObject
     rules: plain object mapping rule-names to definitions
     nodeClass: optional, must extend BabelBridge.Node or be a plain object
   ###
-  @rule: (rules, nodeClass = @baseNodeType)->
+  @rule: (rules, nodeBaseClass = @nodeBaseClass)->
 
     for rule, definition of rules
       if isPlainObject definition
-        definition = merge node: nodeClass, definition
+        definition = merge nodeBaseClass: nodeBaseClass, definition
       else
-        definition = pattern: definition, node: nodeClass
+        definition = pattern: definition, nodeBaseClass: nodeBaseClass
       @addRule rule, definition
 
   @getter "source parser",

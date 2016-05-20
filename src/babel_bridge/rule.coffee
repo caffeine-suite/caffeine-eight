@@ -1,6 +1,5 @@
 Foundation = require 'art-foundation'
 RuleVariant = require './rule_variant'
-{RuleNode} = require './nodes'
 
 {BaseObject, merge, upperCamelCase, objectName, log} = Foundation
 
@@ -8,9 +7,8 @@ module.exports = class Rule extends BaseObject
 
   constructor: (@_name, @_parserClass)->
     @_variants = []
-    @_nodeClassName = "#{upperCamelCase @_name}Node"
 
-  @getter "nodeClassName name",
+  @getter "nodeClassName name variantNodeClasses",
     numVariants: -> @_variants.length
 
   addVariant: (options) ->

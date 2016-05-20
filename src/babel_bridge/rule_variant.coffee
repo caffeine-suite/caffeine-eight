@@ -1,17 +1,19 @@
 Foundation = require 'art-foundation'
 PatternElement = require './pattern_element'
-{Node, RuleNode} = require './nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad} = Foundation
+{Node} = require './nodes'
+{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase} = Foundation
 {allPatternElementsRegExp} = PatternElement
 
 module.exports = class RuleVariant extends BaseObject
 
   constructor: (options) ->
-    {@pattern, @rule, @parserClass, @variantNumber} = options
+    {@pattern, @rule, @parserClass, @variantNodeClassName} = options
     @pattern ||= options
     @_initVariantNodeClass options
 
+  @setter "variantNodeClassName"
   @getter
+    name: -> @variantNodeClassName + "Variant"
     numVariants: -> @rule.numVariants
     patternElements: ->
       @_patternElements ||= @_generatePatternElements()
@@ -28,15 +30,8 @@ module.exports = class RuleVariant extends BaseObject
 
     compactFlatten pes
 
-  inspect: ->
-    {numVariants}  = @
-    numVariantsStr = "#{numVariants}"
-    variantString = "(variant #{pad @variantNumber, numVariantsStr.length, ' '}/#{numVariantsStr})"
-
-    "rule #{@rule.name}#{variantString}: #{@pattern}"
-
-  toString: ->
-    "rule #{@rule.name}: #{@pattern}"
+  inspect: -> @toString()
+  toString: -> "#{@name}: #{@pattern}"
 
   ###
   see: BabelBridge.Rule#parse
@@ -51,13 +46,19 @@ module.exports = class RuleVariant extends BaseObject
 
     node
 
-  _initVariantNodeClass: ({variantNumber, node, rule}) ->
-    self.node ||= node
-    @VariantNodeClass = if node?.prototype instanceof Node
-      node
+  @getter
+    variantNodeClassName: ->
+      return @_variantNodeClassName if @_variantNodeClassName
+      baseName = upperCamelCase(@rule.name) + "Rule" + upperCamelCase "#{@pattern}".match(/[a-zA-Z0-9_]+/g)?.join('_') || ""
+      @_variantNodeClassName = baseName
+
+  _initVariantNodeClass: ({variantNumber, nodeClass, nodeBaseClass, rule}) ->
+    @VariantNodeClass = if nodeClass?.prototype instanceof Node
+      nodeClass
     else
-      class VariantNode extends RuleNode
-        @_name: rule.nodeClassName + "Variant#{variantNumber}"
-        if isPlainObject node
-          for k, v of node
+      {variantNodeClassName} = @
+      class VariantNode extends nodeBaseClass || Node
+        @_name: variantNodeClassName #rule.nodeClassName + "Variant#{variantNumber}"
+        if isPlainObject nodeClass
+          for k, v of nodeClass
             @::[k] = v

@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{TerminalNode, EmptyNode, EmptyOptionalNode} = require './nodes'
+{Node, EmptyNode, EmptyOptionalNode} = require './nodes'
 {BaseObject, isPlainObject, isString, isRegExp, inspect, log} = Foundation
 
 
@@ -24,10 +24,12 @@ module.exports = class PatternElement extends BaseObject
     ///
   @allPatternElementsRegExp: ///#{@patternElementRegExp.source}///g
 
+  #####################
+  # members
+  #####################
   constructor: (@pattern, @options = {}) ->
-    {@ruleVariant} = @options
-    throw new Error "bad args" unless @ruleVariant
-    @_terminal = false
+    super
+    @parse = null
     @_init()
 
   toString: ->
@@ -41,10 +43,6 @@ module.exports = class PatternElement extends BaseObject
     oneOrMore: false
     pattern: null
     couldMatch: false
-
-  @getter
-    parserClass: -> @ruleVariant.parserClass
-    rules: -> @parserClass.getRules()
 
   # IN: parentNode
   # OUT: Node instance or false if no match was found
@@ -136,19 +134,18 @@ module.exports = class PatternElement extends BaseObject
     throw new Error "plain-object pattern definition requires 'parse' or 'parseInto'" unless @parse || parseInto
 
   _initRule: (ruleName) ->
-    matchRule = @rules[ruleName]
-    throw new Error "no rule for #{ruleName}" unless matchRule
     @parse = (parentNode) ->
+      matchRule = parentNode.parser.rules[ruleName]
+      throw new Error "no rule for #{ruleName}" unless matchRule
       matchRule.parse parentNode
 
   _initRegExp: (regExp) ->
-    @_terminal = true
     regExp = ///#{regExp.source}///y
 
     @parse = (parentNode) ->
       regExp.lastIndex = offset = parentNode.nextOffset
       if match = regExp.exec parentNode.source
-        new TerminalNode parentNode,
+        new Node parentNode,
           offset
           match[0].length
           regExp

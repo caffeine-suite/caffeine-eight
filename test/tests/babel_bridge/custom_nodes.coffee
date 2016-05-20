@@ -1,7 +1,6 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
-{TerminalNode} = Nodes
 
 suite "BabelBridge.Parser.custom node classes", ->
 
@@ -10,7 +9,7 @@ suite "BabelBridge.Parser.custom node classes", ->
       @rule
         main:
           pattern: /boo/
-          node:
+          nodeClass:
             myMember: -> 123
 
     mainNode = MyParser.parse "boo"
@@ -20,15 +19,15 @@ suite "BabelBridge.Parser.custom node classes", ->
     class MyParser extends Parser
       @rule expression:
         pattern: "n:number '+' expression"
-        node: compute: -> @n.compute() + @expression.compute()
+        nodeClass: compute: -> @n.compute() + @expression.compute()
 
       @rule expression:
         pattern: "number"
-        node: compute: -> @number.compute()
+        nodeClass: compute: -> @number.compute()
 
       @rule number:
         pattern: /[0-9]+/
-        node: compute: -> @text | 0
+        nodeClass: compute: -> @text | 0
 
     mainNode = MyParser.parse "123+321+111"
     assert.eq mainNode.compute(), 555

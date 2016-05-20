@@ -1,7 +1,6 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
-{TerminalNode} = Nodes
 
 suite "BabelBridge.Parser.labels", ->
 
@@ -14,7 +13,7 @@ suite "BabelBridge.Parser.labels", ->
             b:'bee'?
             c:'cee'?
             """
-          node:
+          nodeClass:
             result: ->
               a: @a?.text
               b: @b?.text
@@ -32,7 +31,7 @@ suite "BabelBridge.Parser.labels", ->
             a:'bee'?
             a:'cee'?
             """
-          node:
+          nodeClass:
             result: ->
               a: @a.text
               "matches.a": (match.text for match in @as)
