@@ -155,18 +155,17 @@ suite "BabelBridge.Parser.many parsing", ->
     MyParser.parse "booboo"
 
 suite "BabelBridge.Parser.custom parser", ->
-  test "with oneOrMore", ->
+  test "basic", ->
     class MyParser extends Parser
       @rule
         main:
-          oneOrMore: true
           parse: (parentNode) ->
             {nextOffset, source} = parentNode
-            if source[nextOffset]?.match /[a-z]/
+            if source[nextOffset] == "a"
               new Node parentNode,
-                nextOffset
-                1
-                "custom"
+                offset: nextOffset
+                matchLength: 1
+                ruleVariant: @
 
-    MyParser.parse "abc"
+    MyParser.parse "a"
     assert.throws -> MyParser.parse "A"

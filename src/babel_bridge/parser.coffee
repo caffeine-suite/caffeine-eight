@@ -39,11 +39,10 @@ module.exports = class Parser extends BaseObject
   @rule: (rules, nodeBaseClass = @nodeBaseClass)->
 
     for rule, definition of rules
-      if isPlainObject definition
-        definition = merge nodeBaseClass: nodeBaseClass, definition
+      @addRule rule, if isPlainObject definition
+        merge nodeBaseClass: nodeBaseClass, definition
       else
-        definition = pattern: definition, nodeBaseClass: nodeBaseClass
-      @addRule rule, definition
+        pattern: definition, nodeBaseClass: nodeBaseClass
 
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()

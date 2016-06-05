@@ -6,10 +6,12 @@ PatternElement = require './pattern_element'
 
 module.exports = class RuleVariant extends BaseObject
 
-  constructor: (options) ->
-    {@pattern, @rule, @parserClass, @variantNodeClassName} = options
-    @pattern ||= options
-    @_initVariantNodeClass options
+  constructor: (@options) ->
+    @options = pattern: @options unless isPlainObject @options
+    {@pattern, @rule, @parserClass} = @options
+    @_variantNodeClassName = @options.variantNodeClassName
+    @_initVariantNodeClass @options
+    @parse = @options.parse if @options.parse
 
   @setter "variantNodeClassName"
   @getter
@@ -31,13 +33,13 @@ module.exports = class RuleVariant extends BaseObject
     compactFlatten pes
 
   inspect: -> @toString()
-  toString: -> "#{@name}: #{@pattern}"
+  toString: -> "#{@name}: #{@pattern || (@options.parse && 'function()')}"
 
   ###
   see: BabelBridge.Rule#parse
   ###
   parse: (parentNode) ->
-    node = new @VariantNodeClass parentNode
+    node = new @VariantNodeClass parentNode, ruleVariant: @
 
     {parser} = parentNode
     for patternElement in @patternElements
@@ -49,16 +51,19 @@ module.exports = class RuleVariant extends BaseObject
   @getter
     variantNodeClassName: ->
       return @_variantNodeClassName if @_variantNodeClassName
-      baseName = upperCamelCase(@rule.name) + "Rule" + upperCamelCase "#{@pattern}".match(/[a-zA-Z0-9_]+/g)?.join('_') || ""
+      baseName = upperCamelCase(@rule.name) + "Rule" + if @pattern
+        upperCamelCase "#{@pattern}".match(/[a-zA-Z0-9_]+/g)?.join('_') || ""
+      else if @parse
+        "CustomParser"
       @_variantNodeClassName = baseName
 
-  _initVariantNodeClass: ({variantNumber, nodeClass, nodeBaseClass, rule}) ->
+  _initVariantNodeClass: ({nodeClass, nodeBaseClass, rule}) ->
     @VariantNodeClass = if nodeClass?.prototype instanceof Node
       nodeClass
     else
       {variantNodeClassName} = @
       class VariantNode extends nodeBaseClass || Node
-        @_name: variantNodeClassName #rule.nodeClassName + "Variant#{variantNumber}"
+        @_name: variantNodeClassName
         if isPlainObject nodeClass
           for k, v of nodeClass
             @::[k] = v

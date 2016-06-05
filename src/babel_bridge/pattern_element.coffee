@@ -146,6 +146,5 @@ module.exports = class PatternElement extends BaseObject
       regExp.lastIndex = offset = parentNode.nextOffset
       if match = regExp.exec parentNode.source
         new Node parentNode,
-          offset
-          match[0].length
-          regExp
+          offset: offset
+          matchLength: match[0].length

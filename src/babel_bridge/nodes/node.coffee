@@ -3,17 +3,20 @@ Foundation = require 'art-foundation'
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
-  constructor: (@_parent, @_offset = @_parent.getNextOffset(), @_matchLength = 0) ->
+  constructor: (@_parent, options) ->
     super
     {@_parser} = @_parent
+    {@offset, @matchLength, @ruleVariant} = options if options
+    @_offset ?= @_parent.getNextOffset()
+    @_matchLength ||= 0
     @_lastMatch = null
     @_matches = null
 
-  @setter "matches"
+  @setter "matches offset matchLength ruleVariant"
   @getter
     matches: -> @_matches ||= []
 
-  @getter "parent parser offset matchLength"
+  @getter "parent parser offset matchLength ruleVariant"
   @getter
     text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
     source: -> @_parser.source

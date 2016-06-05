@@ -18,6 +18,10 @@ module.exports = class Rule extends BaseObject
       parserClass: @_parserClass
     v
 
+  @getter
+    inspectObjects: ->
+      [{inspect: => "<Rule: #{@_name}>"}, @_variants]
+
   ###
   IN:
     parentNode: node instance
