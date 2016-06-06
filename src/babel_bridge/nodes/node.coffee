@@ -18,15 +18,16 @@ module.exports = class Node extends BaseObject
 
   @getter "parent parser offset matchLength ruleVariant"
   @getter
+    inspectObjects: -> @getPlainObjects()
     text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
     source: -> @_parser.source
     nextOffset: -> @offset + @matchLength
     plainObjects: ->
-      ret = [@class.getName()]
+      ret = [{inspect:=>@class.getName()}]
       if @_matches?.length > 0
-        ret = ret.concat (match.plainObjects for match in @matches)
+        ret = ret.concat (match.getPlainObjects() for match in @matches)
       else
-        ret = text: @text #, offset: @offset, length: @matchLength
+        ret = @text #, offset: @offset, length: @matchLength
       ret
 
   ###
