@@ -1,104 +1,271 @@
 Foundation = require 'art-foundation'
-{log, wordsArray, peek} = Foundation
+{log, wordsArray, peek, shallowClone} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
 {Node} = Nodes
 
+###
+TODO: A new IDEA
+
+Annotations:
+
+  Add a pre-parse step which scans all lines and marks every:
+    - indent
+    - samedent
+    - outdent
+
+  This annotations are tied to specific offsets in the source, specicially at
+  the end of the indent string on the first non-white-space character.
+
+  The source string is not altered. Annotations use their own data structure
+  attached the the parser instance.
+
+  Then, we add custom parsers which match only if there is a matching
+  annotation at the current offset.
+
+  There may be more than one annotation at the same offset.
+  (that was the problem I had before with suggestions on the net to
+  alter the source and add <indent> and <outdent> unique strings - you couldn't
+  have two at the same index which is required for two sequential blocks.)
+
+Pros:
+  should make parsing pretty streightforward.
+
+Cons:
+  The following appears to be very hard or ugly to write parse rules for:
+    if foo
+        fooParam1
+        fooParam2
+      ifStatement1
+      ifStatement2
+
+  AND also parse:
+
+    if foo
+      ifStatement1
+      ifStatement2
+
+  Logically, I'd also like to be able to parse, even though there isn't a practical need:
+
+    if if foo
+          fooParam1
+          fooParam2
+        secondIfStatement1
+        secondIfStatement2
+      firstIfStatement1
+      firstIfStatement2
+
+    if if foo
+    {
+      fooParam1
+      fooParam2
+    }
+    {
+      secondIfStatement1
+      secondIfStatement2
+    }
+    {
+      firstIfStatement1
+      firstIfStatement2
+    }
+
+    The problem is the determining if "foo" is a method invocation with parameters
+    in a block-style-list or if "foo" is just a value is CONTEXCTUAL!
+    It matters both how many "ifs" (or other block-requiring expressions) come before it
+    AND how many blocks follow it.
+
+    The answer may be that the test-expression for an "if", "while" or similar block-requireing
+    statement cannot have itself match a block UNLESS it is within a parenthesis.
+
+    So we could allow:
+    if foo(
+        fooParam1
+        fooParam2
+      )
+      ifStatement1
+      ifStatement2
+
+    And:
+    if foo () # the () with whitespace padding indicate a function invocation params list follows.
+        fooParam1
+        fooParam2
+      ifStatement1
+      ifStatement2
+
+  Another option:
+    Do something like the current system where we fully parse every line, but we ignore blocks.
+    Then on each line we count how many "tail-blocks" are "required".
+    Then we do the annotations, and tail-blocks get get "tailIndent" annotations instead of "indent"
+    annotations. That way "foo" won't greedly assume the following "tailIndent" block indicates
+    a method invocation - it only matches "indent" blocks.
+    And, if, etc, matches "tailIndent" blocks.
+
+    Is it possible to use the same parsing rules on the same source with two results?
+
+    Perhaps we can do it with custom parsers? The first time the annotations aren't set, and
+    therefor all the "blocks" stuff parses one way.
+
+    The second time, the annotations exist and we are doing the "real" thing.
+
+###
+
 suite "BabelBridge.Parser.indent block parsing", ->
 
-  test "blocks with intent parsing", ->
-    class IndentBlocksNode extends Node
+  class IndentBlocksNode extends Node
 
-      collectLines: (lineStack) ->
-        @collectLastBlock lineStack if @collectBlock == "lastBlock"
-        for match in @matches
-          match.collectLines? lineStack
-        @collectFirstBlock lineStack if @collectBlock == "firstBlock"
+    blockParseMatches: (lineStack) ->
 
-        @block?.collectLines()
+      newMatches = []
+      for match in @matches
+        result = if match.blockParse
+          match.blockParse lineStack
+        else
+          match
 
-      @getter
-        collectBlock: ->
-          @ruleVariant.options.collectBlock || @class.collectBlock
+        unless result
+          log
+            error: "didn't match blockParse"
+            match:
+              match.plainObjects
+          throw new Error "didn't match blockParse"
 
+        newMatches.push result
 
-      collectFirstBlock: (lineStack) ->
-        if peek(lineStack) instanceof Block
-          @block = lineStack.pop()
+      @_matches = newMatches
 
-      collectLastBlock: (lineStack) ->
-        otherBlocks = []
-        while peek(lineStack) instanceof Block
-          otherBlocks.push @block if @block
-          @matches.push @block = lineStack.pop()
+    blockParse: (lineStack) ->
+      @blockParseMatches lineStack
+      @
 
-        # restore otherBlocks
-        while otherBlocks.length > 0
-          lineStack.push otherBlocks.pop()
+    collectLastBlock: (lineStack) ->
+      blocks = []
+      blocks.push lineStack.pop() while peek(lineStack) instanceof Block
+      @addMatch "block", block = blocks.pop()
+      lineStack.push blocks.pop() while blocks.length > 0
+      block.blockParse()
 
-    class Block extends Node
-      constructor: (_, @indentLength = 0, firstMatch)->
-        super
-        @addMatch null, firstMatch
+  class Block extends IndentBlocksNode
+    constructor: (_, @indentLength = 0, firstMatch)->
+      super
+      @addMatch null, firstMatch
 
-      collectLines: ->
-        lineStack = @matches.reverse()
-        newLines = []
-        while line = lineStack.pop()
-          line.collectLines? lineStack
-          newLines.push line
+    blockParse: ->
+      lineStack = @matches.reverse()
+      newMatches = []
+      while match = lineStack.pop()
+        result = match.blockParse lineStack
+        unless result
+          log match:match.plainObjects
+          throw new Error "didn't match blockParse"
+        newMatches.push result
 
-        @_matches = newLines
+      @_matches = newMatches
 
-    class CouldHaveBlockNode extends IndentBlocksNode
+    toJavascript: ->
+      out = for match in @matches
+        match.toJavascript()
+      "{#{out.join ';'};}"
 
-    class LinesNode extends Block
-      extractBlocks: ->
-        blockStack = [new Block @parser]
+  class CouldHaveBlockNode extends IndentBlocksNode
 
-        for line in @matches
-          indentLength = line.indent.matchLength
+  class LinesNode extends Block
+    extractBlocks: ->
+      blockStack = [new Block @parser]
 
-          while indentLength < peek(blockStack).indentLength
-            block = blockStack.pop()
-            peek(blockStack).matches.push block
+      for line in @matches
+        indentLength = line.indent.matchLength
 
-          if indentLength == peek(blockStack).indentLength
-            peek(blockStack).addMatch null, line.expression
-          else
-            blockStack.push new Block peek(blockStack), indentLength, line.expression
-
-        while blockStack.length > 1
+        while indentLength < peek(blockStack).indentLength
           block = blockStack.pop()
           peek(blockStack).matches.push block
 
-        @lines = null
-        @matches = [@block = blockStack[0]]
+        if indentLength == peek(blockStack).indentLength
+          peek(blockStack).addMatch null, line.expression
+        else
+          blockStack.push new Block peek(blockStack), indentLength, line.expression
 
-      postParse: ->
-        @extractBlocks()
-        log extractBlocks: @plainObjects
-        @block.collectLines()
-        log collectLines: @plainObjects
-        @
+      while blockStack.length > 1
+        block = blockStack.pop()
+        peek(blockStack).matches.push block
 
-    class MyParser extends Parser
-      # need to be able to declare the base non-ternal node type for all nodes
-      @nodeBaseClass: IndentBlocksNode
-      @rule lines: "line+", LinesNode
-      @rule line: "indent expression eol"
+      @lines = null
+      @matches = [@block = blockStack[0]]
 
-      @rule expression: pattern: "/if/ _ expression", collectBlock: "lastBlock"
-      @rule expression: pattern: "/else/", collectBlock: "lastBlock"
+    postParse: ->
+      @extractBlocks()
+      log extractBlocks: @plainObjects
+      @block.blockParse()
+      log blockParse: @plainObjects
+      @
 
-      @rule expression: /true|false/
-      @rule _: pattern: / +/, variantNodeClassName: "Whitespace"
-      @rule eol: pattern: /[ ]*(\n|$)/, variantNodeClassName: "Eol"
+    toJavascript: -> @matches[0].toJavascript()
 
-      @rule indent: / */
+  class MyParser extends Parser
+    # need to be able to declare the base non-ternal node type for all nodes
+    @nodeBaseClass: IndentBlocksNode
+    @rule lines: "line+", LinesNode
+    @rule line: "indent expression eol"
 
-      @rule
-        if: "'if' _ expression"
+    @rule expression:
+      pattern: "/if/ _ expression"
+      collectBlock: "lastBlock"
+      nodeClass: class IfExpression extends IndentBlocksNode
+        getPlainObjects: ->
+          out =
+            expression: @expression
+          out.block = @block if @block
+          out.else = @else if @else
+          [
+            {inspect: => "If"},
+            out
+          ]
+        blockParse: (lineStack) ->
+          if peek(lineStack) instanceof Block
+            @collectLastBlock lineStack
+            if @expression = @expression.blockParse lineStack
+              if peek(lineStack) instanceof ElseExpression
+                log "foundElseExpression"
+                elseExpression = lineStack.pop()
+                if newElseExpression elseExpression.blockParse lineStack
+                  @addMatch "else", newElseExpression
+                  @
+              else
+                @
 
+        toJavascript: ->
+          res = "if (#{@expression.toJavascript()}) #{@block.toJavascript()}"
+          res += @else.toJavascript() if @else
+          res
+
+    @rule expression: "elseExpression"
+
+    @rule elseExpression:
+      pattern: "/else/"
+      collectBlock: "lastBlock"
+      nodeClass: class ElseExpression extends IndentBlocksNode
+        toJavascript: ->
+          " else #{@block.toJavascript()}"
+
+    @rule expression:
+      pattern: /true|false/
+      nodeClass:
+        toJavascript: -> @text
+
+    @rule _: pattern: / +/, variantNodeClassName: "Whitespace"
+    @rule eol: pattern: /[ ]*(\n|$)/, variantNodeClassName: "Eol"
+
+    @rule indent: / */
+
+
+  test "basic if-block", ->
+    p = MyParser.parse """
+      if true
+        false
+      """
+    log p.plainObjects
+    p.postParse()
+    assert.eq "{if (true) {false;};}", p.toJavascript()
+
+  test "basic if-else-block", ->
     p = MyParser.parse """
       if true
         false
@@ -107,6 +274,19 @@ suite "BabelBridge.Parser.indent block parsing", ->
       """
     log p.plainObjects
     p.postParse()
+    assert.eq "{if (true) {false;} else {true;};}", p.toJavascript()
+
+  test "simple expression", ->
+    p = MyParser.parse "false"
+    p.postParse()
+    log "simple expression": p.plainObjects
+    assert.eq "{false;}", p.toJavascript()
+
+  test "simple expressions", ->
+    p = MyParser.parse "false\ntrue"
+    p.postParse()
+    log "simple expression": p.plainObjects
+    assert.eq "{false;true;}", p.toJavascript()
 
 ###
 Block things we want to parse:
