@@ -141,6 +141,93 @@ I think I have a complete solution:
     for definitions and for references in patterns.
     Maybe "context" is a better name than "environment". It's more parser-lingo and accurate.
 
+2016-07-14 Update
+
+BAD IDEA 1
+
+  I don't like #6. Instead, what if we did:
+
+    a) we match all blocks after a line of code as a set.
+    b) we attach those blocks as makes sense post-parsting
+
+  This way there is no special case. No context. No Env.
+
+  I think this can handle:
+
+    long expression with if exp
+      blocks
+    else
+      blocks
+
+  rules:
+
+    if: "/if/ expression (/then/ statement|blocks)"
+    how do we ens ensure the /else/ is the same indention??
+
+BAD IDEA 2
+
+    I kinda want a sub-parse trick.
+
+    When we match start matching a block, we set the EOF index to be the end of the block.
+    Only when the block matches or fails to match do we "pop" the EOF stack
+
+PLAUSABLE IDEA
+
+  We may be able to do this in one pass - with sub-parsers.
+  Let's start with the simple version, then see if we can optimize for performance.
+
+  - Our parser is always matching a 0-indention block.
+  - for ease, remove all trailing spaces
+  - If we find a line that starts with a space
+    - by definition the line has non-whitespace characters
+    - We start a new instance of the parser
+    - We run that parser on a new string that:
+      - contains the curret line
+      - and contains all following lines until their indent is < the indention of this first line
+      - has the first line's indention level REMOVED from every line
+      - ends ends with the last character on the last >= indent line - before the newline
+    - this makes the string 0-indented
+    - Then we execute the sub-parser and determine if it matches.
+    - If so, great! we matched the sublock, return the parser's result.
+    - else, failed to match.
+      - I think the enclosing parser WILL cache a negative-match for "blocks",
+      - and that means we won't attempt to match a block there again,
+      - and that will cause the parse to fail
+        - however, we want the failure info to be the failure info of the sub-block
+
+
+  - Implementation
+    - just requires one custom parser for blocks - which does the above work.
+
+  - The slow parts:
+    - we do a lot of extra string manipulation that could probably be avoided.
+    - because the sub-parsers are created from scratch, none of there work is cached.
+      - This may be OK, since I believe if a sub-parser fails, the whole parse fails.
+      - Therefor, we won't ever attempt to re-sub-parse the same area.
+
+  - What about things that break out of blocks, like open parenthesis?
+    - In CoffeeScript you can have an open parenthesis over multiple lines which
+    ignore the enclosing blocks indention level - WRONG - just tested, lines within
+    an open paren must be indented from the enclosing block.
+    - BUT, In CoffeeScript you can have a multi-line comment or string which ignores the enclosing indent level
+        if foo
+          "a
+        b
+          c"
+    - This is probably because CoffeeScript doesn't use a PEG parser - instead it has a tokenizer which
+      tokenizes strings away in the first pass.
+    - I'm actually pretty OK with not allowing that, it just makes us one more step incompatible with
+      existing coffeeScript.
+    - NOTE - for strings, I like the idea that the second """ determins the indent level for the result string:
+      this:
+        someExpression """
+            foo
+            bar
+          """
+      becomes:
+        "  foo\n  bar"
+
+
 ###
 
 suite "BabelBridge.Parser.indent block v2 parsing", ->
