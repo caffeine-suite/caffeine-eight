@@ -239,32 +239,30 @@ suite "BabelBridge.Parser.indent block v2 parsing", ->
 
     @rule body: 'expression*'
 
-    blockStartRegExp = /(?:\n [^\n]*)+/y
-    sliceOffSmallestIndent = (lists) ->
-      shortest = null
-      for line in lists
-        [indent] = line.match /^ */
-        shortest = indent if !shortest || indent.length < shortest.length
-      {length} = shortest
-      line.slice length for line in lists
+    blockStartRegExp = /\n( +)/y
 
+    @rule blocks: 'block+'
     @rule block:
       parse: (parentNode) ->
         {nextOffset, source} = parentNode
         blockStartRegExp.lastIndex = nextOffset
         if match = blockStartRegExp.exec source
-          [match] = match
-          lines = sliceOffSmallestIndent match.split("\n").slice 1
-          log slicedLines: lines
-          new Node parentNode,
-            offset: nextOffset
-            matchLength: match.length
-            ruleVariant: @
+          [_, indent] = match
+          length = indent.length
+          linesRegexp = ///(\n#{indent}[^\n]*)+///y
+          linesRegexp.lastIndex = nextOffset
+          [match] = linesRegexp.exec source
+          lines = (line.slice length for line in match.split("\n").slice 1)
+
+          if p = parentNode.parser.class.parse lines.join "\n"
+            p.offset = nextOffset
+            p.matchLength = match.length
+            p
 
     @rule _: / */
-    @rule expression: '/false/ end'
+    @rule expression: '/[a-z0-9A-Z]+/ end'
 
-    @rule end: 'block'
+    @rule end: 'blocks end'
     @rule end: '/\n|$/'
 
   test "simple expression", ->
@@ -274,9 +272,12 @@ suite "BabelBridge.Parser.indent block v2 parsing", ->
   test "simple block", ->
     p = MyParser.parse """
       false
-          false
-         false
-        false
+         indent3a
+          indent4
+         indent3b
+        indent2
+       indent1
+      false
       """
     log "simple expression": p.plainObjects
 
