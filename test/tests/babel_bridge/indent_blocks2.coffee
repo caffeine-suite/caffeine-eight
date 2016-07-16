@@ -237,7 +237,7 @@ suite "BabelBridge.Parser.indent block v2 parsing", ->
   class MyParser extends Parser
     @nodeBaseClass: IndentBlocksNode
 
-    @rule body: 'expression*'
+    @rule body: 'statement*'
 
     blockStartRegExp = /\n( +)/y
 
@@ -260,7 +260,9 @@ suite "BabelBridge.Parser.indent block v2 parsing", ->
             p
 
     @rule _: / */
-    @rule expression: '/[a-z0-9A-Z]+/ end'
+
+    @rule statement: 'expression end'
+    @rule expression: '/[a-z0-9A-Z]+/'
 
     @rule end: 'blocks end'
     @rule end: '/\n|$/'
