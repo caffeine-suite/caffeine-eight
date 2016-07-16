@@ -112,7 +112,7 @@ suite "BabelBridge.Parser.negative parsing", ->
 
 suite "BabelBridge.Parser.couldMatch parsing", ->
 
-  test "!boo anything", ->
+  test "couldMatch: 'boo &foo rest'", ->
     class MyParser extends Parser
       @rule
         main: "boo &foo rest"
