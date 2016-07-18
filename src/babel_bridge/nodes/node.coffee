@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, BaseObject} = Foundation
+{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -16,9 +16,22 @@ module.exports = class Node extends BaseObject
   @getter
     matches: -> @_matches ||= []
 
+  toString: -> @text
+
   @getter "parent parser offset matchLength ruleVariant"
   @getter
-    inspectObjects: -> @getPlainObjects()
+    inspectedObjects: ->
+      m = @_matches || []
+      if m.length > 0
+        ret = {}
+        ret[@class.getName()] = if m.length == 1
+          m[0].inspectedObjects
+        else
+          match.inspectedObjects for match in @_matches
+        ret
+      else
+        @text #, offset: @offset, length: @matchLength
+
     text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
     source: -> @_parser.source
     nextOffset: -> @offset + @matchLength

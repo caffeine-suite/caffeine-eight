@@ -7,7 +7,7 @@ suite "BabelBridge.Parser.custom node classes", ->
   test "one node with custom node class", ->
     class MyParser extends Parser
       @rule
-        main:
+        root:
           pattern: /boo/
           nodeClass:
             myMember: -> 123
@@ -18,6 +18,7 @@ suite "BabelBridge.Parser.custom node classes", ->
   test "simple math", ->
     class MyParser extends Parser
       @rule expression:
+        root: true
         pattern: "n:number '+' expression"
         nodeClass: compute: -> @n.compute() + @expression.compute()
 

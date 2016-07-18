@@ -57,7 +57,20 @@ module.exports = class RuleVariant extends BaseObject
         "CustomParser"
       @_variantNodeClassName = baseName
 
-  _initVariantNodeClass: ({nodeClass, nodeBaseClass, rule}) ->
+  ###
+  OPTIONS:
+
+    node / nodeClass
+      TODO: pick one, I like 'node' today
+
+    extends / baseClass / nodeBaseClass
+      TODO: pick one, I like 'extends' today
+  ###
+  _initVariantNodeClass: (options) ->
+    {rule} = options
+    nodeClass = options.node || options.nodeClass
+    nodeBaseClass = options.extends || options.baseClass || options.nodeBaseClass
+
     @VariantNodeClass = if nodeClass?.prototype instanceof Node
       nodeClass
     else

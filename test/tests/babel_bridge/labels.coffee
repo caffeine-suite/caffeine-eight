@@ -7,7 +7,7 @@ suite "BabelBridge.Parser.labels", ->
   test "three different labels", ->
     class MyParser extends Parser
       @rule
-        main:
+        root:
           pattern: """
             a:'eh'?
             b:'bee'?
@@ -25,7 +25,7 @@ suite "BabelBridge.Parser.labels", ->
   test "three same labels", ->
     class MyParser extends Parser
       @rule
-        main:
+        root:
           pattern: """
             a:'eh'?
             a:'bee'?

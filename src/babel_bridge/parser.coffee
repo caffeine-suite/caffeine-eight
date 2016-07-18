@@ -6,6 +6,8 @@ Rule = require './rule'
   BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
   inspectLean
   pluralize
+  isClass
+  isPlainArray
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -14,35 +16,45 @@ module.exports = class Parser extends BaseObject
     (new @).parse @_source, options
 
   @classGetter
-    rules: ->
-      @getPrototypePropertyExtendedByInheritance "_rules", {}
+    rootRuleName: -> @_rootRuleName || "root"
+    rootRule: -> @getRules()[@_rootRuleName]
 
-    rootRuleName: -> @_rootRuleName
+  @getRules: ->
+    @getPrototypePropertyExtendedByInheritance "_rules", {}
 
-    rootRule: ->
-      @getRules()[@_rootRuleName]
+  @addRule: (ruleName, definitions, nodeBaseClass = @nodeBaseClass) ->
+    # log addRule: ruleName:ruleName, definition:definition
+    rule = @getRules()[ruleName] ||= new Rule ruleName, @
+    if definitions.root
+      throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
+      @_rootRuleName = ruleName
 
-  @addRule: (name, options) ->
-    # log addRule: name:name, options:options
-    rule = @getRules()[name] ||= new Rule name, @
-    @_rootRuleName ||= name
+    definitions = [definitions] unless isPlainArray array = definitions
 
-    options = pattern: options unless isPlainObject options
-
-    rule.addVariant options
+    for definition in definitions
+      rule.addVariant if isPlainObject definition
+        merge nodeBaseClass: nodeBaseClass, definition
+      else
+        pattern: definition, nodeBaseClass: nodeBaseClass
 
   ###
   IN:
     rules: plain object mapping rule-names to definitions
     nodeClass: optional, must extend BabelBridge.Node or be a plain object
   ###
-  @rule: (rules, nodeBaseClass = @nodeBaseClass)->
+  @rule: rulesFunction = (a, b)->
+    {nodeBaseClass} = @
+    if isClass a
+      nodeBaseClass = a
+      rules = b
+    else
+      rules = a
+      nodeBaseClass = b if isClass b
 
-    for rule, definition of rules
-      @addRule rule, if isPlainObject definition
-        merge nodeBaseClass: nodeBaseClass, definition
-      else
-        pattern: definition, nodeBaseClass: nodeBaseClass
+    for ruleName, definition of rules
+      @addRule ruleName, definition, nodeBaseClass
+
+  @rules: rulesFunction
 
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()
@@ -77,7 +89,7 @@ module.exports = class Parser extends BaseObject
       if result.matchLength == @_source.length
         result
       else
-        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters"
+        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo()}"
     else
       throw new Error @getParseFailureInfo()
 

@@ -7,7 +7,7 @@ suite "BabelBridge.Parser.terminal parsing", ->
 
   test "\"'foo'\"", ->
     class MyParser extends Parser
-      @rule foo: "'foo'"
+      @rule root: "'foo'"
 
     myParser = new MyParser
     result = myParser.parse "foo"
@@ -17,7 +17,7 @@ suite "BabelBridge.Parser.terminal parsing", ->
 
   test "/foo/", ->
     class MyParser extends Parser
-      @rule foo: /foo/
+      @rule root: /foo/
 
     myParser = new MyParser
     result = myParser.parse "foo"
@@ -27,7 +27,7 @@ suite "BabelBridge.Parser.terminal parsing", ->
 
   test "/[0-9]+/", ->
     class MyParser extends Parser
-      @rule foo: /[0-9]+/
+      @rule root: /[0-9]+/
 
     for source in sources = wordsArray "0 1 10 123 1001"
       result = MyParser.parse source
@@ -45,7 +45,7 @@ suite "BabelBridge.Parser.sequence parsing", ->
 
   test "'foo' /bar/", ->
     class MyParser extends Parser
-      @rule foo: "'foo' /bar/"
+      @rule root: "'foo' /bar/"
 
     myParser = new MyParser
     result = myParser.parse "foobar"
@@ -56,7 +56,7 @@ suite "BabelBridge.Parser.sequence parsing", ->
 
   test "/foo/ /bar/", ->
     class MyParser extends Parser
-      @rule foo: "/foo/ /bar/"
+      @rule root: "/foo/ /bar/"
 
     myParser = new MyParser
     result = myParser.parse "foobar"
@@ -67,7 +67,7 @@ suite "BabelBridge.Parser.sequence parsing", ->
   test "/foo/ bar", ->
     class MyParser extends Parser
       @rule
-        foo: '/foo/ bar'
+        root: '/foo/ bar'
         bar: /bar/
 
     myParser = new MyParser
@@ -81,7 +81,7 @@ suite "BabelBridge.Parser.conditional parsing", ->
   test "conditional rule 'foo? bar'", ->
     class MyParser extends Parser
       @rule
-        main: "foo? bar"
+        root: "foo? bar"
         bar: /bar/
         foo: /foo/
 
@@ -91,7 +91,7 @@ suite "BabelBridge.Parser.conditional parsing", ->
   test "conditional regExp '/foo/? bar'", ->
     class MyParser extends Parser
       @rule
-        main: "/foo/? bar"
+        root: "/foo/? bar"
         bar: /bar/
 
     MyParser.parse "bar"
@@ -102,7 +102,7 @@ suite "BabelBridge.Parser.negative parsing", ->
   test "!boo anything", ->
     class MyParser extends Parser
       @rule
-        main: "!boo anything"
+        root: "!boo anything"
         boo: /boo/
         anything: /.*/
 
@@ -115,7 +115,7 @@ suite "BabelBridge.Parser.couldMatch parsing", ->
   test "couldMatch: 'boo &foo rest'", ->
     class MyParser extends Parser
       @rule
-        main: "boo &foo rest"
+        root: "boo &foo rest"
         boo: /boo/
         foo: /foo/
         rest: /fo[a-z]+/
@@ -126,8 +126,8 @@ suite "BabelBridge.Parser.couldMatch parsing", ->
 suite "BabelBridge.Parser.rule variants", ->
   test "two variants", ->
     class MyParser extends Parser
-      @rule main: /boo/
-      @rule main: /foo/
+      @rule root: /boo/
+      @rule root: /foo/
 
     MyParser.parse "boo"
     MyParser.parse "foo"
@@ -137,7 +137,7 @@ suite "BabelBridge.Parser.many parsing", ->
   test "boo*", ->
     class MyParser extends Parser
       @rule
-        main: 'boo*'
+        root: 'boo*'
         boo: /boo/
 
     MyParser.parse ""
@@ -147,7 +147,7 @@ suite "BabelBridge.Parser.many parsing", ->
   test "boo+", ->
     class MyParser extends Parser
       @rule
-        main: 'boo+'
+        root: 'boo+'
         boo: /boo/
 
     assert.throws -> MyParser.parse ""
@@ -158,7 +158,7 @@ suite "BabelBridge.Parser.custom parser", ->
   test "basic", ->
     class MyParser extends Parser
       @rule
-        main:
+        root:
           parse: (parentNode) ->
             {nextOffset, source} = parentNode
             if source[nextOffset] == "a"
