@@ -63,7 +63,7 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
     toJs: ->
       for match in @matches when match.toJs
         return match.toJs()
-      log "no matches have toJs": @, class: @class
+      log "no matches have toJs": self: @, class: @class, matches: @matches, parseTreePath: @parseTreePath
       throw new Error "no matches have toJs"
 
   class MyParser extends Parser
@@ -100,7 +100,7 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
 
       literal:          ['string', 'number']
       end:              ['block end', '/\n+|$/']
-      statement:        'expression end'
+      statement:        ['objectStatement end', 'expression end']
       string:           /"([^"]|\\.)*"/
       number:           /-?(\.[0-9]+|[0-9]+(\.[0-9]+)?)/
 
@@ -122,14 +122,28 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
 
       object: [
         "'{}' block"
-        "'{}'? _? objectPropList"
+        pattern: "'{}'? _? objectPropList"
+        node: toJs: -> @objectPropList.toJs()
       ]
 
-      objectPropList:
-        pattern: "objectProp commaObjectProp*"
-        node: toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @commaObjectProps]).join ', '}}"
+      objectStatement:
+        pattern: "objectProp objectPropLine*"
+        node: toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropLines]).join ', '}}"
 
-      commaObjectProp: pattern: '"," _? objectProp'
+      objectPropLine:
+        pattern: "end objectProp"
+        node: toJs: -> @objectProp.toJs()
+
+      objectPropList:
+        pattern: "objectProp objectPropListItem*"
+        node: toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropListItems]).join ', '}}"
+
+      objectPropListItem: [
+        {
+          pattern: '"," _? objectProp'
+          node: toJs: -> @objectProp.toJs()
+        }
+      ]
 
       objectProp:
         pattern: 'objectPropLabel _? colon _? expression'
@@ -193,22 +207,30 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
     test "simple", ->
       assert.eq MyParser.parse('hi: 123').toJs(), "{hi: 123}"
 
-    test "one line", ->
-      assert.eq MyParser.parse('hi: 123, bye:456').toJs(), "{hi: 123}"
+    test "object expression implicit one-liner", ->
+      assert.eq MyParser.parse('hi: 123, bye:456').toJs(), "{hi: 123, bye: 456}"
 
-    test "object expression", ->
-      assert.eq MyParser.parse(
+    test "object expression explicit one-liner", ->
+      assert.eq MyParser.parse('{} hi: 123, bye:456').toJs(), "{hi: 123, bye: 456}"
+
+    test "object statement", ->
+      p = MyParser.parse(
         """
         foo: 123
         bar: "hi"
+        baz: .1
         """
-      ).toJs(), '{foo: 123, bar: "hi"}'
-      assert.eq MyParser.parse("""
+      )
+      assert.eq p.toJs(), '{foo: 123, bar: "hi", baz: .1}'
+
+    test "object statement with nested object expression", ->
+      p = MyParser.parse("""
         foo: bar: 123
         baz: 456
-      """).toJs(), '{foo: {bar: 123}, baz: 456}'
+      """)
+      assert.eq p.toJs(), '{foo: {bar: 123}, baz: 456}'
 
-    test "nested object expression", ->
+    test "nested object statements", ->
       assert.eq MyParser.parse(
         """
         foo: 123
@@ -255,4 +277,4 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
         myObject1: foo: 1, bar: 2
         myObject2: {} foo: 1, bar: 2
       """
-      ).toJs(), "{[123, 456]}"
+      ).toJs(), "{myNumber1: .10, myNumber2: 1, myNumber3: 1.1, myArray1: [123, 456], myArray2: [\"hello\", \"world\"], myObject1: {foo: 1, bar: 2}, myObject2: {foo: 1, bar: 2}}"

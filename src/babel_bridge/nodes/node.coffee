@@ -14,6 +14,7 @@ module.exports = class Node extends BaseObject
 
   @setter "matches offset matchLength ruleVariant"
   @getter
+    parseTreePath: -> compactFlatten [@parent?.parseTreePath, @class.getName()]
     matches: -> @_matches ||= []
 
   toString: -> @text
