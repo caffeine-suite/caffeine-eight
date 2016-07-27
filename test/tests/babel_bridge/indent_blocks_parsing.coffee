@@ -42,7 +42,7 @@ suite "BabelBridge.Parser.indent block parsing.basic", ->
 
   test "simple expression", ->
     p = MyParser.parse "false"
-    log "simple expression": p.plainObjects
+    "simple expression": p.plainObjects
 
   test "simple block", ->
     p = MyParser.parse """
@@ -54,7 +54,7 @@ suite "BabelBridge.Parser.indent block parsing.basic", ->
        indent1
       false
       """
-    log "simple expression": p.plainObjects
+    "simple expression": p.plainObjects
 
 suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
 
@@ -183,7 +183,7 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
         """
 
     test "nested object expression", ->
-      log MyParser.parse """
+      MyParser.parse """
         hi:    123
         there:
           one: 123
