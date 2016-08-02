@@ -5,8 +5,7 @@ RuleVariant = require './rule_variant'
 
 module.exports = class Rule extends BaseObject
 
-  constructor: (@_name, @_parserClass)->
-    @_variants = []
+  constructor: (@_name, @_parserClass, @_variants = [])->
 
   @getter "nodeClassName name variantNodeClasses",
     numVariants: -> @_variants.length
@@ -21,6 +20,9 @@ module.exports = class Rule extends BaseObject
   @getter
     inspectObjects: ->
       [{inspect: => "<Rule: #{@_name}>"}, @_variants]
+
+  clone: ->
+    new Rule @_name, @_parserClass, @_variants.slice()
 
   ###
   IN:

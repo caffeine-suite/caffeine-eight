@@ -20,7 +20,11 @@ module.exports = class Parser extends BaseObject
     rootRule: -> @getRules()[@_rootRuleName]
 
   @getRules: ->
-    @getPrototypePropertyExtendedByInheritance "_rules", {}
+    @getPrototypePropertyExtendedByInheritance "_rules", {}, (superRules) ->
+      out = {}
+      for k, v of superRules
+        out[k] = v.clone()
+      out
 
   @addRule: (ruleName, definitions, nodeBaseClass = @nodeBaseClass) ->
     # log addRule: ruleName:ruleName, definition:definition
@@ -55,6 +59,9 @@ module.exports = class Parser extends BaseObject
       @addRule ruleName, definition, nodeBaseClass
 
   @rules: rulesFunction
+
+  rule: instanceRulesFunction = (a, b) -> @class.rule a, b
+  rules: instanceRulesFunction
 
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()

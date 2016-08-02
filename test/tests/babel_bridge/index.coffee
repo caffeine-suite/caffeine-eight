@@ -3,7 +3,8 @@
 
 module.exports = require './namespace'
 .addModules
-  CustomNodes:         require './custom_nodes'         
-  IndentBlocksParsing: require './indent_blocks_parsing'
-  Labels:              require './labels'               
-  Parser:              require './parser'               
+  CustomNodes:                   require './custom_nodes'                    
+  IndentBlocksParsing:           require './indent_blocks_parsing'           
+  Labels:                        require './labels'                          
+  ParserExtensionViaInheritance: require './parser_extension_via_inheritance'
+  Parser:                        require './parser'                          
