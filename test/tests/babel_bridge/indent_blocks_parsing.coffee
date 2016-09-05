@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 {log, wordsArray, peek, shallowClone, compactFlatten} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{Parser, Nodes, Extensions} = Neptune.BabelBridge
 {Node} = Nodes
 
 suite "BabelBridge.Parser.indent block parsing.basic", ->
@@ -10,35 +10,15 @@ suite "BabelBridge.Parser.indent block parsing.basic", ->
   class MyParser extends Parser
     @nodeBaseClass: IndentBlocksNode
 
-    @rule root: 'statement*'
+    @rule
+      root: 'statement*'
 
-    blockStartRegExp = /\n( +)/y
+      statement: 'expression end'
+      expression: '/[a-z0-9A-Z]+/'
+      end: ['blocks end', '/\n|$/']
 
-    @rule blocks: 'block+'
-    @rule block:
-      parse: (parentNode) ->
-        {nextOffset, source} = parentNode
-        blockStartRegExp.lastIndex = nextOffset
-        if match = blockStartRegExp.exec source
-          [_, indent] = match
-          length = indent.length
-          linesRegexp = ///(\n#{indent}[^\n]*)+///y
-          linesRegexp.lastIndex = nextOffset
-          [match] = linesRegexp.exec source
-          lines = (line.slice length for line in match.split("\n").slice 1)
-
-          if p = parentNode.parser.class.parse lines.join "\n"
-            p.offset = nextOffset
-            p.matchLength = match.length
-            p
-
-    @rule _: / */
-
-    @rule statement: 'expression end'
-    @rule expression: '/[a-z0-9A-Z]+/'
-
-    @rule end: 'blocks end'
-    @rule end: '/\n|$/'
+      blocks: 'block+'
+      block: Extensions.IndentBlocks.ruleProps
 
   test "simple expression", ->
     p = MyParser.parse "false"
@@ -69,26 +49,10 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
   class MyParser extends Parser
     @nodeBaseClass: IndentBlocksNode
 
-    blockStartRegExp = /\n( +)/y
 
     @rules
       root: 'statement+'
-      block:
-        parse: (parentNode) ->
-          {nextOffset, source} = parentNode
-          blockStartRegExp.lastIndex = nextOffset
-          if match = blockStartRegExp.exec source
-            [_, indent] = match
-            length = indent.length
-            linesRegexp = ///(\n#{indent}[^\n]*)+///y
-            linesRegexp.lastIndex = nextOffset
-            [match] = linesRegexp.exec source
-            lines = (line.slice length for line in match.split("\n").slice 1)
-
-            if p = parentNode.parser.class.parse lines.join "\n"
-              p.offset = nextOffset
-              p.matchLength = match.length
-              p
+      block: Extensions.IndentBlocks.ruleProps
 
       expression: [
         'object'
