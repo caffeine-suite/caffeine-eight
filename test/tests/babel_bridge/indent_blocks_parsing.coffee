@@ -5,10 +5,7 @@ Foundation = require 'art-foundation'
 
 suite "BabelBridge.Parser.indent block parsing.basic", ->
 
-  class IndentBlocksNode extends Node
-
   class MyParser extends Parser
-    @nodeBaseClass: IndentBlocksNode
 
     @rule
       root: 'statement*'
