@@ -19,16 +19,16 @@ module.exports = class Parser extends BaseObject
     rootRuleName: -> @_rootRuleName || "root"
     rootRule: -> @getRules()[@_rootRuleName]
 
-  @getRules: ->
-    @getPrototypePropertyExtendedByInheritance "_rules", {}, (superRules) ->
-      out = {}
-      for k, v of superRules
-        out[k] = v.clone()
-      out
+  @extendableProperty
+    rules: {}
+  , (extendableRules, newRules) ->
+    for ruleName, newRule of a
+      extendableRules[ruleName] = newRule.clone()
+    newRule
 
   @addRule: (ruleName, definitions, nodeBaseClass = @nodeBaseClass) ->
     # log addRule: ruleName:ruleName, definition:definition
-    rule = @getRules()[ruleName] ||= new Rule ruleName, @
+    rule = @extendRules()[ruleName] ||= new Rule ruleName, @
     if definitions.root
       throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
       @_rootRuleName = ruleName
@@ -66,7 +66,6 @@ module.exports = class Parser extends BaseObject
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()
     rootRule:     -> @class.getRootRule()
-    rules:        -> @class.getRules()
     nextOffset:   -> 0
 
   constructor: ->

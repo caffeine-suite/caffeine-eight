@@ -1,4 +1,4 @@
-{defineModule} = require 'art-foundation'
+{defineModule, log} = require 'art-foundation'
 
 defineModule module, -> class IndentBlocks
   blockStartRegExp = /\n( +)/y
@@ -7,15 +7,20 @@ defineModule module, -> class IndentBlocks
     parse: (parentNode) ->
       {nextOffset, source} = parentNode
       blockStartRegExp.lastIndex = nextOffset
-      if match = blockStartRegExp.exec source
-        [_, indent] = match
-        length = indent.length
-        linesRegexp = ///(\n#{indent}[^\n]*)+///y
-        linesRegexp.lastIndex = nextOffset
-        [match] = linesRegexp.exec source
-        lines = (line.slice length for line in match.split("\n").slice 1)
 
-        if p = parentNode.parser.class.parse lines.join "\n"
+      if match = blockStartRegExp.exec source
+        [__, indent] = match
+        length = indent.length
+        linesRegexp = ///
+          (
+            (?:\s*\n)
+            (?:#{indent}\ *[^\n\ ][^\n]*)
+          )+
+          ///y
+        linesRegexp.lastIndex = nextOffset
+        [indentedCode] = match = linesRegexp.exec source
+
+        if p = parentNode.parser.class.parse indentedCode.replace(///\n#{indent}///g, "\n").slice 1
           p.offset = nextOffset
-          p.matchLength = match.length
+          p.matchLength = indentedCode.length
           p
