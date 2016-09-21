@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 PatternElement = require './pattern_element'
 {Node} = require './nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase} = Foundation
+{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, mergeInto} = Foundation
 {allPatternElementsRegExp} = PatternElement
 
 module.exports = class RuleVariant extends BaseObject
@@ -77,6 +77,4 @@ module.exports = class RuleVariant extends BaseObject
       {variantNodeClassName} = @
       class VariantNode extends nodeBaseClass || Node
         @_name: variantNodeClassName
-        if isPlainObject nodeClass
-          for k, v of nodeClass
-            @::[k] = v
+        mergeInto @::, nodeClass || options
