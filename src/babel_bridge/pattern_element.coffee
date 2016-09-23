@@ -35,6 +35,8 @@ module.exports = class PatternElement extends BaseObject
   toString: ->
     "PatternElement(#{@pattern})"
 
+  @getter "isTokenPattern"
+
   @property
     label: null
     optional: false
@@ -92,6 +94,7 @@ module.exports = class PatternElement extends BaseObject
 
   # initialize PatternElement based on the type of: match
   _init: ->
+    @_isTokenPattern = false
     {pattern} = @
     if isPlainObject pattern
       @_initPlainObject pattern
@@ -140,6 +143,7 @@ module.exports = class PatternElement extends BaseObject
       matchRule.parse parentNode
 
   _initRegExp: (regExp) ->
+    @_isTokenPattern = true
     regExp = ///#{regExp.source}///y
 
     @parse = (parentNode) ->

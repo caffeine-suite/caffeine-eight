@@ -27,7 +27,7 @@ module.exports = class Parser extends BaseObject
     newRule
 
   @addRule: (ruleName, definitions, nodeBaseClass = @nodeBaseClass) ->
-    # log addRule: ruleName:ruleName, definition:definition
+
     rule = @extendRules()[ruleName] ||= new Rule ruleName, @
     if definitions.root
       throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
@@ -99,42 +99,46 @@ module.exports = class Parser extends BaseObject
     else
       throw new Error @getParseFailureInfo()
 
-  getParseFailureInfo: ->
-    return unless @_source
+  ##################
+  # Parsing Failure Info
+  ##################
+  @getter "nonMatchingVariants",
+    parseFailureInfo: ->
+      return unless @_source
 
-    sourceBefore = @_source.slice 0, @_failureIndex
-    sourceAfter = @_source.slice @_failureIndex
+      sourceBefore = @_source.slice 0, @_failureIndex
+      sourceAfter = @_source.slice @_failureIndex
 
-    out = compactFlatten [
-      """
-      Parsing error at offset #{inspectLean getLineColumn @_source, @_failureIndex}
+      out = compactFlatten [
+        """
+        Parsing error at offset #{inspectLean getLineColumn @_source, @_failureIndex}
 
-      Source:
-      ...
-      #{sourceBefore}<HERE>#{sourceAfter}
-      ...
+        Source:
+        ...
+        #{sourceBefore}<HERE>#{sourceAfter}
+        ...
 
-      """
-      @getExpectingInfo()
-    ]
-    out.join "\n"
+        """
+        @expectingInfo
+      ]
+      out.join "\n"
 
-  getExpectingInfo: ->
-    return null unless objectLength(@_expectingList) > 0
+    expectingInfo: ->
+      return null unless objectLength(@_nonMatchingVariants) > 0
 
-    sortedKeys = Object.keys(@_expectingList).sort()
+      sortedKeys = Object.keys(@_nonMatchingVariants).sort()
 
-    [
-      "Could continue if one of these rules matched:"
-      for k in sortedKeys
-        {ruleVariant} = @_expectingList[k]
-        "  #{k}"
-    ]
+      [
+        "Could continue if one of these rules matched:"
+        for k in sortedKeys
+          {ruleVariant} = @_nonMatchingVariants[k]
+          "  #{k}"
+      ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
     if patternElement.parseInto parseIntoNode
       true
-    else
+    else if patternElement.isTokenPattern
       @_logParsingFailure parseIntoNode.offset,
         ruleVariant: ruleVariant
         parentNode: parseIntoNode.parent
@@ -147,7 +151,7 @@ module.exports = class Parser extends BaseObject
     @_matchingNegativeDepth = 0
     @_parsingDidNotMatchEntireInput = false
     @_failureIndex = 0
-    @_expectingList = {}
+    @_nonMatchingVariants = {}
     @_parseCache = {}
 
   @getter
@@ -168,6 +172,6 @@ module.exports = class Parser extends BaseObject
     if index >= @_failureIndex
       if index > @_failureIndex
         @_failureIndex = index
-        @_expectingList = {}
-      # log _logParsingFailure: index:index, expecting: expecting
-      @_expectingList[expecting.ruleVariant.toString()] = expecting
+        @_nonMatchingVariants = {}
+
+      @_nonMatchingVariants[expecting.ruleVariant.toString()] = expecting
