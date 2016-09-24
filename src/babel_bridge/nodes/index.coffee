@@ -3,6 +3,6 @@
 
 module.exports = require './namespace'
 .addModules
-  EmptyNode:         require './empty_node'         
-  EmptyOptionalNode: require './empty_optional_node'
-  Node:              require './node'               
+  EmptyNode:         require './EmptyNode'        
+  EmptyOptionalNode: require './EmptyOptionalNode'
+  Node:              require './node'             

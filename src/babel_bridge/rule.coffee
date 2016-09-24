@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-RuleVariant = require './rule_variant'
+RuleVariant = require './RuleVariant'
 
 {BaseObject, merge, upperCamelCase, objectName, log} = Foundation
 
