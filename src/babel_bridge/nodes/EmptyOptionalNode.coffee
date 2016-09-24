@@ -1,1 +1,1 @@
-module.exports = class EmptyOptionalNode extends require './empty_node'
+module.exports = class EmptyOptionalNode extends require './EmptyNode'
