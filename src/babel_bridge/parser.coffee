@@ -147,6 +147,21 @@ module.exports = class Parser extends BaseObject
   ##################
   # PRIVATE
   ##################
+
+  _getRuleParseCache: (ruleName) ->
+    @_parseCache[ruleName] ||= {}
+
+  _cached: (ruleName, offset) ->
+    @_getRuleParseCache(ruleName)[offset]
+
+  _cacheMatch: (ruleName, matchingNode) ->
+    @_getRuleParseCache(ruleName)[matchingNode.offset] = matchingNode
+    matchingNode
+
+  _cacheNoMatch: (ruleName, offset) ->
+    @_getRuleParseCache(ruleName)[offset] = "no_match"
+    null
+
   _resetParserTracking: ->
     @_matchingNegativeDepth = 0
     @_parsingDidNotMatchEntireInput = false

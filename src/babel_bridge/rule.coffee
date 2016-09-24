@@ -36,8 +36,12 @@ module.exports = class Rule extends BaseObject
   OUT: Node instance if parsing was successful
   ###
   parse: (parentNode) ->
+    {parser, nextOffset} = parentNode
+    if cached = parser._cached @name, nextOffset
+      return if cached == "no_match" then null else cached
+
     for v in @_variants
       if match = v.parse parentNode
-        return match
+        return parser._cacheMatch @name, match
 
-    null
+    parser._cacheNoMatch @name, nextOffset
