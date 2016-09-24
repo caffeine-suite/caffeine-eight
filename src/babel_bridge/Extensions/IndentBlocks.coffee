@@ -1,7 +1,7 @@
 {defineModule, log} = require 'art-foundation'
 
 defineModule module, -> class IndentBlocks
-  blockStartRegExp = /\n( +)/y
+  blockStartRegExp = /\n(?: *\n)*( +)(?=[^ \n])/y
 
   @ruleProps:
     parse: (parentNode) ->
