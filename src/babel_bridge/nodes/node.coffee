@@ -45,7 +45,7 @@ module.exports = class Node extends BaseObject
       ret
 
   subParse: (subSource, options) ->
-    @_parser.subParse subSource, merge options, parentNode: @
+    @_parser.subParse subSource, merge options #, parentNode: @
 
   ###
   IN: match - instanceof Node

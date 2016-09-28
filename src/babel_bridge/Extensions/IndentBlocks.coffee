@@ -24,13 +24,12 @@ defineModule module, -> class IndentBlocks
       offset: nextOffset
       nextOffset: nextOffset + indentedCode.length
 
-
   @ruleProps:
     parse: (parentNode) ->
       if block = matchBlock parentNode
         {blockSource, matchLength, offset} = block
 
-        parentNode.parser.subParse blockSource,
+        parentNode.subParse blockSource,
           originalOffset: offset
           originalMatchLength: matchLength
 

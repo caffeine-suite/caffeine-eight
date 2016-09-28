@@ -84,6 +84,7 @@ module.exports = class Parser extends BaseObject
       any string what-so-ever
     options:
       [all of @parse's options plus:]
+      parentNode: set the resulting Node's parent
       originalOffset:
       originalMatchLength:
         offset and matchLength from @source that subSource was generated from.
@@ -94,6 +95,7 @@ module.exports = class Parser extends BaseObject
     if p = @class.parse subSource, options
       p.offset = options.originalOffset
       p.matchLength = options.originalMatchLength
+      p._parent = options.parentNode
       p
 
   ###
@@ -103,15 +105,13 @@ module.exports = class Parser extends BaseObject
     @_resetParserTracking()
 
     ruleName = options.rule || @rootRuleName
-    {parentNode} = options
-    parentNode ||= @
     {rules} = @
     throw new Error "No root rule defined." unless ruleName
     startRule = rules[ruleName]
     throw new Error "Could not find rule: #{rule}" unless startRule
 
 
-    if result = startRule.parse parentNode
+    if result = startRule.parse @
       if result.matchLength == @_source.length
         result
       else
