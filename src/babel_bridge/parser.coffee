@@ -92,11 +92,14 @@ module.exports = class Parser extends BaseObject
   OUT: a Node with offset and matchLength
   ###
   subParse: (subSource, options = {}) ->
-    if p = @class.parse subSource, options
-      p.offset = options.originalOffset
-      p.matchLength = options.originalMatchLength
-      p._parent = options.parentNode
-      p
+    try
+      if p = @class.parse subSource, options
+        p.offset = options.originalOffset
+        p.matchLength = options.originalMatchLength
+        p._parent = options.parentNode
+        p
+    catch
+      null
 
   ###
   OUT: on success, root Node of the parse tree, else null
