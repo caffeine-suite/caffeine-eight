@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral} = Foundation
+{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral, merge} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -43,6 +43,9 @@ module.exports = class Node extends BaseObject
       else
         ret = @text #, offset: @offset, length: @matchLength
       ret
+
+  subParse: (subSource, options) ->
+    @_parser.subParse subSource, merge options, parentNode: @
 
   ###
   IN: match - instanceof Node
