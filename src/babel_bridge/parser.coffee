@@ -8,6 +8,8 @@ Rule = require './rule'
   pluralize
   isClass
   isPlainArray
+  upperCamelCase
+  mergeInto
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -47,16 +49,20 @@ module.exports = class Parser extends BaseObject
     nodeClass: optional, must extend BabelBridge.Node or be a plain object
   ###
   @rule: rulesFunction = (a, b)->
-    {nodeBaseClass} = @
     if isClass a
-      nodeBaseClass = a
+      sharedNodeBaseClass = a
       rules = b
     else
       rules = a
-      nodeBaseClass = b if isClass b
+      sharedNodeBaseClass = b
+
+    if isPlainObject sharedNodeBaseClass
+      sharedNodeBaseClass = class SharedNode extends @nodeBaseClass || Node
+        @_name: upperCamelCase (Object.keys(rules).join " ") + " SharedNode"
+        mergeInto @::, sharedNodeBaseClass
 
     for ruleName, definition of rules
-      @addRule ruleName, definition, nodeBaseClass
+      @addRule ruleName, definition, sharedNodeBaseClass || @nodeBaseClass
 
   @rules: rulesFunction
 

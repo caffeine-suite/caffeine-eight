@@ -3,7 +3,7 @@ Foundation = require 'art-foundation'
 {Parser, Nodes} = require 'babel-bridge'
 {Node} = Nodes
 
-suite "BabelBridge.Parser.parser extension via inheritance", ->
+module.exports =suite:  ->
   MyParser = MySubParser = null
   setup ->
     class MyParser extends Parser
@@ -26,6 +26,7 @@ suite "BabelBridge.Parser.parser extension via inheritance", ->
   test "can add rules from instance", ->
     class MyParser extends Parser
       @rule root: "'foo'"
+
     myParser = new MyParser
     myParser.rule root: "'bar'"
 

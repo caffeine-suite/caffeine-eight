@@ -144,7 +144,9 @@ module.exports = class PatternElement extends BaseObject
 
   _initRegExp: (regExp) ->
     @_isTokenPattern = true
-    regExp = ///#{regExp.source}///y
+    flags = "y"
+    flags += "i" if regExp.ignoreCase
+    regExp = RegExp regExp.source, flags
 
     @parse = (parentNode) ->
       {nextOffset, source} = parentNode

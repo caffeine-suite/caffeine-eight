@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
 
-suite "BabelBridge.Parser.labels", ->
+module.exports = suite: ->
 
   test "three different labels", ->
     class MyParser extends Parser

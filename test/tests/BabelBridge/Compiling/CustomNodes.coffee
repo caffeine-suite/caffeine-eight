@@ -2,7 +2,7 @@ Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
 {Parser, Nodes} = require 'babel-bridge'
 
-suite "BabelBridge.Parser.custom node classes", ->
+module.exports = suite: ->
 
   test "one node with custom node class", ->
     class MyParser extends Parser

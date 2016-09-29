@@ -3,7 +3,7 @@ Foundation = require 'art-foundation'
 {Parser, Nodes} = require 'babel-bridge'
 {Node} = Nodes
 
-suite "BabelBridge.Parser.terminal parsing", ->
+module.exports = suite: ->
 
   test "\"'foo'\"", ->
     class MyParser extends Parser
