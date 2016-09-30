@@ -155,12 +155,12 @@ module.exports = class Parser extends BaseObject
     expectingInfo: ->
       return null unless objectLength(@_nonMatchingVariants) > 0
 
-      sortedKeys = Object.keys(@_nonMatchingVariants).sort()
+      keys = (info for k, {info} of @_nonMatchingVariants)
+      sortedKeys = keys.sort()
 
       [
         "Could continue if one of these rules matched:"
         for k in sortedKeys
-          {ruleVariant} = @_nonMatchingVariants[k]
           "  #{k}"
       ]
 
@@ -171,6 +171,7 @@ module.exports = class Parser extends BaseObject
       @_logParsingFailure parseIntoNode.offset,
         ruleVariant: ruleVariant
         parentNode: parseIntoNode.parent
+        info: "#{ruleVariant.rule.name}: #{patternElement.pattern.toString()}"
       false
 
   ##################
