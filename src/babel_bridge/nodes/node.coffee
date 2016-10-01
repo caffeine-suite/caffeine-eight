@@ -15,6 +15,8 @@ module.exports = class Node extends BaseObject
   @createSubClass: (options) ->
     class NodeSubClass extends @
       @_name = @prototype._name = options.name if options.name
+      @ruleVarient = options.ruleVarient if options.ruleVarient
+      @rule = options.rule if options.rule
       mergeInto @prototype, options
 
   toString: -> @text
