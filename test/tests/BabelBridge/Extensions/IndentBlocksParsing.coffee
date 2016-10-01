@@ -15,7 +15,7 @@ suite "BabelBridge.Parser.indent block parsing.basic", ->
       end: ['blocks end', '/\n|$/']
 
       blocks: 'block+'
-      block: Extensions.IndentBlocks.ruleProps
+      block: Extensions.IndentBlocks.getPropsToSubparseBlock()
 
   test "simple expression", ->
     p = MyParser.parse "false"
@@ -49,7 +49,7 @@ suite "BabelBridge.Parser.indent block parsing.CaffeineScriptObjectNotation", ->
 
     @rules
       root: 'statement+'
-      block: Extensions.IndentBlocks.ruleProps
+      block: Extensions.IndentBlocks.getPropsToSubparseBlock()
 
       expression: [
         'object'

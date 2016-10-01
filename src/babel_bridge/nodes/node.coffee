@@ -29,7 +29,13 @@ module.exports = class Node extends BaseObject
     matches: -> @_matches ||= []
     source: -> @_parser.source
     nextOffset: -> @offset + @matchLength
-    text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
+    text: ->
+      {matchLength, offset, source} = @
+      if matchLength == 0 then "" else source.slice offset, offset + matchLength
+
+    subparseText: ->
+      {matchLength, offset, source} = @subparse
+      if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
     ruleName: -> @class.rule?.getName()
@@ -65,8 +71,8 @@ module.exports = class Node extends BaseObject
         @text #, offset: @offset, length: @matchLength
 
     inspectedObjects: ->
-      m = @_matches || []
-      if m.length > 0
+      {matches} = @
+      if matches.length > 0
 
         children = for match in matches
           match.inspectedObjects

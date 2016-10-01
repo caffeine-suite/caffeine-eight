@@ -33,16 +33,3 @@ defineModule module, -> class IndentBlocks
         parentNode.subparse blockSource, merge subparseOptions,
           originalOffset: offset
           originalMatchLength: matchLength
-
-  @ruleProps: getPropsToSubparseBlock()
-
-  @unparsedBlockRuleProps:
-    parse: (parentNode) ->
-      if block = matchBlock parentNode
-        {blockSource, matchLength, offset} = block
-
-        node = new Node parentNode,
-          offset: offset
-          matchLength: matchLength
-        node.toString = -> blockSource
-        node

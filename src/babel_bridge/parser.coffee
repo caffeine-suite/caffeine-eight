@@ -98,9 +98,15 @@ module.exports = class Parser extends BaseObject
   subparse: (subSource, options = {}) ->
     try
       if p = @class.parse subSource, options
+        {offset, matchLength, source} = p
         p.offset = options.originalOffset
         p.matchLength = options.originalMatchLength
         p._parent = options.parentNode
+        p.source = options.parentNode.source
+        p.subparse =
+          offset: offset
+          matchLength: matchLength
+          source: source
         p
     catch
       null
