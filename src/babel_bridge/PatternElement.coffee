@@ -41,10 +41,20 @@ module.exports = class PatternElement extends BaseObject
     label: null
     optional: false
     negative: false
+    couldMatch: false
     zeroOrMore: false
     oneOrMore: false
     pattern: null
-    couldMatch: false
+    ruleName: null
+
+  @getter
+    isBasicRulePattern: ->
+      @ruleName &&
+      !@optional &&
+      !@negative &&
+      !@zeroOrMore &&
+      !@oneOrMore &&
+      !@couldMatch
 
   # IN: parentNode
   # OUT: Node instance or false if no match was found
@@ -137,6 +147,7 @@ module.exports = class PatternElement extends BaseObject
     throw new Error "plain-object pattern definition requires 'parse' or 'parseInto'" unless @parse || parseInto
 
   _initRule: (ruleName) ->
+    @ruleName = ruleName
     @parse = (parentNode) ->
       matchRule = parentNode.parser.rules[ruleName]
       throw new Error "no rule for #{ruleName}" unless matchRule
