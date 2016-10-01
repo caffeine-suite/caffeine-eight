@@ -1,4 +1,4 @@
-{defineModule, log} = require 'art-foundation'
+{defineModule, log, merge} = require 'art-foundation'
 {Node} = require '../nodes'
 
 defineModule module, -> class IndentBlocks
@@ -24,14 +24,17 @@ defineModule module, -> class IndentBlocks
       offset: nextOffset
       nextOffset: nextOffset + indentedCode.length
 
-  @ruleProps:
+
+  @getPropsToSubparseBlock: getPropsToSubparseBlock = (subparseOptions = {}) ->
     parse: (parentNode) ->
       if block = matchBlock parentNode
         {blockSource, matchLength, offset} = block
 
-        parentNode.subParse blockSource,
+        parentNode.subparse blockSource, merge subparseOptions,
           originalOffset: offset
           originalMatchLength: matchLength
+
+  @ruleProps: getPropsToSubparseBlock()
 
   @unparsedBlockRuleProps:
     parse: (parentNode) ->
