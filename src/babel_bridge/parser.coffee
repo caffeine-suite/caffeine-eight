@@ -57,9 +57,7 @@ module.exports = class Parser extends BaseObject
       sharedNodeBaseClass = b
 
     if isPlainObject sharedNodeBaseClass
-      sharedNodeBaseClass = class SharedNode extends @nodeBaseClass || Node
-        @_name: upperCamelCase (Object.keys(rules).join " ") + " SharedNode"
-        mergeInto @::, sharedNodeBaseClass
+      sharedNodeBaseClass = (@nodeBaseClass || Node).createSubclass sharedNodeBaseClass
 
     for ruleName, definition of rules
       @addRule ruleName, definition, sharedNodeBaseClass || @nodeBaseClass
@@ -97,7 +95,7 @@ module.exports = class Parser extends BaseObject
 
   OUT: a Node with offset and matchLength
   ###
-  subParse: (subSource, options = {}) ->
+  subparse: (subSource, options = {}) ->
     try
       if p = @class.parse subSource, options
         p.offset = options.originalOffset

@@ -12,11 +12,12 @@ module.exports = class Node extends BaseObject
     @_lastMatch = null
     @_matches = null
 
-  @createSubClass: (options) ->
-    class NodeSubClass extends @
+  @createSubclass: (options) ->
+    class NodeSubclass extends @
       @_name = @prototype._name = options.name if options.name
-      @ruleVarient = options.ruleVarient if options.ruleVarient
-      @rule = options.rule if options.rule
+      if options.ruleVarient
+        @ruleVarient = options.ruleVarient
+        @rule = @ruleVariant.rule
       mergeInto @prototype, options
 
   toString: -> @text

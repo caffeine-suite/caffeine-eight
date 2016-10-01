@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
 PatternElement = require './PatternElement'
 {Node} = require './nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, mergeInto} = Foundation
+{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, merge} = Foundation
 {allPatternElementsRegExp} = PatternElement
 
 module.exports = class RuleVariant extends BaseObject
@@ -13,8 +13,12 @@ module.exports = class RuleVariant extends BaseObject
     @_initVariantNodeClass @options
     @parse = @options.parse if @options.parse
 
+  @property
+    passThroughRuleName: null
+
   @setter "variantNodeClassName"
   @getter
+    isPassThrough: -> @_passThroughRuleName
     name: -> @variantNodeClassName + "Variant"
     numVariants: -> @rule.numVariants
     patternElements: ->
@@ -30,7 +34,9 @@ module.exports = class RuleVariant extends BaseObject
       else
         [new PatternElement @pattern, ruleVariant: @]
 
-    compactFlatten pes
+    pes = compactFlatten pes
+    @passThroughRuleName = pes[0].ruleName if pes.length == 1 && pes[0].isBasicRulePattern
+    pes
 
   inspect: -> @toString()
   toString: -> "#{@name}: #{@pattern || (@options.parse && 'function()')}"
@@ -68,13 +74,13 @@ module.exports = class RuleVariant extends BaseObject
   ###
   _initVariantNodeClass: (options) ->
     {rule} = options
-    nodeClass = options.node || options.nodeClass
-    nodeBaseClass = options.extends || options.baseClass || options.nodeBaseClass
+    nodeSubclassOptions = options.node || options.nodeClass || options
+    nodeBaseClass = options.extends || options.baseClass || options.nodeBaseClass || Node
 
     @VariantNodeClass = if nodeClass?.prototype instanceof Node
       nodeClass
     else
-      {variantNodeClassName} = @
-      class VariantNode extends nodeBaseClass || Node
-        @_name: variantNodeClassName
-        mergeInto @::, nodeClass || options
+      nodeBaseClass.createSubclass merge
+        name:        @variantNodeClassName
+        ruleVarient: @ruleVarient
+        nodeSubclassOptions
