@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral, merge} = Foundation
+{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -12,30 +12,72 @@ module.exports = class Node extends BaseObject
     @_lastMatch = null
     @_matches = null
 
-  @setter "matches offset matchLength ruleVariant"
-  @getter
-    parseTreePath: -> compactFlatten [@parent?.parseTreePath, @class.getName()]
-    matches: -> @_matches ||= []
+  @createSubClass: (options) ->
+    class NodeSubClass extends @
+      @_name = @prototype._name = options.name if options.name
+      mergeInto @prototype, options
 
   toString: -> @text
 
-  @getter "parent parser offset matchLength ruleVariant"
+  @setter "matches offset matchLength ruleVariant"
+  @getter "parent parser offset matchLength",
+    name: -> @_name || @ruleName || @class.getName()
+    present: -> true
+    matches: -> @_matches ||= []
+    source: -> @_parser.source
+    nextOffset: -> @offset + @matchLength
+    text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
+
+    ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
+    ruleName: -> @class.rule?.getName()
+
+    isRuleNode: -> @class.rule
+
+    isPassThrough: -> @ruleVariant?.isPassThrough
+    nonPassThrough: -> !@ruleVariant?.isPassThrough
+
+  # inspectors
   @getter
-    inspectedObjects: ->
-      m = @_matches || []
-      if m.length > 0
+    parseTreePath: -> compactFlatten [@parent?.parseTreePath, @class.getName()]
+
+    presentMatches: ->
+      @_presentMatches ||= (m for m in @matches when m.getPresent?())
+
+    simplifiedInspectedObjects: ->
+      matches = @presentMatches
+      if matches.length == 1 && matches[0].presentMatches.length > 0
+        matches[0].simplifiedInspectedObjects
+      else if matches.length > 0
+        children = for match in matches
+          match.simplifiedInspectedObjects
+
         ret = {}
-        ret[@class.getName()] = if m.length == 1
-          m[0].inspectedObjects
+        ret[@name] = if children.length == 1
+          children[0]
         else
-          match.inspectedObjects for match in @_matches
+          children
+
         ret
       else
         @text #, offset: @offset, length: @matchLength
 
-    text: -> if @matchLength == 0 then "" else @source.slice @_offset, @_offset + @matchLength
-    source: -> @_parser.source
-    nextOffset: -> @offset + @matchLength
+    inspectedObjects: ->
+      m = @_matches || []
+      if m.length > 0
+
+        children = for match in matches
+          match.inspectedObjects
+
+        ret = {}
+        ret[@name] = if children.length == 1
+          children[0]
+        else
+          children
+
+        ret
+      else
+        @text #, offset: @offset, length: @matchLength
+
     plainObjects: ->
       ret = [{inspect:=>@class.getName()}]
       if @_matches?.length > 0
@@ -44,8 +86,16 @@ module.exports = class Node extends BaseObject
         ret = @text #, offset: @offset, length: @matchLength
       ret
 
-  subParse: (subSource, options) ->
-    @_parser.subParse subSource, merge options, parentNode: @
+  find: (searchName, out = []) ->
+    for m in @matches
+      if m.getName() == searchName
+        out.push m
+      else
+        m.find searchName, out
+    out
+
+  subparse: (subSource, options) ->
+    @_parser.subparse subSource, merge options, parentNode: @
 
   ###
   IN: match - instanceof Node
