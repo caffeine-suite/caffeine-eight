@@ -3,169 +3,185 @@ Foundation = require 'art-foundation'
 {Parser, Nodes} = require 'babel-bridge'
 {Node} = Nodes
 
-module.exports = suite: ->
+module.exports = suite:
+  basic: ->
 
-  test "\"'foo'\"", ->
-    class MyParser extends Parser
-      @rule root: "'foo'"
+    test "\"'foo'\"", ->
+      class MyParser extends Parser
+        @rule root: "'foo'"
 
-    myParser = new MyParser
-    result = myParser.parse "foo"
-    assert.eq result.offset, 0
-    assert.eq result.matchLength, 3
-    assert.eq result.text, "foo"
-
-  test "/foo/", ->
-    class MyParser extends Parser
-      @rule root: /foo/
-
-    myParser = new MyParser
-    result = myParser.parse "foo"
-    assert.eq result.offset, 0
-    assert.eq result.matchLength, 3
-    assert.eq result.text, "foo"
-
-  test "/[0-9]+/", ->
-    class MyParser extends Parser
-      @rule root: /[0-9]+/
-
-    for source in sources = wordsArray "0 1 10 123 1001"
-      result = MyParser.parse source
+      myParser = new MyParser
+      result = myParser.parse "foo"
       assert.eq result.offset, 0
-      assert.eq result.matchLength, source.length
-      assert.eq result.text, source
+      assert.eq result.matchLength, 3
+      assert.eq result.text, "foo"
 
-  test "match /[0-9]+/ -- doesn't match if not at the start of the string", ->
-    class MyParser extends Parser
-      @rule foo: /[0-9]+/
+    test "/foo/", ->
+      class MyParser extends Parser
+        @rule root: /foo/
 
-    assert.throws -> MyParser.parse " 0123"
+      myParser = new MyParser
+      result = myParser.parse "foo"
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 3
+      assert.eq result.text, "foo"
 
-suite "BabelBridge.Parser.sequence parsing", ->
+    test "/[0-9]+/", ->
+      class MyParser extends Parser
+        @rule root: /[0-9]+/
 
-  test "'foo' /bar/", ->
-    class MyParser extends Parser
-      @rule root: "'foo' /bar/"
+      for source in sources = wordsArray "0 1 10 123 1001"
+        result = MyParser.parse source
+        assert.eq result.offset, 0
+        assert.eq result.matchLength, source.length
+        assert.eq result.text, source
 
-    myParser = new MyParser
-    result = myParser.parse "foobar"
-    assert.eq result.offset, 0
-    assert.eq result.matchLength, 6
-    assert.eq result.text, "foobar"
+    test "match /[0-9]+/ -- doesn't match if not at the start of the string", ->
+      class MyParser extends Parser
+        @rule foo: /[0-9]+/
+
+      assert.throws -> MyParser.parse " 0123"
+
+  "sequence parsing": ->
+
+    test "'foo' /bar/", ->
+      class MyParser extends Parser
+        @rule root: "'foo' /bar/"
+
+      myParser = new MyParser
+      result = myParser.parse "foobar"
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
 
 
-  test "/foo/ /bar/", ->
-    class MyParser extends Parser
-      @rule root: "/foo/ /bar/"
+    test "/foo/ /bar/", ->
+      class MyParser extends Parser
+        @rule root: "/foo/ /bar/"
 
-    myParser = new MyParser
-    result = myParser.parse "foobar"
-    assert.eq result.offset, 0
-    assert.eq result.matchLength, 6
-    assert.eq result.text, "foobar"
+      myParser = new MyParser
+      result = myParser.parse "foobar"
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
 
-  test "/foo/ bar", ->
-    class MyParser extends Parser
-      @rule
-        root: '/foo/ bar'
-        bar: /bar/
+    test "/foo/ bar", ->
+      class MyParser extends Parser
+        @rule
+          root: '/foo/ bar'
+          bar: /bar/
 
-    myParser = new MyParser
-    result = myParser.parse "foobar"
-    assert.eq result.offset, 0
-    assert.eq result.matchLength, 6
-    assert.eq result.text, "foobar"
+      myParser = new MyParser
+      result = myParser.parse "foobar"
+      assert.eq result.offset, 0
+      assert.eq result.matchLength, 6
+      assert.eq result.text, "foobar"
 
-suite "BabelBridge.Parser.conditional parsing", ->
+  "conditional parsing": ->
 
-  test "conditional rule 'foo? bar'", ->
-    class MyParser extends Parser
-      @rule
-        root: "foo? bar"
-        bar: /bar/
-        foo: /foo/
+    test "conditional rule 'foo? bar'", ->
+      class MyParser extends Parser
+        @rule
+          root: "foo? bar"
+          bar: /bar/
+          foo: /foo/
 
-    MyParser.parse "bar"
-    MyParser.parse "foobar"
+      MyParser.parse "bar"
+      MyParser.parse "foobar"
 
-  test "conditional regExp '/foo/? bar'", ->
-    class MyParser extends Parser
-      @rule
-        root: "/foo/? bar"
-        bar: /bar/
+    test "conditional regExp '/foo/? bar'", ->
+      class MyParser extends Parser
+        @rule
+          root: "/foo/? bar"
+          bar: /bar/
 
-    MyParser.parse "bar"
-    MyParser.parse "foobar"
+      MyParser.parse "bar"
+      MyParser.parse "foobar"
 
-suite "BabelBridge.Parser.negative parsing", ->
+  "negative parsing": ->
 
-  test "!boo anything", ->
-    class MyParser extends Parser
-      @rule
-        root: "!boo anything"
-        boo: /boo/
-        anything: /.*/
+    test "!boo anything", ->
+      class MyParser extends Parser
+        @rule
+          root: "!boo anything"
+          boo: /boo/
+          anything: /.*/
 
-     assert.throws -> MyParser.parse "boo"
-     assert.throws -> MyParser.parse "boobat"
-     MyParser.parse "bobat"
+       assert.throws -> MyParser.parse "boo"
+       assert.throws -> MyParser.parse "boobat"
+       MyParser.parse "bobat"
 
-suite "BabelBridge.Parser.couldMatch parsing", ->
+  "couldMatch parsing": ->
 
-  test "couldMatch: 'boo &foo rest'", ->
-    class MyParser extends Parser
-      @rule
-        root: "boo &foo rest"
-        boo: /boo/
-        foo: /foo/
-        rest: /fo[a-z]+/
+    test "couldMatch: 'boo &foo rest'", ->
+      class MyParser extends Parser
+        @rule
+          root: "boo &foo rest"
+          boo: /boo/
+          foo: /foo/
+          rest: /fo[a-z]+/
 
-     MyParser.parse "boofoo"
-     assert.throws -> MyParser.parse "boofoa"
+       MyParser.parse "boofoo"
+       assert.throws -> MyParser.parse "boofoa"
 
-suite "BabelBridge.Parser.rule variants", ->
-  test "two variants", ->
-    class MyParser extends Parser
-      @rule root: /boo/
-      @rule root: /foo/
+  "rule variants": ->
+    test "two variants", ->
+      class MyParser extends Parser
+        @rule root: /boo/
+        @rule root: /foo/
 
-    MyParser.parse "boo"
-    MyParser.parse "foo"
+      MyParser.parse "boo"
+      MyParser.parse "foo"
 
-suite "BabelBridge.Parser.many parsing", ->
+  "many parsing": ->
 
-  test "boo*", ->
-    class MyParser extends Parser
-      @rule
-        root: 'boo*'
-        boo: /boo/
+    test "boo*", ->
+      class MyParser extends Parser
+        @rule
+          root: 'boo*'
+          boo: /boo/
 
-    MyParser.parse ""
-    MyParser.parse "boo"
-    MyParser.parse "booboo"
+      MyParser.parse ""
+      MyParser.parse "boo"
+      MyParser.parse "booboo"
 
-  test "boo+", ->
-    class MyParser extends Parser
-      @rule
-        root: 'boo+'
-        boo: /boo/
+    test "boo+", ->
+      class MyParser extends Parser
+        @rule
+          root: 'boo+'
+          boo: /boo/
 
-    assert.throws -> MyParser.parse ""
-    MyParser.parse "boo"
-    MyParser.parse "booboo"
+      assert.throws -> MyParser.parse ""
+      MyParser.parse "boo"
+      MyParser.parse "booboo"
 
-suite "BabelBridge.Parser.custom parser", ->
-  test "basic", ->
-    class MyParser extends Parser
-      @rule
-        root:
-          parse: (parentNode) ->
-            {nextOffset, source} = parentNode
-            if source[nextOffset] == "a"
-              new Node parentNode,
-                offset: nextOffset
-                matchLength: 1
-                ruleVariant: @
+  "custom parser": ->
+    test "basic", ->
+      class MyParser extends Parser
+        @rule
+          root:
+            parse: (parentNode) ->
+              {nextOffset, source} = parentNode
+              if source[nextOffset] == "a"
+                new Node parentNode,
+                  offset: nextOffset
+                  matchLength: 1
+                  ruleVariant: @
 
-    MyParser.parse "a"
-    assert.throws -> MyParser.parse "A"
+      MyParser.parse "a"
+      assert.throws -> MyParser.parse "A"
+
+  "prevent simple infinite loops": ->
+    test "/foo/ /$/*", ->
+      class MyParser extends Parser
+        @rule
+          root: "/foo/ /$/*"
+
+      MyParser.parse "foo"
+
+    test "/foo/ /$/+", ->
+      class MyParser extends Parser
+        @rule
+          root: "/foo/ /$/+"
+
+      MyParser.parse "foo"

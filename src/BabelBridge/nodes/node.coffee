@@ -25,9 +25,10 @@ module.exports = class Node extends BaseObject
   @setter "matches offset matchLength ruleVariant"
   @getter "parent parser offset matchLength",
     name: -> @_name || @ruleName || @class.getName()
-    present: -> true
+    present: -> @_matchLength > 0
     matches: -> @_matches ||= []
     source: -> @_parser.source
+    isRoot: -> @_parser == @_parent
     nextOffset: -> @offset + @matchLength
     text: ->
       {matchLength, offset, source} = @
@@ -38,7 +39,7 @@ module.exports = class Node extends BaseObject
       if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
-    ruleName: -> @class.rule?.getName()
+    ruleName: -> @class.rule?.getName() || @_ruleVariant.rule.getName()
 
     isRuleNode: -> @class.rule
 
@@ -52,16 +53,14 @@ module.exports = class Node extends BaseObject
     presentMatches: ->
       @_presentMatches ||= (m for m in @matches when m.getPresent?())
 
-    simplifiedInspectedObjects: ->
+    inspectedObjects: ->
       matches = @presentMatches
-      if matches.length == 1 && matches[0].presentMatches.length > 0
-        matches[0].simplifiedInspectedObjects
-      else if matches.length > 0
+      if matches.length > 0
         children = for match in matches
-          match.simplifiedInspectedObjects
+          match.inspectedObjects
 
         ret = {}
-        ret[@name] = if children.length == 1
+        ret[@ruleName] = if children.length == 1
           children[0]
         else
           children
@@ -70,12 +69,12 @@ module.exports = class Node extends BaseObject
       else
         @text #, offset: @offset, length: @matchLength
 
-    inspectedObjects: ->
+    detailedInspectedObjects: ->
       {matches} = @
       if matches.length > 0
 
         children = for match in matches
-          match.inspectedObjects
+          match.detailedInspectedObjects
 
         ret = {}
         ret[@name] = if children.length == 1

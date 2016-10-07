@@ -91,7 +91,9 @@ module.exports = class PatternElement extends BaseObject
     if @_zeroOrMore
       @parseInto = (parentNode) =>
         matchCount = 0
-        matchCount++ while parentNode.addMatch @label, singleParser parentNode
+        while parentNode.addMatch @label, m = singleParser parentNode
+          matchCount++
+          break unless m.matchLength > 0
 
         parentNode.addMatch new EmptyNode parentNode if matchCount == 0
         true
@@ -99,7 +101,9 @@ module.exports = class PatternElement extends BaseObject
     if @_oneOrMore
       @parseInto = (parentNode) =>
         matchCount = 0
-        matchCount++ while parentNode.addMatch @label, singleParser parentNode
+        while parentNode.addMatch @label, m = singleParser parentNode
+          matchCount++
+          break unless m.matchLength > 0
         matchCount > 0
 
   # initialize PatternElement based on the type of: match
