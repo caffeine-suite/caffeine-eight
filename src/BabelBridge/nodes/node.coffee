@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, BaseObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
+{peek, log, push, compactFlatten, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -10,6 +10,8 @@ module.exports = class Node extends BaseObject
     @_offset ?= @_parent.getNextOffset()
     @_matchLength ||= 0
     @_lastMatch = null
+    @_label = null
+    @_pluralLabel = null
     @_matches = null
 
   @createSubclass: (options) ->
@@ -23,7 +25,7 @@ module.exports = class Node extends BaseObject
   toString: -> @text
 
   @setter "matches offset matchLength ruleVariant"
-  @getter "parent parser offset matchLength",
+  @getter "parent parser offset matchLength, label pluralLabel",
     name: -> @_name || @ruleName || @class.getName()
     present: -> @_matchLength > 0
     matches: -> @_matches ||= []
@@ -54,20 +56,39 @@ module.exports = class Node extends BaseObject
       @_presentMatches ||= (m for m in @matches when m.getPresent?())
 
     inspectedObjects: ->
+      match = @
       matches = @presentMatches
       if matches.length > 0
+
+        path = []
+        while matches.length == 1 && matches[0].matches?.length > 0
+          path.push match.ruleName
+          [match] = matches
+          matches = match.presentMatches
+
+        {label, ruleName} = match
+
+        path = path[0] if path.length == 1
+
         children = for match in matches
           match.inspectedObjects
 
+        parts = compactFlatten [
+          path: path if path.length > 0
+          label: label if label && label != ruleName
+          if children.length > 0
+            children
+          else
+            match.toString()
+        ]
+        parts = parts[0] if parts.length == 1
         ret = {}
-        ret[@ruleName] = if children.length == 1
-          children[0]
-        else
-          children
+        ret[ruleName] = parts
+
 
         ret
       else
-        @text #, offset: @offset, length: @matchLength
+        source: text: @text, offset: @offset, length: @matchLength #, offset: @offset, length: @matchLength
 
     detailedInspectedObjects: ->
       {matches} = @
@@ -113,11 +134,13 @@ module.exports = class Node extends BaseObject
     return false unless match
 
     match._parent = @
+    match._label = label
+    match._pluralLabel = @parser.pluralize label
 
     @_matches = push @_matches, @_lastMatch = match
     if label && match.class != Nodes.EmptyOptionalNode
-      @_bindToLabelLists label, match
-      @_bindToSingleLabels label, match
+      @_bindToLabelLists match
+      @_bindToSingleLabels match
 
     @_matchLength = match.nextOffset - @offset
     true
@@ -127,12 +150,14 @@ module.exports = class Node extends BaseObject
   #################
 
   # add to appropriate list in @matches
-  _bindToLabelLists: (label, match) ->
-    pluralLabel = @parser.pluralize label
+  # TODO: I'll bet this slows things down, generating the pluralLabel EVERY TIME
+  _bindToLabelLists: (match) ->
+    {pluralLabel} = match
     {matches} = @
     @[pluralLabel] = push @[pluralLabel], match unless @__proto__[pluralLabel]
 
   # keep most recent match directly as node property
   # IFF the prototype doesn't already have a property of that name
-  _bindToSingleLabels: (label, match) ->
+  _bindToSingleLabels: (match) ->
+    {label} = match
     @[label] = match unless @__proto__[label]
