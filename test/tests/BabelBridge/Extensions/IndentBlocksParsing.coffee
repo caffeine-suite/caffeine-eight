@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{log, wordsArray, peek, shallowClone, compactFlatten} = Foundation
+{log, a, m, peek, shallowClone, compactFlatten} = Foundation
 {Parser, Nodes, Extensions} = Neptune.BabelBridge
 {Node} = Nodes
 
@@ -90,8 +90,8 @@ module.exports = suite:
           'object'
           'array'
           'block'
-          pattern: 'literal',
-          node: toJs: -> @text
+          pattern: 'literal'
+          toJs: -> @text
         ]
 
         literal:          ['string', 'number']
@@ -100,50 +100,47 @@ module.exports = suite:
         string:           /"([^"]|\\.)*"/
         number:           /-?(\.[0-9]+|[0-9]+(\.[0-9]+)?)/
 
-        array: [
-          {
-            pattern: "'[]' block"
-            node: toJs: ->
-              "[#{(node.toJs() for node in @block.statements).join ', '}]"
-          }
-          {
+        array: a
+          pattern: "'[]' block"
+          toJs: ->
+            "[#{(node.toJs() for node in @block.statements).join ', '}]"
+          m
             pattern: "'[]' _? arrayElementWithDelimiter* expression"
-            node: toJs: -> "[#{(node.toJs() for node in compactFlatten [@arrayElementWithDelimiters, @expression]).join ', '}]"
-          }
-          pattern: "'[]'"
-          node: toJs: -> @text
-        ]
+            toJs: -> "[#{(node.toJs() for node in compactFlatten [@arrayElementWithDelimiters, @expression]).join ', '}]"
+          m
+            pattern: "'[]'"
+            toJs: -> @text
 
         arrayElementWithDelimiter: "expression _? ',' _?"
 
         object: [
           "'{}' block"
           pattern: "'{}'? _? objectPropList"
-          node: toJs: -> @objectPropList.toJs()
+          toJs: -> @objectPropList.toJs()
         ]
 
         objectStatement:
           pattern: "objectProp objectPropLine*"
-          node: toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropLines]).join ', '}}"
+          toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropLines]).join ', '}}"
 
         objectPropLine:
           pattern: "end objectProp"
-          node: toJs: -> @objectProp.toJs()
+          toJs: -> @objectProp.toJs()
 
         objectPropList:
           pattern: "objectProp objectPropListItem*"
-          node: toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropListItems]).join ', '}}"
+          toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropListItems]).join ', '}}"
 
         objectPropListItem: [
           {
             pattern: '"," _? objectProp'
-            node: toJs: -> @objectProp.toJs()
+            toJs: -> @objectProp.toJs()
           }
         ]
 
         objectProp:
           pattern: 'objectPropLabel _? colon _? expression'
-          node: toJs: -> "#{@objectPropLabel}: #{@expression.toJs()}"
+          toJs: -> "#{@objectPropLabel}: #{@expression.toJs()}"
 
         commaOrEnd: ["',' _?", "end"]
         objectPropLabel:  /[_a-zA-Z][_a-zA-Z0-9.]*/

@@ -10,9 +10,12 @@ module.exports = class Node extends BaseObject
     @_offset ?= @_parent.getNextOffset()
     @_matchLength ||= 0
     @_lastMatch = null
+    @_matches = null
+
+    @_ruleName = null
+    @_pluralRuleName = null
     @_label = null
     @_pluralLabel = null
-    @_matches = null
 
   @createSubclass: (options) ->
     class NodeSubclass extends @
@@ -25,7 +28,7 @@ module.exports = class Node extends BaseObject
   toString: -> @text
 
   @setter "matches offset matchLength ruleVariant"
-  @getter "parent parser offset matchLength, label pluralLabel",
+  @getter "parent parser offset matchLength, label pluralLabel ruleName pluralRuleName",
     name: -> @_name || @ruleName || @class.getName()
     present: -> @_matchLength > 0
     matches: -> @_matches ||= []
@@ -62,7 +65,7 @@ module.exports = class Node extends BaseObject
 
         path = []
         while matches.length == 1 && matches[0].matches?.length > 0
-          path.push match.ruleName
+          path.push "#{match.ruleName}#{if match.label then " label:#{match.label}" else ""}"
           [match] = matches
           matches = match.presentMatches
 
@@ -75,7 +78,7 @@ module.exports = class Node extends BaseObject
 
         parts = compactFlatten [
           path: path if path.length > 0
-          label: label if label && label != ruleName
+          label: label if label
           if children.length > 0
             children
           else
@@ -127,20 +130,27 @@ module.exports = class Node extends BaseObject
     @_parser.subparse subSource, merge options, parentNode: @
 
   ###
-  IN: match - instanceof Node
+  IN: pattern, match - instanceof Node
   OUT: true if match was added
   ###
-  addMatch: (label, match) ->
+  addMatch: (pattern, match) ->
     return false unless match
+
+    {label, ruleName} = pattern
 
     match._parent = @
     match._label = label
-    match._pluralLabel = @parser.pluralize label
+    match._ruleName = ruleName
+    match._pluralLabel    = pluralLabel    = @parser.pluralize label    if label
+    match._pluralRuleName = pluralRuleName = @parser.pluralize ruleName if ruleName
+
+    label ||= ruleName
+    pluralLabel ||= pluralRuleName
 
     @_matches = push @_matches, @_lastMatch = match
-    if label && match.class != Nodes.EmptyOptionalNode
-      @_bindToLabelLists match
-      @_bindToSingleLabels match
+    if match.present && label && match.class != Nodes.EmptyOptionalNode
+      @_bindToLabelLists    pluralLabel, match
+      @_bindToSingleLabels  label, match
 
     @_matchLength = match.nextOffset - @offset
     true
@@ -151,13 +161,10 @@ module.exports = class Node extends BaseObject
 
   # add to appropriate list in @matches
   # TODO: I'll bet this slows things down, generating the pluralLabel EVERY TIME
-  _bindToLabelLists: (match) ->
-    {pluralLabel} = match
-    {matches} = @
+  _bindToLabelLists: (pluralLabel, match) ->
     @[pluralLabel] = push @[pluralLabel], match unless @__proto__[pluralLabel]
 
   # keep most recent match directly as node property
   # IFF the prototype doesn't already have a property of that name
-  _bindToSingleLabels: (match) ->
-    {label} = match
+  _bindToSingleLabels: (label, match) ->
     @[label] = match unless @__proto__[label]

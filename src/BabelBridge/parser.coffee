@@ -10,6 +10,7 @@ Rule = require './rule'
   isPlainArray
   upperCamelCase
   mergeInto
+  objectWithout
 } = Foundation
 
 module.exports = class Parser extends BaseObject

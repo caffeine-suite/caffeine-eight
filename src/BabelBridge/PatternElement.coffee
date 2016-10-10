@@ -55,6 +55,18 @@ module.exports = class PatternElement extends BaseObject
       !@zeroOrMore &&
       !@oneOrMore &&
       !@couldMatch
+    inspectedObjects: ->
+      PatternElement: @props
+    props: ->
+      props = pattern: @pattern
+
+      props.ruleName = @ruleName if @ruleName
+      props.negative = true if @negative
+      props.zeroOrMore = true if @zeroOrMore
+      props.oneOrMore = true if @oneOrMore
+      props.couldMatch = true if @couldMatch
+      props
+
 
   # IN: parentNode
   # OUT: Node instance or false if no match was found
@@ -64,7 +76,7 @@ module.exports = class PatternElement extends BaseObject
   # OUT: true if parsing was successful
   # EFFECT: if successful, one or more chlidren nodes have been added to parentNode
   parseInto: (parentNode) ->
-    !!parentNode.addMatch @label, @parse parentNode
+    !!parentNode.addMatch @, @parse parentNode
 
   _applyParseFlags: ->
     singleParser = @parse
@@ -91,19 +103,20 @@ module.exports = class PatternElement extends BaseObject
     if @_zeroOrMore
       @parseInto = (parentNode) =>
         matchCount = 0
-        while parentNode.addMatch @label, m = singleParser parentNode
+        while parentNode.addMatch @, m = singleParser parentNode
           matchCount++
-          break unless m.matchLength > 0
+          break if m.matchLength == 0 # avoid infinite match
 
-        parentNode.addMatch new EmptyNode parentNode if matchCount == 0
+        parentNode.addMatch @, new EmptyNode parentNode if matchCount == 0
         true
 
     if @_oneOrMore
       @parseInto = (parentNode) =>
         matchCount = 0
-        while parentNode.addMatch @label, m = singleParser parentNode
+        while parentNode.addMatch @, m = singleParser parentNode
           matchCount++
-          break unless m.matchLength > 0
+          break if m.matchLength == 0 # avoid infinite match
+
         matchCount > 0
 
   # initialize PatternElement based on the type of: match
@@ -113,13 +126,13 @@ module.exports = class PatternElement extends BaseObject
     if isPlainObject pattern
       @_initPlainObject pattern
     else if isString pattern
-      [_, label, prefix, ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
+      [_, @label, prefix, @ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
       throw new Error "pattern can only have one prefix: !/& or one suffix: ?/+/*" if prefix && suffix
 
       switch prefix
         when "!" then @negative = true
         when "&" then @couldMatch = true
-      @label = label || ruleName
+
       switch suffix
         when "?" then @optional = true
         when "+" then @oneOrMore = true
@@ -127,7 +140,7 @@ module.exports = class PatternElement extends BaseObject
 
       string = singleQuotedString || doubleQuotedString
 
-      if ruleName    then @_initRule ruleName
+      if @ruleName   then @_initRule @ruleName
       else if regExp then @_initRegExp new RegExp regExp
       else if string then @_initRegExp new RegExp escapeRegExp string
       else throw new Error "invalid pattern: #{pattern}"
@@ -151,7 +164,6 @@ module.exports = class PatternElement extends BaseObject
     throw new Error "plain-object pattern definition requires 'parse' or 'parseInto'" unless @parse || parseInto
 
   _initRule: (ruleName) ->
-    @ruleName = ruleName
     @parse = (parentNode) ->
       matchRule = parentNode.parser.rules[ruleName]
       throw new Error "no rule for #{ruleName}" unless matchRule
