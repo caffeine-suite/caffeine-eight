@@ -1,6 +1,6 @@
 {
   "name": "babel-bridge",
-  "version": "0.10.0",
+  "version": "1.0.0",
   "description": "atomic data-types such as Color, Point, Rectangle and Matrix",
   "main": "index.coffee",
   "dependencies": {
