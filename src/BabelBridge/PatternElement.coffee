@@ -27,7 +27,7 @@ module.exports = class PatternElement extends BaseObject
   #####################
   # members
   #####################
-  constructor: (@pattern, @options = {}) ->
+  constructor: (@pattern, {@ruleVariant} = {}) ->
     super
     @parse = null
     @_init()
@@ -107,7 +107,7 @@ module.exports = class PatternElement extends BaseObject
           matchCount++
           break if m.matchLength == 0 # avoid infinite match
 
-        parentNode.addMatch @, new EmptyNode parentNode if matchCount == 0
+        # parentNode.addMatch @, new EmptyNode parentNode if matchCount == 0
         true
 
     if @_oneOrMore

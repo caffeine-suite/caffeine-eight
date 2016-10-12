@@ -7,6 +7,8 @@ PatternElement = require './PatternElement'
 module.exports = class RuleVariant extends BaseObject
 
   constructor: (@options) ->
+    @_toString = null
+
     @options = pattern: @options unless isPlainObject @options
     {@pattern, @rule, @parserClass} = @options
     @_variantNodeClassName = @options.variantNodeClassName
@@ -39,7 +41,7 @@ module.exports = class RuleVariant extends BaseObject
     pes
 
   inspect: -> @toString()
-  toString: -> "#{@name}: #{@pattern || (@options.parse && 'function()')}"
+  toString: -> @_toString ||= "#{@name}: #{@pattern || (@options.parse && 'function()')}"
 
   ###
   see: BabelBridge.Rule#parse

@@ -3,6 +3,7 @@
 
 module.exports = require './namespace'
 .addModules
+  NonMatch:       require './NonMatch'      
   Parser:         require './parser'        
   PatternElement: require './PatternElement'
   Rule:           require './rule'          

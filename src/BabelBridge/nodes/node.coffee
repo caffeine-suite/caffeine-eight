@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
+{peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -23,7 +23,8 @@ module.exports = class Node extends BaseObject
       if options.ruleVarient
         @ruleVarient = options.ruleVarient
         @rule = @ruleVariant.rule
-      mergeInto @prototype, options
+      mergeInto @prototype, objectWithout options, "getter"
+      @getter options.getter if options.getter
 
   toString: -> @text
 
@@ -34,13 +35,23 @@ module.exports = class Node extends BaseObject
     matches: -> @_matches ||= []
     source: -> @_parser.source
     isRoot: -> @_parser == @_parent
+    ancestors: (into = [])->
+      @parent.getAncestors into
+      into.push @
+      into
+
+    parseInfo: ->
+      "#{@ruleName}:#{@offset}"
+
+    rulePath: ->
+      ancestorRuleNames = for ancestor in @ancestors
+        ancestor.parseInfo
+
+      ancestorRuleNames.join " > "
+
     nextOffset: -> @offset + @matchLength
     text: ->
-      {matchLength, offset, source} = @
-      if matchLength == 0 then "" else source.slice offset, offset + matchLength
-
-    subparseText: ->
-      {matchLength, offset, source} = @subparse
+      {matchLength, offset, source} = @subparseInfo || @
       if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
@@ -148,7 +159,7 @@ module.exports = class Node extends BaseObject
     pluralLabel ||= pluralRuleName
 
     @_matches = push @_matches, @_lastMatch = match
-    if match.present && label && match.class != Nodes.EmptyOptionalNode
+    if label && !(match instanceof Nodes.EmptyNode)
       @_bindToLabelLists    pluralLabel, match
       @_bindToSingleLabels  label, match
 

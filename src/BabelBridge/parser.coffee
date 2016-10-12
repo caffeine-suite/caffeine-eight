@@ -1,6 +1,8 @@
 Foundation = require 'art-foundation'
 Rule = require './rule'
 {getLineColumn} = require './tools'
+{Node} = require './nodes'
+NonMatch = require './NonMatch'
 
 {
   BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
@@ -11,6 +13,8 @@ Rule = require './rule'
   upperCamelCase
   mergeInto
   objectWithout
+  uniqueValues
+  formattedInspect
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -68,14 +72,22 @@ module.exports = class Parser extends BaseObject
   rule: instanceRulesFunction = (a, b) -> @class.rule a, b
   rules: instanceRulesFunction
 
+  @property "subparseInfo"
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()
     rootRule:     -> @class.getRootRule()
     nextOffset:   -> 0
+    ancestors:    (into) ->
+      into.push @
+      into
+
+    parseInfo: ->
+      "Parser"
 
   constructor: ->
     super
     @_parser = @
+    @_subparseInfo = null
     @_source = null
     @_resetParserTracking()
     @_pluralNames = {}
@@ -98,16 +110,19 @@ module.exports = class Parser extends BaseObject
   ###
   subparse: (subSource, options = {}) ->
     try
+      options.parentParser = @
       if p = @class.parse subSource, options
-        {offset, matchLength, source} = p
-        p.offset = options.originalOffset
-        p.matchLength = options.originalMatchLength
-        p._parent = options.parentNode
-        p.source = options.parentNode.source
-        p.subparse =
+        {offset, matchLength, source, parser} = p
+        p.subparseInfo =
           offset: offset
           matchLength: matchLength
           source: source
+          parser: parser
+
+        p.offset = options.originalOffset
+        p.matchLength = options.originalMatchLength
+        p._parent = options.parentNode
+        p._parser = options.parentNode._parser
         p
     catch
       null
@@ -116,6 +131,7 @@ module.exports = class Parser extends BaseObject
   OUT: on success, root Node of the parse tree, else null
   ###
   parse: (@_source, options = {})->
+    {@parentParser} = options
     @_resetParserTracking()
 
     ruleName = options.rule || @rootRuleName
@@ -133,10 +149,16 @@ module.exports = class Parser extends BaseObject
     else
       throw new Error @getParseFailureInfo()
 
+  addToExpectingInfo = (node, into, value) ->
+    if node.parent
+      into = addToExpectingInfo node.parent, into
+
+    into[node.parseInfo] ||= value || {}
+
   ##################
   # Parsing Failure Info
   ##################
-  @getter "nonMatchingVariants",
+  @getter "nonMatches",
     parseFailureInfo: ->
       return unless @_source
 
@@ -158,13 +180,24 @@ module.exports = class Parser extends BaseObject
       out.join "\n"
 
     expectingInfo: ->
-      return null unless objectLength(@_nonMatchingVariants) > 0
+      return null unless objectLength(@_nonMatches) > 0
 
-      keys = (info for k, {info} of @_nonMatchingVariants)
-      sortedKeys = keys.sort()
+      expectingInfoTree = {}
+      for k, {patternElement, node} of @_nonMatches
+        addToExpectingInfo node, expectingInfoTree, patternElement.pattern.toString()
+
+      # log expectingInfoTree:expectingInfoTree
+
+      keys = for k, {patternElement, node} of @_nonMatches
+        {ruleVariant} = patternElement
+        # log ancestors: node.rulePath
+        "#{node.rulePath} - #{ruleVariant.rule.name}: #{patternElement.pattern.toString()}"
+
+      sortedKeys = uniqueValues keys.sort()
 
       [
         "Could continue if one of these rules matched:"
+        formattedInspect expectingInfoTree, 0
         for k in sortedKeys
           "  #{k}"
       ]
@@ -173,10 +206,7 @@ module.exports = class Parser extends BaseObject
     if patternElement.parseInto parseIntoNode
       true
     else if patternElement.isTokenPattern
-      @_logParsingFailure parseIntoNode.offset,
-        ruleVariant: ruleVariant
-        parentNode: parseIntoNode.parent
-        info: "#{ruleVariant.rule.name}: #{patternElement.pattern.toString()}"
+      @_logParsingFailure parseIntoNode.offset, new NonMatch parseIntoNode, patternElement
       false
 
   ##################
@@ -201,7 +231,7 @@ module.exports = class Parser extends BaseObject
     @_matchingNegativeDepth = 0
     @_parsingDidNotMatchEntireInput = false
     @_failureIndex = 0
-    @_nonMatchingVariants = {}
+    @_nonMatches = {}
     @_parseCache = {}
 
   @getter
@@ -214,14 +244,14 @@ module.exports = class Parser extends BaseObject
     result
 
   ###
-    expecting: {ruleVariant, parentNode}
+    expecting: {ruleVariant, parentNode, parentNode}
   ###
-  _logParsingFailure: (index, expecting) ->
-    return if @matchingNegative
+  _logParsingFailure: (index, nonMatch) ->
+    return if @_matchingNegativeDepth > 0
 
     if index >= @_failureIndex
       if index > @_failureIndex
         @_failureIndex = index
-        @_nonMatchingVariants = {}
+        @_nonMatches = {}
 
-      @_nonMatchingVariants[expecting.ruleVariant.toString()] = expecting
+      @_nonMatches[nonMatch] = nonMatch
