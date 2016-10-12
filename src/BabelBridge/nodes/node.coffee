@@ -41,7 +41,10 @@ module.exports = class Node extends BaseObject
       into
 
     parseInfo: ->
-      "#{@ruleName}:#{@offset}"
+      if @subparseInfo
+        "subparse:#{@ruleName}:#{@offset}"
+      else
+        "#{@ruleName}:#{@offset}"
 
     rulePath: ->
       ancestorRuleNames = for ancestor in @ancestors

@@ -15,6 +15,7 @@ NonMatch = require './NonMatch'
   objectWithout
   uniqueValues
   formattedInspect
+  max
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -90,10 +91,13 @@ module.exports = class Parser extends BaseObject
     @_subparseInfo = null
     @_source = null
     @_resetParserTracking()
-    @_pluralNames = {}
+
+  @_pluralNames = {}
+  @pluralize: (name) ->
+    @_pluralNames[name] ||= pluralize name
 
   pluralize: (name) ->
-    @_pluralNames[name] ||= pluralize name
+    @class.pluralize name
 
   ###
   IN:
@@ -186,27 +190,16 @@ module.exports = class Parser extends BaseObject
       for k, {patternElement, node} of @_nonMatches
         addToExpectingInfo node, expectingInfoTree, patternElement.pattern.toString()
 
-      # log expectingInfoTree:expectingInfoTree
-
-      keys = for k, {patternElement, node} of @_nonMatches
-        {ruleVariant} = patternElement
-        # log ancestors: node.rulePath
-        "#{node.rulePath} - #{ruleVariant.rule.name}: #{patternElement.pattern.toString()}"
-
-      sortedKeys = uniqueValues keys.sort()
-
       [
         "Could continue if one of these rules matched:"
         formattedInspect expectingInfoTree, 0
-        for k in sortedKeys
-          "  #{k}"
       ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
     if patternElement.parseInto parseIntoNode
       true
-    else if patternElement.isTokenPattern
-      @_logParsingFailure parseIntoNode.offset, new NonMatch parseIntoNode, patternElement
+    else
+      @_logParsingFailure parseIntoNode, patternElement
       false
 
   ##################
@@ -243,15 +236,13 @@ module.exports = class Parser extends BaseObject
     @_matchingNegativeDepth--
     result
 
-  ###
-    expecting: {ruleVariant, parentNode, parentNode}
-  ###
-  _logParsingFailure: (index, nonMatch) ->
-    return if @_matchingNegativeDepth > 0
+  _logParsingFailure: (parseIntoNode, patternElement) ->
+    return unless @_matchingNegativeDepth == 0 && parseIntoNode.offset >= @_failureIndex && patternElement.isTokenPattern
+    {offset} = parseIntoNode
 
-    if index >= @_failureIndex
-      if index > @_failureIndex
-        @_failureIndex = index
-        @_nonMatches = {}
+    if offset > @_failureIndex
+      @_failureIndex = offset
+      @_nonMatches = {}
 
-      @_nonMatches[nonMatch] = nonMatch
+    nonMatch = new NonMatch parseIntoNode, parseIntoNode
+    @_nonMatches[nonMatch] = nonMatch
