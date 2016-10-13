@@ -18,6 +18,12 @@ module.exports = suite:
     test "simple expression", ->
       MyParser.parse "one"
 
+    test "one block", ->
+      MyParser.parse """
+        one
+          two
+        """
+
     test "nested blocks", ->
       MyParser.parse """
         one

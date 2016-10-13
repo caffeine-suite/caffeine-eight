@@ -16,6 +16,7 @@ NonMatch = require './NonMatch'
   uniqueValues
   formattedInspect
   max
+  inspect
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -157,7 +158,13 @@ module.exports = class Parser extends BaseObject
     if node.parent
       into = addToExpectingInfo node.parent, into
 
-    into[node.parseInfo] ||= value || {}
+    into[node.parseInfo] ||= if value
+      value
+    else
+      p = {}
+      if (pm = node.presentMatches)?.length > 0
+        p.matches = (m.parseInfo for m in pm)
+      p
 
   ##################
   # Parsing Failure Info
@@ -180,19 +187,33 @@ module.exports = class Parser extends BaseObject
 
         """
         @expectingInfo
+        ""
       ]
       out.join "\n"
 
     expectingInfo: ->
       return null unless objectLength(@_nonMatches) > 0
 
+      ###
+      I know how to do this right!
+
+      1) I want to add all the non-match nodes to the parse-tree
+      2) I want to further improve the parse-tree inspect
+        - it may be time to do a custom inspect
+
+
+      ###
       expectingInfoTree = {}
-      for k, {patternElement, node} of @_nonMatches
+      nodes = for k, {patternElement, node} of @_nonMatches #when (node.getPresent() || node.getPresent == Node.prototype.getPresent)
         addToExpectingInfo node, expectingInfoTree, patternElement.pattern.toString()
+        n = new Node node
+        n.pattern = patternElement
+        rootNode = n._addToParentAsNonMatch()
+        n
 
       [
-        "Could continue if one of these rules matched:"
-        formattedInspect expectingInfoTree, 0
+        "Look for nonMatches to see where parsing failed:\n"
+        formattedInspect "partial-parse-tree": rootNode
       ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
@@ -244,5 +265,5 @@ module.exports = class Parser extends BaseObject
       @_failureIndex = offset
       @_nonMatches = {}
 
-    nonMatch = new NonMatch parseIntoNode, parseIntoNode
+    nonMatch = new NonMatch parseIntoNode, patternElement
     @_nonMatches[nonMatch] = nonMatch

@@ -16,6 +16,8 @@ module.exports = class Node extends BaseObject
     @_pluralRuleName = null
     @_label = null
     @_pluralLabel = null
+    @_pattern = null
+    @_nonMatch = false
 
   @createSubclass: (options) ->
     class NodeSubclass extends @
@@ -28,10 +30,13 @@ module.exports = class Node extends BaseObject
 
   toString: -> @text
 
-  @setter "matches offset matchLength ruleVariant"
-  @getter "parent parser offset matchLength, label pluralLabel ruleName pluralRuleName",
+  @setter "matches offset matchLength ruleVariant pattern"
+  @getter "
+    parent parser offset matchLength
+    label pluralLabel ruleName pluralRuleName pattern nonMatch
+    ",
     name: -> @_name || @ruleName || @class.getName()
-    present: -> @_matchLength > 0
+    present: -> @_matchLength > 0 || @_nonMatch
     matches: -> @_matches ||= []
     source: -> @_parser.source
     isRoot: -> @_parser == @_parent
@@ -58,12 +63,15 @@ module.exports = class Node extends BaseObject
       if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
-    ruleName: -> @class.rule?.getName() || @_ruleVariant.rule.getName()
+    ruleName: -> @class.rule?.getName() || @_ruleVariant?.rule.getName() || "#{@pattern || 'no rule'}"
 
     isRuleNode: -> @class.rule
 
     isPassThrough: -> @ruleVariant?.isPassThrough
     nonPassThrough: -> !@ruleVariant?.isPassThrough
+
+  formattedInspect: ->
+    "CUSTOM"
 
   # inspectors
   @getter
@@ -79,33 +87,39 @@ module.exports = class Node extends BaseObject
 
         path = []
         while matches.length == 1 && matches[0].matches?.length > 0
-          path.push "#{match.ruleName}#{if match.label then " label:#{match.label}" else ""}"
+          path.push "#{if match.label then "#{match.label}:" else ""}#{match.ruleName}"
           [match] = matches
           matches = match.presentMatches
 
-        {label, ruleName} = match
+        {label, ruleName, nonMatch} = match
 
-        path = path[0] if path.length == 1
+        path = if path.length == 1
+          path[0]
+        else
+          path.join " > "
 
         children = for match in matches
           match.inspectedObjects
 
         parts = compactFlatten [
-          path: path if path.length > 0
-          label: label if label
+          if path.length > 0   then path: path
+          if label             then label: label
           if children.length > 0
             children
           else
             match.toString()
         ]
         parts = parts[0] if parts.length == 1
-        ret = {}
-        ret[ruleName] = parts
+        ret = "#{if nonMatch then 'partialMatch-' else ''}#{ruleName}": parts
+
+        # ret = nonMatch: ret if nonMatch
 
 
         ret
+      else if @nonMatch
+        nonMatch: offset: @offset, pattern: "#{@pattern?.pattern}"
       else
-        source: text: @text, offset: @offset, length: @matchLength #, offset: @offset, length: @matchLength
+        match: offset: @offset, length: @matchLength, text: @text, pattern: "#{@pattern?.pattern}"
 
     detailedInspectedObjects: ->
       {matches} = @
@@ -152,13 +166,14 @@ module.exports = class Node extends BaseObject
 
     {label, ruleName} = pattern
 
-    match._parent = @
-    match._label = label
-    match._ruleName = ruleName
+    match._pattern        = pattern
+    match._parent         = @
+    match._label          = label
+    match._ruleName       = ruleName
     match._pluralLabel    = pluralLabel    = @parser.pluralize label    if label
     match._pluralRuleName = pluralRuleName = @parser.pluralize ruleName if ruleName
 
-    label ||= ruleName
+    label       ||= ruleName
     pluralLabel ||= pluralRuleName
 
     @_matches = push @_matches, @_lastMatch = match
@@ -182,3 +197,25 @@ module.exports = class Node extends BaseObject
   # IFF the prototype doesn't already have a property of that name
   _bindToSingleLabels: (label, match) ->
     @[label] = match unless @__proto__[label]
+
+  _addNonMatch: (node) ->
+    (@_nonMatches ||= []).push node
+
+  # returns the first parent-node which is a match
+  # TODO: I'd like inspectedObjects to distinguish between partialMatches and nonMatches
+  #  a partialMatch is any non-leaf...
+  _addToParentAsNonMatch: ->
+    @_matchLength = 1 if @_matchLength == 0
+    if @parent
+      if @parent.matches
+        unless 0 <= @parent.matches.indexOf @
+          @_nonMatch = true
+          @parent.matches.push @
+          @parent._presentMatches = null
+          @parent._matchLength = 1 if @parent._matchLength == 0
+        @parent._addToParentAsNonMatch()
+      else
+        @
+
+    else
+      @
