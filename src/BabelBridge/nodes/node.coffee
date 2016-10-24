@@ -63,7 +63,8 @@ module.exports = class Node extends BaseObject
       if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
-    ruleName: -> @class.rule?.getName() || @_ruleVariant?.rule.getName() || "#{@pattern || 'no rule'}"
+    ruleName: ->
+      @class.rule?.getName() || @_ruleVariant?.rule.getName() || @parent?.ruleName || "#{@pattern || 'no rule'}"
 
     isRuleNode: -> @class.rule
 
@@ -79,6 +80,25 @@ module.exports = class Node extends BaseObject
 
     presentMatches: ->
       @_presentMatches ||= (m for m in @matches when m.getPresent?())
+
+    isNonMatch: -> !!@nonMatch
+    isPartialMatch: ->
+      return false unless @nonMatch
+      return true for match in @presentMatches when !match.nonMatch
+
+      false
+
+    isMatch: -> !@nonMatch
+
+    nonMatchingLeaf: ->
+      @nonMatch && @matches.length == 1 && @matches[0]
+
+    firstPartialMatchParent: ->
+      # throw new Error unless @isNonMatch
+      if @parent == @parser || @isPartialMatch
+        @
+      else
+        @parent.firstPartialMatchParent
 
     inspectedObjects: ->
       match = @
@@ -98,7 +118,9 @@ module.exports = class Node extends BaseObject
         else
           path.join " > "
 
+        hasOneOrMoreMatchingChildren = false
         children = for match in matches
+          hasOneOrMoreMatchingChildren = true unless match.nonMatch
           match.inspectedObjects
 
         parts = compactFlatten [
@@ -110,7 +132,14 @@ module.exports = class Node extends BaseObject
             match.toString()
         ]
         parts = parts[0] if parts.length == 1
-        ret = "#{if nonMatch then 'partialMatch-' else ''}#{ruleName}": parts
+        ret = "#{
+          if nonMatch
+            if hasOneOrMoreMatchingChildren
+              'partialMatch-'
+            else 'nonMatch-'
+          else
+            ''
+          }#{ruleName}": parts
 
         # ret = nonMatch: ret if nonMatch
 

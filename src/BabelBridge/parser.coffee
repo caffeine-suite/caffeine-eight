@@ -17,6 +17,7 @@ NonMatch = require './NonMatch'
   formattedInspect
   max
   inspect
+  pushIfNotPresent
 } = Foundation
 
 module.exports = class Parser extends BaseObject
@@ -143,7 +144,7 @@ module.exports = class Parser extends BaseObject
     {rules} = @
     throw new Error "No root rule defined." unless ruleName
     startRule = rules[ruleName]
-    throw new Error "Could not find rule: #{rule}" unless startRule
+    throw new Error "Could not find rule: #{ruleName}" unless startRule
 
 
     if result = startRule.parse @
@@ -211,9 +212,24 @@ module.exports = class Parser extends BaseObject
         rootNode = n._addToParentAsNonMatch()
         n
 
-      [
+      partialMatchingParents = []
+      for node in nodes
+        {firstPartialMatchParent} = node
+        log
+          firstPartialMatchParent: firstPartialMatchParent,
+          node: node
+        pushIfNotPresent partialMatchingParents, firstPartialMatchParent
+
+      log partialMatchingParents:partialMatchingParents
+      newOutput = for pmp in partialMatchingParents
+        for child in pmp.matches when child.isNonMatch
+          "expecting #{child.nonMatchingLeaf.ruleName} to complete #{pmp.ruleName} at #{child.offset}"
+
+      compactFlatten [
         "Look for nonMatches to see where parsing failed:\n"
         formattedInspect "partial-parse-tree": rootNode
+        ""
+        newOutput
       ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
