@@ -151,9 +151,9 @@ module.exports = class Parser extends BaseObject
       if result.matchLength == @_source.length
         result
       else
-        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo()}"
+        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo options}"
     else
-      throw new Error @getParseFailureInfo()
+      throw new Error @getParseFailureInfo options
 
   addToExpectingInfo = (node, into, value) ->
     if node.parent
@@ -171,15 +171,17 @@ module.exports = class Parser extends BaseObject
   # Parsing Failure Info
   ##################
   @getter "nonMatches",
-    parseFailureInfo: ->
+    parseFailureInfo: (options)->
       return unless @_source
+
+      verbose = options?.verbose
 
       sourceBefore = @_source.slice 0, @_failureIndex
       sourceAfter = @_source.slice @_failureIndex
 
       out = compactFlatten [
         """
-        Parsing error at offset #{getLineColumnString @_source, @_failureIndex}
+        Parsing error at #{getLineColumnString @_source, @_failureIndex}
 
         Source:
         ...
@@ -188,6 +190,11 @@ module.exports = class Parser extends BaseObject
 
         """
         @expectingInfo
+        if verbose
+          [
+            "",
+            formattedInspect "partial-parse-tree": @partialParseTree
+          ]
         ""
       ]
       out.join "\n"
@@ -231,6 +238,8 @@ module.exports = class Parser extends BaseObject
         for child in pmp.matches when child.isNonMatch
           "  '#{child.nonMatchingLeaf.ruleName}' to complete '#{pmp.ruleName}' (which started at #{getLineColumnString @_source, pmp.offset})"
 
+      newOutput = compactFlatten newOutput
+      newOutput = "  end of input" unless newOutput.length > 0
       compactFlatten [
         "expecting:"
         newOutput

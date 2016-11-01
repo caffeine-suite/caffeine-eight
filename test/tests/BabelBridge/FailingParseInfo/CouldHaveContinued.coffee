@@ -31,8 +31,8 @@ defineModule module, suite: ->
 
     myParser = new MyParser
     assert.rejects -> myParser.parse "barfo"
-    .then ->
-      log myParser.parseFailureInfo
+    .then (e)->
+      log e
 
   test "matchingNegative", ->
     class MyParser extends Parser
