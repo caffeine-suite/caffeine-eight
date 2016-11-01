@@ -215,12 +215,8 @@ module.exports = class Parser extends BaseObject
       partialMatchingParents = []
       for node in nodes
         {firstPartialMatchParent} = node
-        log
-          firstPartialMatchParent: firstPartialMatchParent,
-          node: node
         pushIfNotPresent partialMatchingParents, firstPartialMatchParent
 
-      log partialMatchingParents:partialMatchingParents
       newOutput = for pmp in partialMatchingParents
         for child in pmp.matches when child.isNonMatch
           "expecting #{child.nonMatchingLeaf.ruleName} to complete #{pmp.ruleName} at #{child.offset}"
