@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 Rule = require './rule'
-{getLineColumn} = require './tools'
+{getLineColumn, getLineColumnString} = require './tools'
 {Node} = require './nodes'
 NonMatch = require './NonMatch'
 
@@ -179,7 +179,7 @@ module.exports = class Parser extends BaseObject
 
       out = compactFlatten [
         """
-        Parsing error at offset #{inspectLean getLineColumn @_source, @_failureIndex}
+        Parsing error at offset #{getLineColumnString @_source, @_failureIndex}
 
         Source:
         ...
@@ -191,6 +191,23 @@ module.exports = class Parser extends BaseObject
         ""
       ]
       out.join "\n"
+
+    partialParseTreeLeafNodes: ->
+      return @_partialParseTreeNodes if @_partialParseTreeNodes
+      @partialParseTree
+      @_partialParseTreeNodes
+
+    partialParseTree: ->
+      return @_partialParseTree if @_partialParseTree
+      expectingInfoTree = {}
+      @_partialParseTreeNodes = for k, {patternElement, node} of @_nonMatches #when (node.getPresent() || node.getPresent == Node.prototype.getPresent)
+        addToExpectingInfo node, expectingInfoTree, patternElement.pattern.toString()
+        n = new Node node
+        n.pattern = patternElement
+        rootNode = n._addToParentAsNonMatch()
+        n
+
+      @_partialParseTree = rootNode
 
     expectingInfo: ->
       return null unless objectLength(@_nonMatches) > 0
@@ -204,27 +221,18 @@ module.exports = class Parser extends BaseObject
 
 
       ###
-      expectingInfoTree = {}
-      nodes = for k, {patternElement, node} of @_nonMatches #when (node.getPresent() || node.getPresent == Node.prototype.getPresent)
-        addToExpectingInfo node, expectingInfoTree, patternElement.pattern.toString()
-        n = new Node node
-        n.pattern = patternElement
-        rootNode = n._addToParentAsNonMatch()
-        n
 
       partialMatchingParents = []
-      for node in nodes
+      for node in @partialParseTreeLeafNodes
         {firstPartialMatchParent} = node
         pushIfNotPresent partialMatchingParents, firstPartialMatchParent
 
       newOutput = for pmp in partialMatchingParents
         for child in pmp.matches when child.isNonMatch
-          "expecting #{child.nonMatchingLeaf.ruleName} to complete #{pmp.ruleName} at #{child.offset}"
+          "  '#{child.nonMatchingLeaf.ruleName}' to complete '#{pmp.ruleName}' (which started at #{getLineColumnString @_source, pmp.offset})"
 
       compactFlatten [
-        "Look for nonMatches to see where parsing failed:\n"
-        formattedInspect "partial-parse-tree": rootNode
-        ""
+        "expecting:"
         newOutput
       ]
 
@@ -254,6 +262,8 @@ module.exports = class Parser extends BaseObject
     null
 
   _resetParserTracking: ->
+    @_partialParseTreeNodes = null
+    @_partialParseTree = null
     @_matchingNegativeDepth = 0
     @_parsingDidNotMatchEntireInput = false
     @_failureIndex = 0
