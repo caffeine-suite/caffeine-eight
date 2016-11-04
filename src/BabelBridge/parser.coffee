@@ -167,6 +167,18 @@ module.exports = class Parser extends BaseObject
         p.matches = (m.parseInfo for m in pm)
       p
 
+
+  lastLines = (string, count = 5) ->
+    a = string.split "\n"
+    a.slice a.length - count, a.length
+    .join "\n"
+
+  firstLines = (string, count = 5) ->
+    a = string.split "\n"
+    a.slice 0, count
+    .join "\n"
+
+
   ##################
   # Parsing Failure Info
   ##################
@@ -176,8 +188,8 @@ module.exports = class Parser extends BaseObject
 
       verbose = options?.verbose
 
-      sourceBefore = @_source.slice 0, @_failureIndex
-      sourceAfter = @_source.slice @_failureIndex
+      sourceBefore = lastLines @_source.slice 0, @_failureIndex
+      sourceAfter = firstLines @_source.slice @_failureIndex
 
       out = compactFlatten [
         """
