@@ -107,37 +107,49 @@ module.exports = class Parser extends BaseObject
       any string what-so-ever
     options:
       [all of @parse's options plus:]
-      parentNode: set the resulting Node's parent
-      originalOffset:
-      originalMatchLength:
-        offset and matchLength from @source that subSource was generated from.
+      parentNode: (required)
+        the resulting Node's parent
+
+      originalMatchLength: (required)
+        matchLength from @source that subSource was generated from.
+
+    The original source we are sub-parsing from must be:
+
+      parentNode.getNextText originalMatchLength
 
   OUT: a Node with offset and matchLength
   ###
   subparse: (subSource, options = {}) ->
+    # log subparse: {subSource, options}
     try
       options.parentParser = @
-      if p = @class.parse subSource, options
-        {offset, matchLength, source, parser} = p
-        p.subparseInfo =
-          offset: offset
-          matchLength: matchLength
-          source: source
-          parser: parser
+      if match = @class.parse subSource, options
+        {offset, matchLength, source, parser} = match
+        match.subparseInfo = {offset, matchLength, source, parser}
 
-        p.offset = options.originalOffset
-        p.matchLength = options.originalMatchLength
-        p._parent = options.parentNode
-        p._parser = options.parentNode._parser
-        p
+        {originalMatchLength, parentNode} = options
+
+        # if options.allowPartialMatch was requested - and the match was partial...
+        if match.matchLength < subSource.length
+
+          if match.text != parentNode.getNextText match.matchLength
+            throw new Error "INTERNAL TODO: SubParse was a partial match, but a source-map is required to determine the matchLength in the original source."
+
+          originalMatchLength = match.matchLength
+
+        match.offset      = parentNode.nextOffset
+        match.matchLength = originalMatchLength
+        match
     catch
       null
 
   ###
   OUT: on success, root Node of the parse tree, else null
+  options:
+    allowPartialMatch: true/false
   ###
   parse: (@_source, options = {})->
-    {@parentParser} = options
+    {@parentParser, allowPartialMatch} = options
     @_resetParserTracking()
 
     ruleName = options.rule || @rootRuleName
@@ -148,7 +160,7 @@ module.exports = class Parser extends BaseObject
 
 
     if result = startRule.parse @
-      if result.matchLength == @_source.length
+      if result.matchLength == @_source.length || (allowPartialMatch && result.matchLength > 0)
         result
       else
         throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo options}"

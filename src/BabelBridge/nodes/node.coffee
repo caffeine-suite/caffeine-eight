@@ -62,6 +62,7 @@ module.exports = class Node extends BaseObject
       {matchLength, offset, source} = @subparseInfo || @
       if matchLength == 0 then "" else source.slice offset, offset + matchLength
 
+
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
     ruleName: ->
       @class.rule?.getName() || @_ruleVariant?.rule.getName() || @parent?.ruleName || "#{@pattern || 'no rule'}"
@@ -71,6 +72,11 @@ module.exports = class Node extends BaseObject
     isPassThrough: -> @ruleVariant?.isPassThrough
     nonPassThrough: -> !@ruleVariant?.isPassThrough
 
+  # get substring from source starting at nextOffset of the specified length
+  getNextText: (length)->
+    {nextOffset} = @
+    @source.slice nextOffset, nextOffset + length
+
   formattedInspect: ->
     "CUSTOM"
 
@@ -79,7 +85,7 @@ module.exports = class Node extends BaseObject
     parseTreePath: -> compactFlatten [@parent?.parseTreePath, @class.getName()]
 
     presentMatches: ->
-      @_presentMatches ||= (m for m in @matches when m.getPresent?())
+      m for m in @matches when m.getPresent?()
 
     isNonMatch: -> !!@nonMatch
     isPartialMatch: ->
@@ -148,7 +154,7 @@ module.exports = class Node extends BaseObject
       else if @nonMatch
         nonMatch: offset: @offset, pattern: "#{@pattern?.pattern}"
       else
-        match: offset: @offset, length: @matchLength, text: @text, pattern: "#{@pattern?.pattern}"
+        token: offset: @offset, length: @matchLength, text: @text, pattern: "#{@pattern?.pattern}", class: @class.getName(), ruleName: @ruleName
 
     detailedInspectedObjects: ->
       {matches} = @
@@ -193,12 +199,14 @@ module.exports = class Node extends BaseObject
   addMatch: (pattern, match) ->
     return false unless match
 
-    {label, ruleName} = pattern
+    match._parent = @
 
-    match._pattern        = pattern
-    match._parent         = @
-    match._label          = label
-    match._ruleName       = ruleName
+    if pattern
+      {label, ruleName} = pattern
+      match._pattern        = pattern
+      match._label          = label
+      match._ruleName       = ruleName
+
     match._pluralLabel    = pluralLabel    = @parser.pluralize label    if label
     match._pluralRuleName = pluralRuleName = @parser.pluralize ruleName if ruleName
 
@@ -211,6 +219,7 @@ module.exports = class Node extends BaseObject
       @_bindToSingleLabels  label, match
 
     @_matchLength = match.nextOffset - @offset
+
     true
 
   #################
