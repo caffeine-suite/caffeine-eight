@@ -30,9 +30,10 @@ This is NOT a parser-generator. There is no pre-compile step. Unlike other PEG l
 
 ## Features
 
-* Full parsing expression grammer support with memoizing (TODO)
+* Full parsing expression grammer support with memoizing
 * Full JavaScript regular expressions support for terminals
 * Simple, convention-over-configuration parse-tree class structure
 * Human-readable parse-tree dumps
 * Detailed information about parsing failures
 * Custom sub-parser hooks
+  * Which enable indention-based block parsing for languages like Python, CoffeeScript, or my own CaffeineScript
