@@ -1,4 +1,4 @@
-## BabelBridgeJS
+## BabelBridgeJs
 
 * Create parsers with ease 100% in JavaScript, or better yet, CoffeeScript!
 * Powered by [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar)
