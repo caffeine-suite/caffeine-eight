@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 PatternElement = require './PatternElement'
-{Node} = require './nodes'
+{Node} = require './Nodes'
 {BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, merge} = Foundation
 {allPatternElementsRegExp} = PatternElement
 

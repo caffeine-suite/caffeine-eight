@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{Node, EmptyNode, EmptyOptionalNode} = require './nodes'
+{Node, EmptyNode, EmptyOptionalNode} = require './Nodes'
 {BaseObject, isPlainObject, isString, isRegExp, inspect, log} = Foundation
 
 

@@ -1,5 +1,5 @@
 {defineModule, log, merge, escapeJavascriptString} = require 'art-foundation'
-{Node} = require '../nodes'
+{Node} = require '../Nodes'
 
 defineModule module, -> class IndentBlocks
   blockStartRegExp = /\n(?: *\n)*( +)(?=$|[^ \n])/y

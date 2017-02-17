@@ -1,1 +1,1 @@
-module.exports = require "./src/BabelBridge"
+module.exports = require "./source/BabelBridge"

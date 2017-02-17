@@ -1,7 +1,7 @@
 Foundation = require 'art-foundation'
-Rule = require './rule'
-{getLineColumn, getLineColumnString} = require './tools'
-{Node} = require './nodes'
+Rule = require './Rule'
+{getLineColumn, getLineColumnString} = require './Tools'
+{Node} = require './Nodes'
 NonMatch = require './NonMatch'
 
 {
