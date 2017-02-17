@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
+{array, peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -11,6 +11,8 @@ module.exports = class Node extends BaseObject
     @_matchLength ||= 0
     @_lastMatch = null
     @_matches = null
+
+    @_matchPatterns = null
 
     @_ruleName = null
     @_pluralRuleName = null
@@ -206,28 +208,39 @@ module.exports = class Node extends BaseObject
   addMatch: (pattern, match) ->
     return false unless match
 
-    match._parent = @
-
-    if pattern
-      {label, ruleName} = pattern
-      match._pattern        = pattern
-      match._label          = label
-      match._ruleName       = ruleName
-
-    match._pluralLabel    = pluralLabel    = @parser.pluralize label    if label
-    match._pluralRuleName = pluralRuleName = @parser.pluralize ruleName if ruleName
-
-    label       ||= ruleName
-    pluralLabel ||= pluralRuleName
-
     @_matches = push @_matches, @_lastMatch = match
-    if label && !(match instanceof Nodes.EmptyNode)
-      @_bindToLabelLists    pluralLabel, match
-      @_bindToSingleLabels  label, match
+    @_matchPatterns = push @_matchPatterns, pattern
 
     @_matchLength = match.nextOffset - @offset
 
     true
+
+  applyLabels: ->
+    return unless @_matches
+    throw new Error "already applied labels" if @_labelsApplied
+    @_labelsApplied = true
+    array @_matches, (match, i) =>
+      pattern = @_matchPatterns[i]
+
+      match._parent = @
+
+      if pattern
+        {label, ruleName} = pattern
+        match._pattern        = pattern
+        match._label          = label
+        match._ruleName       = ruleName
+
+      match._pluralLabel    = pluralLabel    = @parser.pluralize label    if label
+      match._pluralRuleName = pluralRuleName = @parser.pluralize ruleName if ruleName
+
+      label       ||= ruleName
+      pluralLabel ||= pluralRuleName
+
+      if label && !(match instanceof Nodes.EmptyNode)
+        @_bindToLabelLists    pluralLabel, match
+        @_bindToSingleLabels  label, match
+
+      match.applyLabels()
 
   #################
   # PRIVATE
@@ -236,12 +249,12 @@ module.exports = class Node extends BaseObject
   # add to appropriate list in @matches
   # TODO: I'll bet this slows things down, generating the pluralLabel EVERY TIME
   _bindToLabelLists: (pluralLabel, match) ->
-    @[pluralLabel] = push @[pluralLabel], match unless @__proto__[pluralLabel]
+    @[pluralLabel] = push @[pluralLabel], match unless @__proto__[pluralLabel]?
 
   # keep most recent match directly as node property
   # IFF the prototype doesn't already have a property of that name
   _bindToSingleLabels: (label, match) ->
-    @[label] = match unless @__proto__[label]
+    @[label] = match unless @__proto__[label]?
 
   _addNonMatch: (node) ->
     (@_nonMatches ||= []).push node

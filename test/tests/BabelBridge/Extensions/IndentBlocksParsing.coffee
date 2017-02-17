@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{log, a, m, peek, shallowClone, compactFlatten} = Foundation
+{array, log, a, m, peek, shallowClone, compactFlatten} = Foundation
 {Parser, Nodes, Extensions} = Neptune.BabelBridge
 {Node} = Nodes
 
@@ -230,14 +230,15 @@ module.exports = suite:
         assert.eq p.toJs(), '{foo: {bar: 123}, baz: 456}'
 
       test "nested object statements", ->
-        assert.eq MyParser.parse(
+        parsed = MyParser.parse(
           """
           foo: 123
           bar:
             baz: 2
             bud: 3
           """
-        ).toJs(), '{foo: 123, bar: {baz: 2, bud: 3}}'
+        )
+        assert.eq parsed.toJs(), '{foo: 123, bar: {baz: 2, bud: 3}}'
 
       test "nested object expression one line", ->
         assert.eq MyParser.parse(
@@ -246,7 +247,6 @@ module.exports = suite:
           bar: baz: 2, bud: 3
           """
         ).toJs(), '{foo: 123, bar: {baz: 2, bud: 3}}'
-
 
     suite "toJs array", ->
       test "array", ->

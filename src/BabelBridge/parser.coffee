@@ -125,7 +125,7 @@ module.exports = class Parser extends BaseObject
     # log subparse: {subSource, options}
     try
       options.parentParser = @
-      if match = @class.parse subSource, options
+      if match = @class.parse subSource, merge(options, isSubparse: true)
         {offset, matchLength, source, parser} = match
         match.subparseInfo = {offset, matchLength, source, parser}
 
@@ -151,7 +151,7 @@ module.exports = class Parser extends BaseObject
     allowPartialMatch: true/false
   ###
   parse: (@_source, @options = {})->
-    {@parentParser, allowPartialMatch, rule} = @options
+    {@parentParser, allowPartialMatch, rule, isSubparse} = @options
     @_resetParserTracking()
 
     ruleName = rule || @rootRuleName
@@ -163,6 +163,7 @@ module.exports = class Parser extends BaseObject
 
     if result = startRule.parse @
       if result.matchLength == @_source.length || (allowPartialMatch && result.matchLength > 0)
+        result.applyLabels() unless isSubparse
         result
       else
         throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
