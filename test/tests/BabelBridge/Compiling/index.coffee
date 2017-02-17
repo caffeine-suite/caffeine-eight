@@ -5,4 +5,5 @@ module.exports = require './namespace'
 .addModules
   CustomNodes:            require './CustomNodes'           
   NodeBaseClass:          require './NodeBaseClass'         
+  Nodes:                  require './Nodes'                 
   RuleGroupNodeBaseClass: require './RuleGroupNodeBaseClass'

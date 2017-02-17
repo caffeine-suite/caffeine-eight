@@ -19,14 +19,21 @@ module.exports = class Node extends BaseObject
     @_pattern = null
     @_nonMatch = false
 
-  @createSubclass: (options) ->
+  # provided so CaffineScript or other ES6-class-based systems can define their own class extension
+  @_createSubclassBase: ->
     class NodeSubclass extends @
-      @_name = @prototype._name = options.name if options.name
-      if options.ruleVarient
-        @ruleVarient = options.ruleVarient
-        @rule = @ruleVariant.rule
-      mergeInto @prototype, objectWithout options, "getter"
-      @getter options.getter if options.getter
+
+  @createSubclass: (options) ->
+    klass = @_createSubclassBase()
+    # class NodeSubclass extends @
+    klass._name = klass.prototype._name = options.name if options.name
+    if options.ruleVarient
+      klass.ruleVarient = options.ruleVarient
+      klass.rule = klass.ruleVariant.rule
+    mergeInto klass.prototype, objectWithout options, "getter"
+    klass.getter options.getter if options.getter
+
+    klass
 
   toString: -> @text
 

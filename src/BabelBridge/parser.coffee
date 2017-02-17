@@ -75,11 +75,12 @@ module.exports = class Parser extends BaseObject
   rule: instanceRulesFunction = (a, b) -> @class.rule a, b
   rules: instanceRulesFunction
 
-  @property "subparseInfo"
+  @property "subparseInfo options"
   @getter "source parser",
     rootRuleName: -> @class.getRootRuleName()
     rootRule:     -> @class.getRootRule()
     nextOffset:   -> 0
+    rootParser:   -> @parentParser?.rootParser || @
     ancestors:    (into) ->
       into.push @
       into
@@ -89,6 +90,7 @@ module.exports = class Parser extends BaseObject
 
   constructor: ->
     super
+    @_options = null
     @_parser = @
     @_subparseInfo = null
     @_source = null
@@ -148,11 +150,11 @@ module.exports = class Parser extends BaseObject
   options:
     allowPartialMatch: true/false
   ###
-  parse: (@_source, options = {})->
-    {@parentParser, allowPartialMatch} = options
+  parse: (@_source, @options = {})->
+    {@parentParser, allowPartialMatch, rule} = @options
     @_resetParserTracking()
 
-    ruleName = options.rule || @rootRuleName
+    ruleName = rule || @rootRuleName
     {rules} = @
     throw new Error "No root rule defined." unless ruleName
     startRule = rules[ruleName]
@@ -163,9 +165,9 @@ module.exports = class Parser extends BaseObject
       if result.matchLength == @_source.length || (allowPartialMatch && result.matchLength > 0)
         result
       else
-        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo options}"
+        throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
     else
-      throw new Error @getParseFailureInfo options
+      throw new Error @getParseFailureInfo @options
 
   addToExpectingInfo = (node, into, value) ->
     if node.parent
