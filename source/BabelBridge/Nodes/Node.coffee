@@ -1,5 +1,5 @@
 Foundation = require 'art-foundation'
-{array, peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
+{arrayWith, array, peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
 Nodes = require './namespace'
 
 module.exports = class Node extends BaseObject
@@ -13,6 +13,7 @@ module.exports = class Node extends BaseObject
     @_matches = null
 
     @_matchPatterns = null
+    @_labelsApplied = false
 
     @_ruleName = null
     @_pluralRuleName = null
@@ -216,8 +217,7 @@ module.exports = class Node extends BaseObject
     true
 
   applyLabels: ->
-    return unless @_matches
-    throw new Error "already applied labels" if @_labelsApplied
+    return if !@_matches || @_labelsApplied
     @_labelsApplied = true
     array @_matches, (match, i) =>
       pattern = @_matchPatterns[i]

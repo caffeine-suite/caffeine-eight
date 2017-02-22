@@ -126,8 +126,7 @@ module.exports = class PatternElement extends BaseObject
     if isPlainObject pattern
       @_initPlainObject pattern
     else if isString pattern
-      [_, @label, prefix, @ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
-      @label == "str" && log initPatternElement: {@label, @pattern, @ruleVariant, rule: @ruleVariant.rule.name}
+      [__, @label, prefix, @ruleName, regExp, singleQuotedString, doubleQuotedString, suffix] = res = pattern.match PatternElement.patternElementRegExp
       throw new Error "pattern can only have one prefix: !/& or one suffix: ?/+/*" if prefix && suffix
 
       switch prefix
