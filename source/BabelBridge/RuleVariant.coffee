@@ -41,7 +41,10 @@ module.exports = class RuleVariant extends BaseObject
     pes
 
   inspect: -> @toString()
-  toString: -> @_toString ||= "#{@name}: #{@pattern || (@options.parse && 'function()')}"
+  toString: -> @_toString ||= "#{@name}: #{@patternString}"
+
+  @getter
+    patternString: -> @pattern || (@options.parse && 'function()')
 
   ###
   see: BabelBridge.Rule#parse

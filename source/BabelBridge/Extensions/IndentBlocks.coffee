@@ -39,47 +39,23 @@ defineModule module, -> class IndentBlocks
       subsource = if returnRawMatch then rawSubsource
       else rawSubsource.replace replaceRegExp, "$1"
 
-      # log {subsource, sourceOffset}
-
       matchLength:  rawSubsource.length
-      sourceMap: if returnRawMatch
-        (suboffset) -> suboffset + sourceOffset
-      else (suboffset) ->
-        subsourceToParentSourceMap ||= computeSubsourceToParentSourceMap sourceOffset, replaceRegExp, indent, rawSubsource
-        bestMapEntry = find subsourceToParentSourceMap, (entry) ->
-          entry if suboffset < entry.subsourceEndOffset
+      subsource:    subsource
+      sourceMap:
+        if returnRawMatch
+          (suboffset) -> suboffset + sourceOffset
+        else (suboffset) ->
+          subsourceToParentSourceMap ||= computeSubsourceToParentSourceMap sourceOffset, replaceRegExp, indent, rawSubsource
+          bestMapEntry = find subsourceToParentSourceMap, (entry) ->
+            entry if suboffset < entry.subsourceEndOffset
 
-        # log sourceMap: {
-        #   source
-        #   sourceLenght: source.length
-        #   rawSubsource: rawSubsource
-        #   rawSubsourceLength: rawSubsource.length
-        #   sourceEndOffset: sourceOffset + rawSubsource.length
-        #   subsource
-        #   subsourceLength: subsource.length
-        #   sourceOffset
-        #   subsourceToParentSourceMap: array subsourceToParentSourceMap, (m) ->
-        #     merge m,
-        #       sourceSlice: source.slice m.sourceOffset, m.sourceEndOffset
-        #       subsourceSlice: subsource.slice m.subsourceOffset, m.subsourceEndOffset
-        #   mapInputs: {
-        #     suboffset
-        #     bestMapEntry
-        #   }
-        #   mapResult:
-        #     offset: finalOffset = suboffset + bestMapEntry.toSourceDelta
-        #     here: source.slice(0, finalOffset) + "<here>" + source.slice(finalOffset, source.length)
-        # }
+          suboffset + bestMapEntry.toSourceDelta
 
-        suboffset + bestMapEntry.toSourceDelta
-
-      subsource: subsource
 
   computeSubsourceToParentSourceMap = (sourceBaseOffset, replaceRegExp, indent, rawSubsource)->
       indentLength = indent.length
       indentWithNewLineLength = indentLength + 1
-      indexes = [
-      ]
+      indexes = []
       sourceOffset = toSourceDelta = sourceBaseOffset
       subsourceOffset = subsourceEndOffset = 0
       while match = replaceRegExp.exec rawSubsource
@@ -118,20 +94,23 @@ defineModule module, -> class IndentBlocks
 
       indexes
 
+  # I think this is actually matchToEolOrBlock - one or the other
   @matchToEolAndBlock: matchToEolAndBlock = (source, offset) ->
     toEolContent.lastIndex = offset
+    if eolMatch = toEolContent.exec source
 
-    eolMatch = toEolContent.exec source
-    return matchBlock source, offset unless eolMatch
+      [sourceMatched, spaces] = eolMatch
+      matchLength = sourceMatched.length
 
-    [sourceMatched, spaces] = eolMatch
-    matchLength = sourceMatched.length
+      if blockMatch = matchBlock source, offset + matchLength, true
+        matchLength += blockMatch.matchLength
 
-    if blockMatch = matchBlock source, offset + matchLength, true
-      matchLength += blockMatch.matchLength
+      subsource:    source.slice offset + spaces.length, offset + matchLength
+      sourceMap:    (suboffset) -> offset + spaces.length + suboffset
+      matchLength:  matchLength
 
-    subsource:    source.slice offset + spaces.length, offset + matchLength
-    matchLength:  matchLength
+    else
+      matchBlock source, offset
 
   @getParseFunction: (matcher, subparseOptions) ->
     parse: (parentNode) ->

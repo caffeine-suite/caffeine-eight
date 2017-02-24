@@ -152,10 +152,13 @@ module.exports = class Parser extends BaseObject
       failureIndex = subparser.failureIndexInParentParser
       for k, nonMatch of subparser._nonMatches
         rootNode = nonMatch.node
-        while rootNode.parent instanceof Node
+        # throw new Error "A" if rootNode == parentNode
+        while rootNode != parentNode && rootNode.parent instanceof Node
           rootNode = rootNode.parent
+          # throw new Error "B" if rootNode == parentNode
 
-        rootNode._parent = parentNode
+        log {rootNode, parentNode, node: nonMatch.node}
+        rootNode._parent = parentNode if rootNode != parentNode
         @_addNonMatch failureIndex, nonMatch
       null
 
@@ -164,18 +167,21 @@ module.exports = class Parser extends BaseObject
     if sourceMap
       sourceMap suboffset
     else if @parentParser
-      log.warn "parser.offsetInParentParserSource: cannot give accurate result without sourceMap. Returning originalOffset."
-      @options.originalOffset
+      @options.originalOffset + suboffset
     else
       suboffset
 
   offsetInRootParserSource: (suboffset) ->
-    log offsetInRootParserSourceA: {suboffset}
-    @_parentParserRootOffset ?= if @parentParser
-      @parentParser?.offsetInRootParserSource(0)
-    else 0
-    log offsetInRootParserSourceB: {suboffset, @_parentParserRootOffset, @source, offsetInParentParserSource: @offsetInParentParserSource suboffset}
-    @_parentParserRootOffset + @offsetInParentParserSource suboffset
+    if @parentParser
+      @parentParser.offsetInRootParserSource @offsetInParentParserSource suboffset
+    else
+      suboffset
+    # log offsetInRootParserSourceA: {suboffset}
+    # @_parentParserRootOffset ?= if @parentParser
+    #   @parentParser?.offsetInRootParserSource(0)
+    # else 0
+    # log offsetInRootParserSourceB: {suboffset, @_parentParserRootOffset, @source, offsetInParentParserSource: @offsetInParentParserSource suboffset}
+    # @_parentParserRootOffset + @offsetInParentParserSource suboffset
 
   @getter
     failureIndexInParentParser: -> @offsetInParentParserSource @_failureIndex
@@ -238,12 +244,9 @@ module.exports = class Parser extends BaseObject
 
       verbose = options?.verbose
 
-      log.error parseFailureInfo: {@_source, @_failureIndex}
-
       sourceBefore = lastLines left = @_source.slice 0, @_failureIndex
       sourceAfter = firstLines right = @_source.slice @_failureIndex
 
-      log.error parseFailureInfo: {@_source, @_failureIndex, left, right, sourceBefore, sourceAfter}
       out = compactFlatten [
         """
         Parsing error at #{getLineColumnString @_source, @_failureIndex}
@@ -299,11 +302,23 @@ module.exports = class Parser extends BaseObject
         {firstPartialMatchParent} = node
         pushIfNotPresent partialMatchingParents, firstPartialMatchParent
 
+      couldMatchRuleNames = []
+
       newOutput = for pmp in partialMatchingParents
         for child in pmp.matches when child.isNonMatch
-          "  '#{child.nonMatchingLeaf.ruleName}' to complete '#{pmp.ruleName}' (which started at #{getLineColumnString @_source, pmp.absoluteOffset})"
+          couldMatchRuleNames.push ruleName if ruleName = child.nonMatchingLeaf.ruleNameOrNull
+          "  #{formattedInspect child.nonMatchingLeaf.ruleNameOrPattern} to complete '#{pmp.ruleName}' (which started at #{getLineColumnString @_source, pmp.absoluteOffset})"
 
-      newOutput = compactFlatten newOutput
+      if couldMatchRuleNames.length > 1
+        couldMatchRules = [
+          ""
+          "rules:"
+          for ruleName in couldMatchRuleNames
+            for v in @rules[ruleName]._variants
+              "  #{ruleName}: #{formattedInspect v.patternString}"
+        ]
+
+      newOutput = compactFlatten [newOutput, couldMatchRules]
       newOutput = "  end of input" unless newOutput.length > 0
       compactFlatten [
         "expecting:"

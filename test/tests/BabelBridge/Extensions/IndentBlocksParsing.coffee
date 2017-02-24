@@ -11,6 +11,7 @@ module.exports = suite:
       @rule
         root: 'line+'
         line: [
+          '/!!!/'
           'end'
           'expression block? end'
         ]
@@ -37,6 +38,15 @@ module.exports = suite:
 
     suite "failure location", ->
       suite 'baseline without block', ->
+        test "before first line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            -abc
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 0
+
         test "first line", ->
           parser = new MyParser
           assert.rejects -> parser.parse """
@@ -66,7 +76,7 @@ module.exports = suite:
             """
           .then (rejectsWith) ->
             log {rejectsWith, parser}
-            assert.eq parser._failureIndex, 9
+            assert.eq parser._failureIndex, 6
 
         test "first line", ->
           parser = new MyParser

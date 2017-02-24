@@ -76,7 +76,13 @@ module.exports = class Node extends BaseObject
 
     ruleVariant: -> @_ruleVariant || @_parent?.ruleVariant
     ruleName: ->
-      @class.rule?.getName() || @_ruleVariant?.rule.getName() || @parent?.ruleName || "#{@pattern || 'no rule'}"
+      @ruleNameOrNull || @parent?.ruleName || "#{@pattern || 'no rule'}"
+
+    ruleNameOrNull: ->
+      @class.rule?.getName() || @_ruleVariant?.rule.getName()
+
+    ruleNameOrPattern: ->
+      @ruleNameOrNull || "#{@pattern?.pattern || 'no rule'}"
 
     isRuleNode: -> @class.rule
 
