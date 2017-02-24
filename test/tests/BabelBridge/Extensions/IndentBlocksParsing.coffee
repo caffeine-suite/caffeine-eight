@@ -31,6 +31,39 @@ module.exports = suite:
             three
         """
 
+    suite "failure location", ->
+      test "before block", ->
+        parser = new MyParser
+        assert.rejects -> parser.parse """
+          abc-
+          """
+        .then (rejectsWith) ->
+          log {rejectsWith, parser}
+          assert.eq parser._failureIndex, 3
+
+      test "in block", ->
+        parser = new MyParser
+        assert.rejects -> parser.parse """
+          abc
+            def-
+            foos
+          """
+        .then (rejectsWith) ->
+          log {rejectsWith, parser}
+          assert.eq parser._failureIndex, 9
+
+      test "in nested block", ->
+        parser = new MyParser
+        assert.rejects -> parser.parse """
+          abc
+            def
+              dood-
+            foos
+          """
+        .then (rejectsWith) ->
+          log {rejectsWith, parser}
+          assert.eq parser._failureIndex, 10
+
   eolOrblockParsing: ->
 
     class MyParser extends Parser

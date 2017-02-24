@@ -105,7 +105,7 @@ module.exports = class Parser extends BaseObject
 
   ###
   IN:
-    subSource:
+    subsource:
       any string what-so-ever
     options:
       [all of @parse's options plus:]
@@ -113,7 +113,11 @@ module.exports = class Parser extends BaseObject
         the resulting Node's parent
 
       originalMatchLength: (required)
-        matchLength from @source that subSource was generated from.
+        matchLength from @source that subsource was generated from.
+
+      originalOffset: starting offset in parentParser.source
+
+      sourceMap: (subsourceOffset) -> parentSourceOffset
 
     The original source we are sub-parsing from must be:
 
@@ -121,18 +125,20 @@ module.exports = class Parser extends BaseObject
 
   OUT: a Node with offset and matchLength
   ###
-  subparse: (subSource, options = {}) ->
-    # log subparse: {subSource, options}
+  subparse: (subsource, options = {}) ->
+    # log subparse: {subsource, options}
+
+    subparser = new @class
+    {originalMatchLength, parentNode, sourceMap, originalOffset} = options
     try
       options.parentParser = @
-      if match = @class.parse subSource, merge(options, isSubparse: true)
+      if match = subparser.parse subsource, merge(options, isSubparse: true)
         {offset, matchLength, source, parser} = match
         match.subparseInfo = {offset, matchLength, source, parser}
 
-        {originalMatchLength, parentNode} = options
 
         # if options.allowPartialMatch was requested - and the match was partial...
-        if match.matchLength < subSource.length
+        if match.matchLength < subsource.length
 
           if match.text != parentNode.getNextText match.matchLength
             throw new Error "INTERNAL TODO: SubParse was a partial match, but a source-map is required to determine the matchLength in the original source."
@@ -141,9 +147,34 @@ module.exports = class Parser extends BaseObject
 
         match.offset      = parentNode.nextOffset
         match.matchLength = originalMatchLength
+        match._parent = parentNode
         match
     catch
+      failureIndex = subparser.failureIndexInParentParser
+      log subparser: {originalOffset, subsource, failureIndex, @parentParser}
+      # log "SubParse failed": {
+      #   subFailureIndex: subparser.failureIndex
+      #   subNonMatches: subparser._nonMatches
+      #   failureIndex
+      #   sourceMap
+      #   originalOffset
+      # }
+      failureIndex = if sourceMap then sourceMap failureIndex else originalOffset
+      for k, nonMatch of subparser._nonMatches
+        rootNode = nonMatch.node
+        while rootNode.parent instanceof Node
+          rootNode = rootNode.parent
+
+        rootNode._parent = parentNode
+        @_addNonMatch failureIndex, nonMatch
       null
+
+  offsetInParentParserSource: (subOffset) ->
+    # not right, but first pass
+    (@options.originalOffset || 0) + subOffset
+
+  @getter
+    failureIndexInParentParser: -> @offsetInParentParserSource @_failureIndex
 
   ###
   OUT: on success, root Node of the parse tree, else null
@@ -228,7 +259,7 @@ module.exports = class Parser extends BaseObject
 
     partialParseTreeLeafNodes: ->
       return @_partialParseTreeNodes if @_partialParseTreeNodes
-      @partialParseTree
+      @getPartialParseTree()
       @_partialParseTreeNodes
 
     partialParseTree: ->
@@ -307,6 +338,7 @@ module.exports = class Parser extends BaseObject
     @_parseCache = {}
 
   @getter
+    failureIndex: -> @_failureIndex
     isMatchingNegative: -> @_matchingNegativeDepth > 0
 
   _matchNegative: (f) ->
@@ -317,11 +349,13 @@ module.exports = class Parser extends BaseObject
 
   _logParsingFailure: (parseIntoNode, patternElement) ->
     return unless @_matchingNegativeDepth == 0 && parseIntoNode.offset >= @_failureIndex && patternElement.isTokenPattern
-    {offset} = parseIntoNode
 
+    @_addNonMatch parseIntoNode.offset, new NonMatch parseIntoNode, patternElement
+
+  _addNonMatch: (offset, nonMatch) ->
+    # log _addNonMatch: {offset, nonMatch}
     if offset > @_failureIndex
       @_failureIndex = offset
       @_nonMatches = {}
 
-    nonMatch = new NonMatch parseIntoNode, patternElement
     @_nonMatches[nonMatch] = nonMatch
