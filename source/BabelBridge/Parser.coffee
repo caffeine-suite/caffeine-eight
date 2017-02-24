@@ -157,7 +157,6 @@ module.exports = class Parser extends BaseObject
           rootNode = rootNode.parent
           # throw new Error "B" if rootNode == parentNode
 
-        log {rootNode, parentNode, node: nonMatch.node}
         rootNode._parent = parentNode if rootNode != parentNode
         @_addNonMatch failureIndex, nonMatch
       null
