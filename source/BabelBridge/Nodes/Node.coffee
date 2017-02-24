@@ -50,6 +50,7 @@ module.exports = class Node extends BaseObject
     matches: -> @_matches ||= []
     source: -> @_parser.source
     isRoot: -> @_parser == @_parent
+    absoluteOffset: -> @_parser.offsetInRootParserSource @_offset
     ancestors: (into = [])->
       @parent.getAncestors into
       into.push @

@@ -9,7 +9,11 @@ module.exports = suite:
     class MyParser extends Parser
 
       @rule
-        root: 'expression block? end'
+        root: 'line+'
+        line: [
+          'end'
+          'expression block? end'
+        ]
         expression: '/[a-z0-9A-Z]+/'
         end: '/\n|$/'
 
@@ -32,37 +36,85 @@ module.exports = suite:
         """
 
     suite "failure location", ->
-      test "before block", ->
-        parser = new MyParser
-        assert.rejects -> parser.parse """
-          abc-
-          """
-        .then (rejectsWith) ->
-          log {rejectsWith, parser}
-          assert.eq parser._failureIndex, 3
+      suite 'baseline without block', ->
+        test "first line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc-
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 3
 
-      test "in block", ->
-        parser = new MyParser
-        assert.rejects -> parser.parse """
-          abc
-            def-
-            foos
-          """
-        .then (rejectsWith) ->
-          log {rejectsWith, parser}
-          assert.eq parser._failureIndex, 9
+        test "second line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+            foo-
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 7
 
-      test "in nested block", ->
-        parser = new MyParser
-        assert.rejects -> parser.parse """
-          abc
-            def
-              dood-
-            foos
-          """
-        .then (rejectsWith) ->
-          log {rejectsWith, parser}
-          assert.eq parser._failureIndex, 10
+      suite 'in block', ->
+        test "before line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+              -def
+              foos
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 9
+
+        test "first line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+              def-
+              foos
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 9
+
+        test "second line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+              def
+              foos-
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 16
+
+      suite "in nested block", ->
+        test "first line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+              def
+                dood-
+              foos
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 18
+
+        test "second line", ->
+          parser = new MyParser
+          assert.rejects -> parser.parse """
+            abc
+              def2
+                dood
+                goof-
+              foos
+            """
+          .then (rejectsWith) ->
+            log {rejectsWith, parser}
+            assert.eq parser._failureIndex, 28
 
   eolOrblockParsing: ->
 

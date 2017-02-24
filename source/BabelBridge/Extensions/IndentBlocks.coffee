@@ -1,4 +1,4 @@
-{defineModule, log, merge, escapeJavascriptString, find} = require 'art-foundation'
+{array, defineModule, log, merge, escapeJavascriptString, find} = require 'art-foundation'
 {Node} = require '../Nodes'
 
 defineModule module, -> class IndentBlocks
@@ -30,40 +30,68 @@ defineModule module, -> class IndentBlocks
       linesRegExp.lastIndex = sourceOffset
       [rawSubsource] = linesRegExp.exec source
 
-      replaceRegExp = ///\n#{indent}///g
-      replaceWith = "\n"
+      replaceRegExp = ///(?:^\n#{indent})|(\n)(?:#{indent})///g
+      replaceWith = "$1"
 
       # generated on demand, but then cached for future sourceMap calls.
       subsourceToParentSourceMap = null
 
       subsource = if returnRawMatch then rawSubsource
-      else rawSubsource.replace replaceRegExp, replaceWith
+      else rawSubsource.replace replaceRegExp, "$1"
+
+      # log {subsource, sourceOffset}
 
       matchLength:  rawSubsource.length
-      sourceMap: (suboffset) ->
-        subsourceToParentSourceMap ||= computeSubsourceToParentSourceMap sourceOffset, replaceRegExp, replaceWith, indent, rawSubsource
+      sourceMap: if returnRawMatch
+        (suboffset) -> suboffset + sourceOffset
+      else (suboffset) ->
+        subsourceToParentSourceMap ||= computeSubsourceToParentSourceMap sourceOffset, replaceRegExp, indent, rawSubsource
         bestMapEntry = find subsourceToParentSourceMap, (entry) ->
           entry if suboffset < entry.subsourceEndOffset
+
+        # log sourceMap: {
+        #   source
+        #   sourceLenght: source.length
+        #   rawSubsource: rawSubsource
+        #   rawSubsourceLength: rawSubsource.length
+        #   sourceEndOffset: sourceOffset + rawSubsource.length
+        #   subsource
+        #   subsourceLength: subsource.length
+        #   sourceOffset
+        #   subsourceToParentSourceMap: array subsourceToParentSourceMap, (m) ->
+        #     merge m,
+        #       sourceSlice: source.slice m.sourceOffset, m.sourceEndOffset
+        #       subsourceSlice: subsource.slice m.subsourceOffset, m.subsourceEndOffset
+        #   mapInputs: {
+        #     suboffset
+        #     bestMapEntry
+        #   }
+        #   mapResult:
+        #     offset: finalOffset = suboffset + bestMapEntry.toSourceDelta
+        #     here: source.slice(0, finalOffset) + "<here>" + source.slice(finalOffset, source.length)
+        # }
 
         suboffset + bestMapEntry.toSourceDelta
 
       subsource: subsource
 
-  computeSubsourceToParentSourceMap = (sourceBaseOffset, replaceRegExp, replaceWith, indent, rawSubsource)->
+  computeSubsourceToParentSourceMap = (sourceBaseOffset, replaceRegExp, indent, rawSubsource)->
       indentLength = indent.length
       indentWithNewLineLength = indentLength + 1
       indexes = [
       ]
       sourceOffset = toSourceDelta = sourceBaseOffset
       subsourceOffset = subsourceEndOffset = 0
-      replaceWithLength = replaceWith.length
       while match = replaceRegExp.exec rawSubsource
 
-        removedLength = match[0].length
-        sourceEndOffset     = match.index + sourceBaseOffset + removedLength
-        subsourceEndOffset  += sourceEndOffset - sourceOffset - removedLength + replaceWithLength
+        matchLength = match[0].length
+        keptLength = match[1]?.length || 0
+        removedLength = matchLength - keptLength
+        sourceEndOffset     = match.index + sourceBaseOffset + matchLength
+        subsourceEndOffset  += sourceEndOffset - sourceOffset - removedLength
 
         indexes.push {
+          keptLength
           removedLength
           sourceOffset
           subsourceOffset
@@ -78,7 +106,7 @@ defineModule module, -> class IndentBlocks
         subsourceOffset = subsourceEndOffset
 
       sourceEndOffset     = sourceBaseOffset + rawSubsource.length
-      subsourceEndOffset  = sourceEndOffset = sourceOffset
+      subsourceEndOffset  = sourceEndOffset - sourceOffset + sourceOffset
 
       indexes.push {
         sourceOffset
