@@ -126,7 +126,6 @@ module.exports = class Parser extends BaseObject
   OUT: a Node with offset and matchLength
   ###
   subparse: (subsource, options = {}) ->
-    # log subparse: {subsource, options}
 
     subparser = new @class
     {originalMatchLength, parentNode, sourceMap, originalOffset} = options
@@ -175,12 +174,6 @@ module.exports = class Parser extends BaseObject
       @parentParser.offsetInRootParserSource @offsetInParentParserSource suboffset
     else
       suboffset
-    # log offsetInRootParserSourceA: {suboffset}
-    # @_parentParserRootOffset ?= if @parentParser
-    #   @parentParser?.offsetInRootParserSource(0)
-    # else 0
-    # log offsetInRootParserSourceB: {suboffset, @_parentParserRootOffset, @source, offsetInParentParserSource: @offsetInParentParserSource suboffset}
-    # @_parentParserRootOffset + @offsetInParentParserSource suboffset
 
   @getter
     failureIndexInParentParser: -> @offsetInParentParserSource @_failureIndex
@@ -248,7 +241,7 @@ module.exports = class Parser extends BaseObject
 
       out = compactFlatten [
         """
-        Parsing error at #{getLineColumnString @_source, @_failureIndex}
+        Parsing error at #{@options.sourceFile || ''}:#{getLineColumnString @_source, @_failureIndex}
 
         Source:
         ...
@@ -372,11 +365,9 @@ module.exports = class Parser extends BaseObject
   _logParsingFailure: (parseIntoNode, patternElement) ->
     return unless @_matchingNegativeDepth == 0 && parseIntoNode.offset >= @_failureIndex && patternElement.isTokenPattern
 
-    # log _logParsingFailure: {parseIntoNode, offset: parseIntoNode.offset, source: parseIntoNode.source}
     @_addNonMatch parseIntoNode.offset, new NonMatch parseIntoNode, patternElement
 
   _addNonMatch: (offset, nonMatch) ->
-    # log _addNonMatch: {offset, nonMatch}
     if offset > @_failureIndex
       @_failureIndex = offset
       @_nonMatches = {}
