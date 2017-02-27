@@ -25,5 +25,5 @@
     "start": "webpack-dev-server --hot --inline --progress",
     "test": "webpack-dev-server --progress"
   },
-  "version": "1.4.1"
+  "version": "1.5.0"
 }
