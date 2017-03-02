@@ -1,10 +1,9 @@
-Foundation = require 'art-foundation'
 PatternElement = require './PatternElement'
 {Node} = require './Nodes'
-{BaseObject, log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, merge} = Foundation
+{log, isPlainObject, isString, compactFlatten, inspect, pad, upperCamelCase, merge} = require 'art-standard-lib'
 {allPatternElementsRegExp} = PatternElement
 
-module.exports = class RuleVariant extends BaseObject
+module.exports = class RuleVariant extends require("art-class-system").BaseClass
 
   constructor: (@options) ->
     @_toString = null

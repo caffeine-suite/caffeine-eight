@@ -44,7 +44,7 @@ module.exports = suite:
             -abc
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 0
 
         test "first line", ->
@@ -53,7 +53,7 @@ module.exports = suite:
             abc-
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 3
 
         test "second line", ->
@@ -63,7 +63,7 @@ module.exports = suite:
             foo-
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 7
 
       suite 'in block', ->
@@ -75,7 +75,7 @@ module.exports = suite:
               foos
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 6
 
         test "first line", ->
@@ -86,7 +86,7 @@ module.exports = suite:
               foos
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 9
 
         test "second line", ->
@@ -97,7 +97,7 @@ module.exports = suite:
               foos-
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 16
 
       suite "in nested block", ->
@@ -110,7 +110,7 @@ module.exports = suite:
               foos
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 18
 
         test "second line", ->
@@ -123,7 +123,7 @@ module.exports = suite:
               foos
             """
           .then (rejectsWith) ->
-            log {rejectsWith, parser}
+            # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 28
 
   eolOrblockParsing: ->

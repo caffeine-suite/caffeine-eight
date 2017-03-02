@@ -1,5 +1,7 @@
-{log, defineModule, BaseObject} = require 'art-foundation'
-defineModule module, class NonMatch extends BaseObject
+{log, defineModule} = require 'art-standard-lib'
+{BaseClass} = require 'art-class-system'
+
+defineModule module, class NonMatch extends BaseClass
   constructor: (@_node, @_patternElement) ->
 
   @getter "node patternElement",

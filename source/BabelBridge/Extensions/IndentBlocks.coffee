@@ -1,4 +1,4 @@
-{array, defineModule, log, merge, escapeJavascriptString, find} = require 'art-foundation'
+{array, defineModule, log, merge, escapeJavascriptString, find} = require 'art-standard-lib'
 {Node} = require '../Nodes'
 
 defineModule module, -> class IndentBlocks

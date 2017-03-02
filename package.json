@@ -1,8 +1,8 @@
 {
   "author": "Shane Brinkman-Davis Delamore, Imikimi LLC",
   "dependencies": {
-    "art-foundation": "git://github.com/imikimi/art-foundation.git",
-    "art-standard-lib": "^1.0.0",
+    "art-class-system": "^1.0.1",
+    "art-standard-lib": "^1.1.0",
     "art-testbench": "^1.0.0",
     "case-sensitive-paths-webpack-plugin": "^1.1.4",
     "coffee-loader": "^0.7.2",
@@ -21,7 +21,7 @@
   "scripts": {
     "build": "webpack --progress",
     "start": "webpack-dev-server --hot --inline --progress",
-    "test": "webpack-dev-server --progress"
+    "test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register"
   },
   "version": "1.5.1"
 }

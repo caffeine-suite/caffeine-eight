@@ -1,9 +1,7 @@
-Foundation = require 'art-foundation'
 {Node, EmptyNode, EmptyOptionalNode} = require './Nodes'
-{BaseObject, isPlainObject, isString, isRegExp, inspect, log} = Foundation
+{isPlainObject, isString, isRegExp, inspect, log} = require 'art-standard-lib'
 
-
-module.exports = class PatternElement extends BaseObject
+module.exports = class PatternElement extends require("art-class-system").BaseClass
   @escapeRegExp: escapeRegExp = (str) ->
     str.replace /[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&"
   @regExpRegExp: /\/((?:[^\\\/]|\\.)+)\//

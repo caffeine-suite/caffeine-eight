@@ -13,7 +13,7 @@ defineModule module, suite: ->
     myParser = new MyParser
     assert.rejects -> myParser.parse "bad"
     .then ->
-      log myParser.nonMatches
+      # log myParser.nonMatches
       assert.eq Object.keys(myParser.nonMatches).sort(), [
           "BarRuleBarVariant: /bar/"
           'BazRuleBazVariant: "baz"'
@@ -31,8 +31,8 @@ defineModule module, suite: ->
 
     myParser = new MyParser
     assert.rejects -> myParser.parse "barfo"
-    .then (e)->
-      log e
+    # .then (e)->
+    #   log e
 
   test "matchingNegative", ->
     class MyParser extends Parser
@@ -46,6 +46,6 @@ defineModule module, suite: ->
 
     myParser = new MyParser
     assert.rejects -> myParser.parse "baz"
-    .then ->
+    # .then ->
       # log myParser.expectingInfo
-      log compactFlatten(myParser.expectingInfo).join "\n"
+      # log compactFlatten(myParser.expectingInfo).join "\n"

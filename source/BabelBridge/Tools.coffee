@@ -1,5 +1,4 @@
-Foundation = require 'art-foundation'
-{peek} = Foundation
+{peek} = require 'art-standard-lib'
 
 module.exports = class Tools
   @getLineColumn: getLineColumn =(string, offset)->

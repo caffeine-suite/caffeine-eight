@@ -1,8 +1,11 @@
-Foundation = require 'art-foundation'
-{arrayWith, array, peek, log, push, compactFlatten, objectWithout, BaseObject, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto} = Foundation
+{
+  arrayWith, array, peek, log, push, compactFlatten, objectWithout, isPlainArray, isPlainObject, inspectedObjectLiteral, merge, mergeInto
+} = require 'art-standard-lib'
 Nodes = require './namespace'
 
-module.exports = class Node extends BaseObject
+{BaseClass} = require 'art-class-system'
+
+module.exports = class Node extends BaseClass
   constructor: (@_parent, options) ->
     super
     {@_parser} = @_parent

@@ -1,9 +1,8 @@
-Foundation = require 'art-foundation'
 RuleVariant = require './RuleVariant'
 
-{BaseObject, merge, upperCamelCase, objectName, log} = Foundation
+{merge, upperCamelCase, objectName, log} = require 'art-standard-lib'
 
-module.exports = class Rule extends BaseObject
+module.exports = class Rule extends require("art-class-system").BaseClass
 
   constructor: (@_name, @_parserClass, @_variants = [])->
 

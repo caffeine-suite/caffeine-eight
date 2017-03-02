@@ -1,11 +1,10 @@
-Foundation = require 'art-foundation'
 Rule = require './Rule'
 {getLineColumn, getLineColumnString} = require './Tools'
 {Node} = require './Nodes'
 NonMatch = require './NonMatch'
 
 {
-  BaseObject, isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
+  isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
   inspectLean
   pluralize
   isClass
@@ -18,9 +17,9 @@ NonMatch = require './NonMatch'
   max
   inspect
   pushIfNotPresent
-} = Foundation
+} = require 'art-standard-lib'
 
-module.exports = class Parser extends BaseObject
+module.exports = class Parser extends require("art-class-system").BaseClass
 
   @parse: (@_source, options = {})->
     (new @).parse @_source, options
