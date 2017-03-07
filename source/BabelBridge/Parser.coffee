@@ -193,7 +193,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   parse: (@_source, @options = {})->
     {@parentParser, allowPartialMatch, rule, isSubparse, logParsingFailures} = @options
 
-    startRule = @getStartRule rule
+    startRule = @getRule rule
 
     @_resetParserTracking()
     @_logParsingFailures = logParsingFailures
@@ -217,12 +217,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
           # NOTE: we could speed this up by not completely trashing the cache
           @parse @_source, merge @options, logParsingFailures: true
 
-  getStartRule: (ruleName) ->
+  getRule: (ruleName) ->
     ruleName ||= @rootRuleName
     throw new Error "No root rule defined." unless ruleName
-    unless startRule = @rules[ruleName]
+    unless rule = @rules[ruleName]
       throw new Error "Could not find rule: #{ruleName}"
-    startRule
+    rule
 
   addToExpectingInfo = (node, into, value) ->
     if node.parent
@@ -356,10 +356,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     @_getRuleParseCache(ruleName)[offset]
 
   _cacheMatch: (ruleName, matchingNode) ->
+    Stats.add "cacheMatch"
     @_getRuleParseCache(ruleName)[matchingNode.offset] = matchingNode
     matchingNode
 
   _cacheNoMatch: (ruleName, offset) ->
+    Stats.add "cacheNoMatch"
     @_getRuleParseCache(ruleName)[offset] = "no_match"
     null
 
