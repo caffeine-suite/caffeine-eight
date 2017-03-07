@@ -21,7 +21,7 @@ defineModule module, class ScratchNode extends BaseClass
 
   reset: (@parent, @ruleVariant) ->
     {@_parser} = @parent
-    @offset = @parent.getNextOffset()
+    @offset = @parent.getNextOffset() | 0
     @matchesLength = @matchPatternsLength =
     @matchLength = 0
     @

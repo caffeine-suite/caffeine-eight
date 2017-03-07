@@ -1566,7 +1566,7 @@ defineModule(module, ScratchNode = (function(superClass) {
     this.parent = parent1;
     this.ruleVariant = ruleVariant1;
     this._parser = this.parent._parser;
-    this.offset = this.parent.getNextOffset();
+    this.offset = this.parent.getNextOffset() | 0;
     this.matchesLength = this.matchPatternsLength = this.matchLength = 0;
     return this;
   };
