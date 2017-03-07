@@ -119,6 +119,8 @@ module.exports = class PatternElement extends require("art-class-system").BaseCl
 
   # initialize PatternElement based on the type of: match
   _init: ->
+    @parse = @label = @ruleName = null
+    @negative = @couldMatch = @oneOrMore = @optional = @zeroOrMore = false
     @_isTokenPattern = false
     {pattern} = @
     if isPlainObject pattern
@@ -162,21 +164,30 @@ module.exports = class PatternElement extends require("art-class-system").BaseCl
     throw new Error "plain-object pattern definition requires 'parse' or 'parseInto'" unless @parse || parseInto
 
   _initRule: (ruleName) ->
+    matchRule = null
     @parse = (parentNode) ->
-      matchRule = parentNode.parser.rules[ruleName]
-      throw new Error "no rule for #{ruleName}" unless matchRule
+      matchRule ||= parentNode.parser.getRule ruleName
       matchRule.parse parentNode
 
+  ###
+  NOTE: regExp.test is 3x faster than .exec in Safari, but about the
+    same in node/chrome. Safari is 2.5x faster than Chrome/Node in this.
+
+    Regexp must have the global flag set, even if we are using the y-flag,
+    to make .test() set .lastIndex correctly.
+
+  SEE: https://jsperf.com/regex-match-length
+  ###
   _initRegExp: (regExp) ->
     @_isTokenPattern = true
-    flags = "y"
+    flags = "yg"
     flags += "i" if regExp.ignoreCase
     regExp = RegExp regExp.source, flags
 
     @parse = (parentNode) ->
       {nextOffset, source} = parentNode
       regExp.lastIndex = nextOffset
-      if match = regExp.exec source
+      if regExp.test source
         new Node parentNode,
           offset: nextOffset
-          matchLength: match[0].length
+          matchLength: regExp.lastIndex - nextOffset
