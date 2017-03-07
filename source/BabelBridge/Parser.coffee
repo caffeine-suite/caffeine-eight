@@ -193,38 +193,36 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   parse: (@_source, @options = {})->
     {@parentParser, allowPartialMatch, rule, isSubparse, logParsingFailures} = @options
 
-    ruleName = rule || @rootRuleName
-    {rules} = @
-    throw new Error "No root rule defined." unless ruleName
-    startRule = rules[ruleName]
-    throw new Error "Could not find rule: #{ruleName}" unless startRule
+    startRule = @getStartRule rule
 
     @_resetParserTracking()
     @_logParsingFailures = logParsingFailures
 
-    # log runParse: START: {@options, @_source}
-
-    if result = startRule.parse @
-      # log runParse: SUCCESS: {result}
-      if result.matchLength == @_source.length || (allowPartialMatch && result.matchLength > 0)
-        result.applyLabels() unless isSubparse
-        result
-      else
-        # log runParse: FAILURE1: {@_failureIndex}
-        unless isSubparse
-          @_resetParserTracking()
-          @_logParsingFailures = true
-          startRule.parse @
-          throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
+    if (result = startRule.parse @) &&
+        (
+          result.matchLength == @_source.length ||
+          (allowPartialMatch && result.matchLength > 0)
+        )
+      result.applyLabels() unless isSubparse
+      result
     else
-      # log runParse: FAILURE2: {@_failureIndex}
-      # TODO: we don't need to 100% reset - but we do need
-      # to reset caching for negative caches at @_failureIndex
       unless isSubparse
-        @_resetParserTracking()
-        @_logParsingFailures = true
-        startRule.parse @
-        throw new Error @getParseFailureInfo @options
+        if logParsingFailures
+          throw new Error if result
+            "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
+          else
+            @getParseFailureInfo @options
+        else
+          # rerun parse with parsing-failure-logging
+          # NOTE: we could speed this up by not completely trashing the cache
+          @parse @_source, merge @options, logParsingFailures: true
+
+  getStartRule: (ruleName) ->
+    ruleName ||= @rootRuleName
+    throw new Error "No root rule defined." unless ruleName
+    unless startRule = @rules[ruleName]
+      throw new Error "Could not find rule: #{ruleName}"
+    startRule
 
   addToExpectingInfo = (node, into, value) ->
     if node.parent
@@ -237,7 +235,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       if (pm = node.presentMatches)?.length > 0
         p.matches = (m.parseInfo for m in pm)
       p
-
 
   lastLines = (string, count = 5) ->
     a = string.split "\n"
