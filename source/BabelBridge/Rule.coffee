@@ -39,8 +39,12 @@ module.exports = class Rule extends require("art-class-system").BaseClass
     Stats.add "parseRule"
     {parser, nextOffset} = parentNode
     if cached = parser._cached @name, nextOffset
-      Stats.add "cacheHit"
-      return if cached == "no_match" then null else cached
+      return if cached == "no_match"
+        Stats.add "cacheHitNoMatch"
+        null
+      else
+        Stats.add "cacheHit"
+        cached
 
     for v in @_variants
       if match = v.parse parentNode
