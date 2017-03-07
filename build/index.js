@@ -225,26 +225,22 @@ module.exports = Node = (function(superClass) {
 
   extend(Node, superClass);
 
-  function Node(_parent, options) {
-    this._parent = _parent;
+  function Node(parent, options) {
+    var ref1;
     Node.__super__.constructor.apply(this, arguments);
     Stats.add("newNode");
-    this._parser = this._parent._parser;
+    this._parent = parent;
+    this._parser = parent._parser;
+    this._offset = ((ref1 = options != null ? options.offset : void 0) != null ? ref1 : this._parent.getNextOffset()) | 0;
+    this._matchLength = 0;
+    this._ruleName = this._pluralRuleName = this._label = this._pluralLabel = this._pattern = this._nonMatches = this._ruleVariant = this._matches = this._matchPatterns = null;
+    this._labelsApplied = this._nonMatch = false;
     if (options) {
-      this.offset = options.offset, this.matchLength = options.matchLength, this.ruleVariant = options.ruleVariant, this.matches = options.matches, this.matchPatterns = options.matchPatterns;
+      this._matchLength = (options.matchLength || 0) | 0;
+      this._ruleVariant = options.ruleVariant;
+      this._matches = options.matches;
+      this._matchPatterns = options.matchPatterns;
     }
-    if (this._offset == null) {
-      this._offset = this._parent.getNextOffset();
-    }
-    this._matchLength || (this._matchLength = 0);
-    this._labelsApplied = false;
-    this._ruleName = null;
-    this._pluralRuleName = null;
-    this._label = null;
-    this._pluralLabel = null;
-    this._pattern = null;
-    this._nonMatch = false;
-    this._nonMatches = null;
   }
 
   Node._createSubclassBase = function() {
@@ -889,6 +885,8 @@ module.exports = PatternElement = (function(superClass) {
 
   PatternElement.prototype._init = function() {
     var __, doubleQuotedString, pattern, prefix, ref2, regExp, res, singleQuotedString, string, suffix;
+    this.parse = this.label = this.ruleName = null;
+    this.negative = this.couldMatch = this.oneOrMore = this.optional = this.zeroOrMore = false;
     this._isTokenPattern = false;
     pattern = this.pattern;
     if (isPlainObject(pattern)) {
@@ -945,32 +943,41 @@ module.exports = PatternElement = (function(superClass) {
   };
 
   PatternElement.prototype._initRule = function(ruleName) {
+    var matchRule;
+    matchRule = null;
     return this.parse = function(parentNode) {
-      var matchRule;
-      matchRule = parentNode.parser.rules[ruleName];
-      if (!matchRule) {
-        throw new Error("no rule for " + ruleName);
-      }
+      matchRule || (matchRule = parentNode.parser.getRule(ruleName));
       return matchRule.parse(parentNode);
     };
   };
 
+
+  /*
+  NOTE: regExp.test is 3x faster than .exec in Safari, but about the
+    same in node/chrome. Safari is 2.5x faster than Chrome/Node in this.
+  
+    Regexp must have the global flag set, even if we are using the y-flag,
+    to make .test() set .lastIndex correctly.
+  
+  SEE: https://jsperf.com/regex-match-length
+   */
+
   PatternElement.prototype._initRegExp = function(regExp) {
     var flags;
     this._isTokenPattern = true;
-    flags = "y";
+    flags = "yg";
     if (regExp.ignoreCase) {
       flags += "i";
     }
     regExp = RegExp(regExp.source, flags);
     return this.parse = function(parentNode) {
-      var match, nextOffset, source;
+      var nextOffset, source;
       nextOffset = parentNode.nextOffset, source = parentNode.source;
       regExp.lastIndex = nextOffset;
-      if (match = regExp.exec(source)) {
+      if (regExp.test(source)) {
         return new Node(parentNode, {
           offset: nextOffset,
-          matchLength: match[0].length
+          matchLength: regExp.lastIndex - nextOffset
         });
       }
     };
@@ -1056,10 +1063,11 @@ module.exports = Rule = (function(superClass) {
     Stats.add("parseRule");
     parser = parentNode.parser, nextOffset = parentNode.nextOffset;
     if (cached = parser._cached(this.name, nextOffset)) {
-      Stats.add("cacheHit");
       if (cached === "no_match") {
+        Stats.add("cacheHitNoMatch");
         return null;
       } else {
+        Stats.add("cacheHit");
         return cached;
       }
     }
@@ -1895,7 +1903,7 @@ module.exports = Parser = (function(superClass) {
     this._source = _source;
     this.options = options1 != null ? options1 : {};
     ref2 = this.options, this.parentParser = ref2.parentParser, allowPartialMatch = ref2.allowPartialMatch, rule = ref2.rule, isSubparse = ref2.isSubparse, logParsingFailures = ref2.logParsingFailures;
-    startRule = this.getStartRule(rule);
+    startRule = this.getRule(rule);
     this._resetParserTracking();
     this._logParsingFailures = logParsingFailures;
     if ((result = startRule.parse(this)) && (result.matchLength === this._source.length || (allowPartialMatch && result.matchLength > 0))) {
@@ -1916,16 +1924,16 @@ module.exports = Parser = (function(superClass) {
     }
   };
 
-  Parser.prototype.getStartRule = function(ruleName) {
-    var startRule;
+  Parser.prototype.getRule = function(ruleName) {
+    var rule;
     ruleName || (ruleName = this.rootRuleName);
     if (!ruleName) {
       throw new Error("No root rule defined.");
     }
-    if (!(startRule = this.rules[ruleName])) {
+    if (!(rule = this.rules[ruleName])) {
       throw new Error("Could not find rule: " + ruleName);
     }
-    return startRule;
+    return rule;
   };
 
   addToExpectingInfo = function(node, into, value) {
@@ -2104,11 +2112,13 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype._cacheMatch = function(ruleName, matchingNode) {
+    Stats.add("cacheMatch");
     this._getRuleParseCache(ruleName)[matchingNode.offset] = matchingNode;
     return matchingNode;
   };
 
   Parser.prototype._cacheNoMatch = function(ruleName, offset) {
+    Stats.add("cacheNoMatch");
     this._getRuleParseCache(ruleName)[offset] = "no_match";
     return null;
   };
