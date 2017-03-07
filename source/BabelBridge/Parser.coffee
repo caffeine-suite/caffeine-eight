@@ -126,6 +126,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   OUT: a Node with offset and matchLength
   ###
   subparse: (subsource, options = {}) ->
+    Stats.add "subparse"
 
     subparser = new @class
     {originalMatchLength, parentNode, sourceMap, originalOffset} = options
