@@ -1,4 +1,5 @@
 RuleVariant = require './RuleVariant'
+Stats = require './Stats'
 
 {merge, upperCamelCase, objectName, log} = require 'art-standard-lib'
 
@@ -35,6 +36,7 @@ module.exports = class Rule extends require("art-class-system").BaseClass
   OUT: Node instance if parsing was successful
   ###
   parse: (parentNode) ->
+    Stats.add "parseRule"
     {parser, nextOffset} = parentNode
     if cached = parser._cached @name, nextOffset
       return if cached == "no_match" then null else cached

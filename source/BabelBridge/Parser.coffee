@@ -2,6 +2,7 @@ Rule = require './Rule'
 {getLineColumn, getLineColumnString} = require './Tools'
 {Node} = require './Nodes'
 NonMatch = require './NonMatch'
+Stats = require './Stats'
 
 {
   isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
@@ -317,6 +318,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       ]
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
+    Stats.add "tryPatternElement"
     if patternElement.parseInto parseIntoNode
       true
     else

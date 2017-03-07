@@ -5,17 +5,16 @@ Nodes = require './namespace'
 
 {BaseClass} = require 'art-class-system'
 
+Stats = require '../Stats'
+
 module.exports = class Node extends BaseClass
   constructor: (@_parent, options) ->
     super
+    Stats.add "newNode"
     {@_parser} = @_parent
-    {@offset, @matchLength, @ruleVariant} = options if options
+    {@offset, @matchLength, @ruleVariant, @matches, @matchPatterns} = options if options
     @_offset ?= @_parent.getNextOffset()
     @_matchLength ||= 0
-    @_lastMatch = null
-    @_matches = null
-
-    @_matchPatterns = null
     @_labelsApplied = false
 
     @_ruleName = null
@@ -24,6 +23,7 @@ module.exports = class Node extends BaseClass
     @_pluralLabel = null
     @_pattern = null
     @_nonMatch = false
+    @_nonMatches = null
 
   # provided so CaffineScript or other ES6-class-based systems can define their own class extension
   @_createSubclassBase: ->
@@ -43,9 +43,11 @@ module.exports = class Node extends BaseClass
 
   toString: -> @text
 
-  @setter "matches offset matchLength ruleVariant pattern"
+  emptyArray = []
+  @setter "matches offset matchLength ruleVariant pattern matchPatterns"
   @getter "
     parent parser offset matchLength
+    matchPatterns
     label pluralLabel ruleName pluralRuleName pattern nonMatch
     ",
     name: -> @_name || @ruleName || @class.getName()
@@ -219,10 +221,10 @@ module.exports = class Node extends BaseClass
   addMatch: (pattern, match) ->
     return false unless match
 
-    @_matches = push @_matches, @_lastMatch = match
+    @_matches       = push @_matches, match
     @_matchPatterns = push @_matchPatterns, pattern
 
-    @_matchLength = match.nextOffset - @offset
+    @_matchLength   = match.nextOffset - @offset
 
     true
 
