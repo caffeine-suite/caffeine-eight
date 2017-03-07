@@ -12,9 +12,20 @@ module.exports = class Node extends BaseClass
     super
     Stats.add "newNode"
     {@_parser} = @_parent
-    {@offset, @matchLength, @ruleVariant, @matches, @matchPatterns} = options if options
-    @_offset ?= @_parent.getNextOffset()
-    @_matchLength ||= 0
+
+    @_offset = (options?.offset ? @_parent.getNextOffset()) | 0
+    @_matchLength = 0
+    @_ruleVariant = @_matches = @_matchPatterns = null
+
+    if options
+      @_matchLength = (options.matchLength || 0) | 0
+      @_ruleVariant = options.ruleVariant
+      @_matches = options.matches
+      @_matchPatterns = options.matchPatterns
+
+    # {@offset, @matchLength, @ruleVariant, @matches, @matchPatterns} = options if options
+    # @_offset ?= @_parent.getNextOffset()
+    # @_matchLength ||= 0
     @_labelsApplied = false
 
     @_ruleName = null
