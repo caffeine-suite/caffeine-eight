@@ -51,7 +51,6 @@ defineModule module, -> class IndentBlocks
 
           suboffset + bestMapEntry.toSourceDelta
 
-
   computeSubsourceToParentSourceMap = (sourceBaseOffset, replaceRegExp, indent, rawSubsource)->
       indentLength = indent.length
       indentWithNewLineLength = indentLength + 1

@@ -5,23 +5,22 @@ defineModule module, class ScratchNode extends BaseClass
   @_scatchNodes: []
   @_scatchNodesInUse: 0
 
-  @checkout: (parentNode) ->
+  @checkout: (parentNode, ruleVariant) ->
     if @_scatchNodesInUse >= @_scatchNodes.length
-      @_scatchNodes[@_scatchNodesInUse++] = new ScratchNode parentNode
+      @_scatchNodes[@_scatchNodesInUse++] = new ScratchNode parentNode, ruleVariant
     else
-      @_scatchNodes[@_scatchNodesInUse++].reset parentNode
+      @_scatchNodes[@_scatchNodesInUse++].reset parentNode, ruleVariant
 
   @checkin: (scratchNode) ->
     throw new Error "WTF" unless scratchNode == @_scatchNodes[--@_scatchNodesInUse]
 
-  constructor: (parent) ->
+  constructor: (parent, ruleVariant) ->
     @matches = []
     @matchPatterns = []
-    @reset parent
+    @reset parent, ruleVariant
 
-  reset: (parent) ->
-    @parent = parent
-    {@_parser} = parent
+  reset: (@parent, @ruleVariant) ->
+    {@_parser} = @parent
     @offset = @parent.getNextOffset()
     @matchesLength = @matchPatternsLength =
     @matchLength = 0
@@ -41,8 +40,8 @@ defineModule module, class ScratchNode extends BaseClass
     @source.slice nextOffset, nextOffset + length
 
   createVariantNode: (ruleVariant) ->
-    new ruleVariant.VariantNodeClass @parent,
-      ruleVariant:    ruleVariant
+    new @ruleVariant.VariantNodeClass @parent,
+      ruleVariant:    @ruleVariant
       matchLength:    @matchLength
       matches:        @matchesLength       > 0 && @matches.slice       0, @matchesLength
       matchPatterns:  @matchPatternsLength > 0 && @matchPatterns.slice 0, @matchPatternsLength

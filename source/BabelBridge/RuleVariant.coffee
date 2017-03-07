@@ -55,7 +55,7 @@ module.exports = class RuleVariant extends BaseClass
   parse: (parentNode) ->
     Stats.add "parseVariant"
 
-    scratchNode = ScratchNode.checkout parentNode
+    scratchNode = ScratchNode.checkout parentNode, @
 
     {parser} = parentNode
     for patternElement in @patternElements
@@ -64,7 +64,7 @@ module.exports = class RuleVariant extends BaseClass
         return false
 
     scratchNode.checkin()
-    scratchNode.createVariantNode @
+    scratchNode.createVariantNode()
 
   @getter
     variantNodeClassName: ->

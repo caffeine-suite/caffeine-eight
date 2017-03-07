@@ -92,7 +92,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     super
     @_options = null
     @_parser = @
-    @_subparseInfo = null
     @_source = null
     @_resetParserTracking()
 
@@ -128,11 +127,14 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   subparse: (subsource, options = {}) ->
     Stats.add "subparse"
 
+    # log subparse: START: {subsource, options}
+
     subparser = new @class
     {originalMatchLength, parentNode, sourceMap, originalOffset} = options
     options.parentParser = @
-    if match = subparser.parse subsource, merge(options, isSubparse: true)
+    if match = subparser.parse subsource, merge(options, isSubparse: true, logParsingFailures: @_logParsingFailures)
       {offset, matchLength, source, parser} = match
+      # log subsource: SUCCESS: {offset, matchLength, source, parser}
       match.subparseInfo = {offset, matchLength, source, parser}
 
 
@@ -150,6 +152,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       match
     else
       failureIndex = subparser.failureIndexInParentParser
+      # log subparse: FAILURE: {failureIndex, originalOffset, subFailureIndex: subparser.failureIndex}
       for k, nonMatch of subparser._nonMatches
         rootNode = nonMatch.node
         # throw new Error "A" if rootNode == parentNode
@@ -158,7 +161,10 @@ module.exports = class Parser extends require("art-class-system").BaseClass
           # throw new Error "B" if rootNode == parentNode
 
         rootNode._parent = parentNode if rootNode != parentNode
-        @_addNonMatch failureIndex, nonMatch
+        if @_logParsingFailures
+          @_addNonMatch failureIndex, nonMatch
+        else
+          @_failureIndex = max @_failureIndex, failureIndex
       null
 
   offsetInParentParserSource: (suboffset) ->
@@ -185,8 +191,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     allowPartialMatch: true/false
   ###
   parse: (@_source, @options = {})->
-    {@parentParser, allowPartialMatch, rule, isSubparse} = @options
-    @_resetParserTracking()
+    {@parentParser, allowPartialMatch, rule, isSubparse, logParsingFailures} = @options
 
     ruleName = rule || @rootRuleName
     {rules} = @
@@ -194,15 +199,32 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     startRule = rules[ruleName]
     throw new Error "Could not find rule: #{ruleName}" unless startRule
 
+    @_resetParserTracking()
+    @_logParsingFailures = logParsingFailures
+
+    # log runParse: START: {@options, @_source}
 
     if result = startRule.parse @
+      # log runParse: SUCCESS: {result}
       if result.matchLength == @_source.length || (allowPartialMatch && result.matchLength > 0)
         result.applyLabels() unless isSubparse
         result
       else
-        !isSubparse && throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
+        # log runParse: FAILURE1: {@_failureIndex}
+        unless isSubparse
+          @_resetParserTracking()
+          @_logParsingFailures = true
+          startRule.parse @
+          throw new Error "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
     else
-      !isSubparse && throw new Error @getParseFailureInfo @options
+      # log runParse: FAILURE2: {@_failureIndex}
+      # TODO: we don't need to 100% reset - but we do need
+      # to reset caching for negative caches at @_failureIndex
+      unless isSubparse
+        @_resetParserTracking()
+        @_logParsingFailures = true
+        startRule.parse @
+        throw new Error @getParseFailureInfo @options
 
   addToExpectingInfo = (node, into, value) ->
     if node.parent
@@ -345,6 +367,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     null
 
   _resetParserTracking: ->
+    @_subparseInfo = null
+    @_logParsingFailures = false
     @_partialParseTreeNodes = null
     @_partialParseTree = null
     @_matchingNegativeDepth = 0
@@ -367,7 +391,13 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   _logParsingFailure: (parseIntoNode, patternElement) ->
     return unless @_matchingNegativeDepth == 0 && parseIntoNode.offset >= @_failureIndex && patternElement.isTokenPattern
 
-    @_addNonMatch parseIntoNode.offset, new NonMatch parseIntoNode, patternElement
+    {offset} = parseIntoNode
+    # log _logParsingFailures: {offset}
+    if @_logParsingFailures
+      parseIntoNode = parseIntoNode.createVariantNode?() || parseIntoNode
+      @_addNonMatch offset, new NonMatch parseIntoNode, patternElement
+    else
+      @_failureIndex = offset
 
   _addNonMatch: (offset, nonMatch) ->
     if offset > @_failureIndex
