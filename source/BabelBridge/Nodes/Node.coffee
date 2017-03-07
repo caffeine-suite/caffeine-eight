@@ -8,33 +8,27 @@ Nodes = require './namespace'
 Stats = require '../Stats'
 
 module.exports = class Node extends BaseClass
-  constructor: (@_parent, options) ->
+  constructor: (parent, options) ->
     super
     Stats.add "newNode"
-    {@_parser} = @_parent
+    @_parent = parent
+    {@_parser} = parent
 
     @_offset = (options?.offset ? @_parent.getNextOffset()) | 0
     @_matchLength = 0
+
+    @_ruleName = @_pluralRuleName =
+    @_label = @_pluralLabel = @_pattern = @_nonMatches =
     @_ruleVariant = @_matches = @_matchPatterns = null
 
-    if options
-      @_matchLength = (options.matchLength || 0) | 0
-      @_ruleVariant = options.ruleVariant
-      @_matches = options.matches
-      @_matchPatterns = options.matchPatterns
-
-    # {@offset, @matchLength, @ruleVariant, @matches, @matchPatterns} = options if options
-    # @_offset ?= @_parent.getNextOffset()
-    # @_matchLength ||= 0
-    @_labelsApplied = false
-
-    @_ruleName = null
-    @_pluralRuleName = null
-    @_label = null
-    @_pluralLabel = null
-    @_pattern = null
+    @_labelsApplied =
     @_nonMatch = false
-    @_nonMatches = null
+
+    if options
+      @_matchLength   = (options.matchLength || 0) | 0
+      @_ruleVariant   = options.ruleVariant
+      @_matches       = options.matches
+      @_matchPatterns = options.matchPatterns
 
   # provided so CaffineScript or other ES6-class-based systems can define their own class extension
   @_createSubclassBase: ->
