@@ -24,6 +24,7 @@ defineModule module, class ScratchNode extends BaseClass
     @offset = @parent.getNextOffset() | 0
     @matchesLength = @matchPatternsLength =
     @matchLength = 0
+    @variantNode = null
     @
 
   @getter "parser",
@@ -39,12 +40,13 @@ defineModule module, class ScratchNode extends BaseClass
     nextOffset = @getNextOffset()
     @source.slice nextOffset, nextOffset + length
 
-  createVariantNode: (ruleVariant) ->
-    new @ruleVariant.VariantNodeClass @parent,
-      ruleVariant:    @ruleVariant
-      matchLength:    @matchLength
-      matches:        @matchesLength       > 0 && @matches.slice       0, @matchesLength
-      matchPatterns:  @matchPatternsLength > 0 && @matchPatterns.slice 0, @matchPatternsLength
+  @getter
+    realNode: ->
+      @variantNode ||= new @ruleVariant.VariantNodeClass @parent.realNode || @_parser,
+        ruleVariant:    @ruleVariant
+        matchLength:    @matchLength
+        matches:        @matchesLength       > 0 && @matches.slice       0, @matchesLength
+        matchPatterns:  @matchPatternsLength > 0 && @matchPatterns.slice 0, @matchPatternsLength
 
   checkin: -> ScratchNode.checkin @
 
@@ -54,9 +56,13 @@ defineModule module, class ScratchNode extends BaseClass
   addMatch: (pattern, match) ->
     return false unless match
 
+    @variantNode?.addMatch pattern, match
+
     @matches[@matchesLength++] = match
     @matchPatterns[@matchPatternsLength++] = pattern
     @matchLength   = match.nextOffset - @offset
 
     true
 
+  _addToParentAsNonMatch: ->
+    throw new Error "now what?"

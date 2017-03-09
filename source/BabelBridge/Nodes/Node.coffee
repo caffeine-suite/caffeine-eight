@@ -55,6 +55,7 @@ module.exports = class Node extends BaseClass
     matchPatterns
     label pluralLabel ruleName pluralRuleName pattern nonMatch
     ",
+    realNode: -> @
     name: -> @_name || @ruleName || @class.getName()
     present: -> @_matchLength > 0 || @_nonMatch
     matches: -> @_matches ||= []

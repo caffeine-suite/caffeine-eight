@@ -64,7 +64,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 23);
+/******/ 	return __webpack_require__(__webpack_require__.s = 24);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -83,11 +83,11 @@ module.exports = require("art-class-system");
 /* 2 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(8).addModules({
-  EmptyNode: __webpack_require__(6),
-  EmptyOptionalNode: __webpack_require__(18),
-  Node: __webpack_require__(7),
-  ScratchNode: __webpack_require__(19)
+module.exports = __webpack_require__(9).addModules({
+  EmptyNode: __webpack_require__(7),
+  EmptyOptionalNode: __webpack_require__(19),
+  Node: __webpack_require__(8),
+  ScratchNode: __webpack_require__(20)
 });
 
 
@@ -130,28 +130,6 @@ module.exports = Stats = (function(superClass) {
 
 /***/ }),
 /* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var BabelBridge, Neptune,
-  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
-
-Neptune = __webpack_require__(22);
-
-module.exports = Neptune.BabelBridge || Neptune.addNamespace('BabelBridge', BabelBridge = (function(superClass) {
-  extend(BabelBridge, superClass);
-
-  function BabelBridge() {
-    return BabelBridge.__super__.constructor.apply(this, arguments);
-  }
-
-  return BabelBridge;
-
-})(Neptune.Base));
-
-
-/***/ }),
-/* 5 */
 /***/ (function(module, exports) {
 
 module.exports = function(module) {
@@ -179,7 +157,52 @@ module.exports = function(module) {
 
 
 /***/ }),
+/* 5 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var BabelBridge, Neptune,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+Neptune = __webpack_require__(23);
+
+module.exports = Neptune.BabelBridge || Neptune.addNamespace('BabelBridge', BabelBridge = (function(superClass) {
+  extend(BabelBridge, superClass);
+
+  function BabelBridge() {
+    return BabelBridge.__super__.constructor.apply(this, arguments);
+  }
+
+  return BabelBridge;
+
+})(Neptune.Base));
+
+
+/***/ }),
 /* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(module) {var BabelBridgeCompileError, ErrorWithInfo, defineModule, formattedInspect, isFunction, log, mergeInto, ref,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
+
+ref = __webpack_require__(0), defineModule = ref.defineModule, log = ref.log, mergeInto = ref.mergeInto, isFunction = ref.isFunction, formattedInspect = ref.formattedInspect, ErrorWithInfo = ref.ErrorWithInfo;
+
+defineModule(module, BabelBridgeCompileError = (function(superClass) {
+  extend(BabelBridgeCompileError, superClass);
+
+  function BabelBridgeCompileError(message, info) {
+    BabelBridgeCompileError.__super__.constructor.call(this, message, info, "BabelBridgeCompileError");
+  }
+
+  return BabelBridgeCompileError;
+
+})(ErrorWithInfo));
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+
+/***/ }),
+/* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var EmptyNode,
@@ -201,11 +224,11 @@ module.exports = EmptyNode = (function(superClass) {
 
   return EmptyNode;
 
-})(__webpack_require__(7));
+})(__webpack_require__(8));
 
 
 /***/ }),
-/* 7 */
+/* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BaseClass, Node, Nodes, Stats, array, arrayWith, compactFlatten, inspectedObjectLiteral, isPlainArray, isPlainObject, log, merge, mergeInto, objectWithout, peek, push, ref,
@@ -214,7 +237,7 @@ var BaseClass, Node, Nodes, Stats, array, arrayWith, compactFlatten, inspectedOb
 
 ref = __webpack_require__(0), arrayWith = ref.arrayWith, array = ref.array, peek = ref.peek, log = ref.log, push = ref.push, compactFlatten = ref.compactFlatten, objectWithout = ref.objectWithout, isPlainArray = ref.isPlainArray, isPlainObject = ref.isPlainObject, inspectedObjectLiteral = ref.inspectedObjectLiteral, merge = ref.merge, mergeInto = ref.mergeInto;
 
-Nodes = __webpack_require__(8);
+Nodes = __webpack_require__(9);
 
 BaseClass = __webpack_require__(1).BaseClass;
 
@@ -283,6 +306,9 @@ module.exports = Node = (function(superClass) {
   Node.setter("matches offset matchLength ruleVariant pattern matchPatterns");
 
   Node.getter("parent parser offset matchLength matchPatterns label pluralLabel ruleName pluralRuleName pattern nonMatch", {
+    realNode: function() {
+      return this;
+    },
     name: function() {
       return this._name || this.ruleName || this["class"].getName();
     },
@@ -656,14 +682,14 @@ module.exports = Node = (function(superClass) {
 
 
 /***/ }),
-/* 8 */
+/* 9 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BabelBridge, Nodes,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-BabelBridge = __webpack_require__(4);
+BabelBridge = __webpack_require__(5);
 
 module.exports = BabelBridge.Nodes || BabelBridge.addNamespace('Nodes', Nodes = (function(superClass) {
   extend(Nodes, superClass);
@@ -678,7 +704,7 @@ module.exports = BabelBridge.Nodes || BabelBridge.addNamespace('Nodes', Nodes = 
 
 
 /***/ }),
-/* 9 */
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var BaseClass, NonMatch, defineModule, log, ref,
@@ -716,10 +742,10 @@ defineModule(module, NonMatch = (function(superClass) {
 
 })(BaseClass));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 10 */
+/* 11 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var EmptyNode, EmptyOptionalNode, Node, PatternElement, inspect, isPlainObject, isRegExp, isString, log, ref, ref1,
@@ -989,14 +1015,14 @@ module.exports = PatternElement = (function(superClass) {
 
 
 /***/ }),
-/* 11 */
+/* 12 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Rule, RuleVariant, Stats, log, merge, objectName, ref, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-RuleVariant = __webpack_require__(12);
+RuleVariant = __webpack_require__(13);
 
 Stats = __webpack_require__(3);
 
@@ -1087,14 +1113,14 @@ module.exports = Rule = (function(superClass) {
 
 
 /***/ }),
-/* 12 */
+/* 13 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BaseClass, Node, PatternElement, RuleVariant, ScratchNode, Stats, allPatternElementsRegExp, compactFlatten, inspect, isPlainObject, isString, log, merge, pad, push, ref, ref1, toInspectedObjects, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-PatternElement = __webpack_require__(10);
+PatternElement = __webpack_require__(11);
 
 Stats = __webpack_require__(3);
 
@@ -1212,7 +1238,7 @@ module.exports = RuleVariant = (function(superClass) {
       }
     }
     scratchNode.checkin();
-    return scratchNode.createVariantNode();
+    return scratchNode.getRealNode();
   };
 
   RuleVariant.getter({
@@ -1254,7 +1280,7 @@ module.exports = RuleVariant = (function(superClass) {
 
 
 /***/ }),
-/* 13 */
+/* 14 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Tools, peek;
@@ -1274,10 +1300,10 @@ module.exports = Tools = (function() {
         column: 1
       };
     }
-    lines = (string.slice(0, offset - 1) + " ").split("\n");
+    lines = (string.slice(0, offset)).split("\n");
     return {
       line: lines.length,
-      column: peek(lines).length
+      column: peek(lines).length + 1
     };
   };
 
@@ -1293,14 +1319,14 @@ module.exports = Tools = (function() {
 
 
 /***/ }),
-/* 14 */
+/* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(21);
+module.exports = __webpack_require__(22);
 
 
 /***/ }),
-/* 15 */
+/* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var Node, array, defineModule, escapeJavascriptString, find, log, merge, ref;
@@ -1464,26 +1490,26 @@ defineModule(module, function() {
   })();
 });
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 16 */
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(17).addModules({
-  IndentBlocks: __webpack_require__(15)
+module.exports = __webpack_require__(18).addModules({
+  IndentBlocks: __webpack_require__(16)
 });
 
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BabelBridge, Extensions,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-BabelBridge = __webpack_require__(4);
+BabelBridge = __webpack_require__(5);
 
 module.exports = BabelBridge.Extensions || BabelBridge.addNamespace('Extensions', Extensions = (function(superClass) {
   extend(Extensions, superClass);
@@ -1498,7 +1524,7 @@ module.exports = BabelBridge.Extensions || BabelBridge.addNamespace('Extensions'
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var EmptyOptionalNode,
@@ -1520,11 +1546,11 @@ module.exports = EmptyOptionalNode = (function(superClass) {
 
   return EmptyOptionalNode;
 
-})(__webpack_require__(6));
+})(__webpack_require__(7));
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var BaseClass, ScratchNode, compactFlatten, defineModule, inspect, isPlainObject, isString, log, merge, pad, push, ref, toInspectedObjects, upperCamelCase,
@@ -1568,6 +1594,7 @@ defineModule(module, ScratchNode = (function(superClass) {
     this._parser = this.parent._parser;
     this.offset = this.parent.getNextOffset() | 0;
     this.matchesLength = this.matchPatternsLength = this.matchLength = 0;
+    this.variantNode = null;
     return this;
   };
 
@@ -1594,14 +1621,16 @@ defineModule(module, ScratchNode = (function(superClass) {
     return this.source.slice(nextOffset, nextOffset + length);
   };
 
-  ScratchNode.prototype.createVariantNode = function(ruleVariant) {
-    return new this.ruleVariant.VariantNodeClass(this.parent, {
-      ruleVariant: this.ruleVariant,
-      matchLength: this.matchLength,
-      matches: this.matchesLength > 0 && this.matches.slice(0, this.matchesLength),
-      matchPatterns: this.matchPatternsLength > 0 && this.matchPatterns.slice(0, this.matchPatternsLength)
-    });
-  };
+  ScratchNode.getter({
+    realNode: function() {
+      return this.variantNode || (this.variantNode = new this.ruleVariant.VariantNodeClass(this.parent.realNode || this._parser, {
+        ruleVariant: this.ruleVariant,
+        matchLength: this.matchLength,
+        matches: this.matchesLength > 0 && this.matches.slice(0, this.matchesLength),
+        matchPatterns: this.matchPatternsLength > 0 && this.matchPatterns.slice(0, this.matchPatternsLength)
+      }));
+    }
+  });
 
   ScratchNode.prototype.checkin = function() {
     return ScratchNode.checkin(this);
@@ -1614,8 +1643,12 @@ defineModule(module, ScratchNode = (function(superClass) {
   };
 
   ScratchNode.prototype.addMatch = function(pattern, match) {
+    var ref1;
     if (!match) {
       return false;
+    }
+    if ((ref1 = this.variantNode) != null) {
+      ref1.addMatch(pattern, match);
     }
     this.matches[this.matchesLength++] = match;
     this.matchPatterns[this.matchPatternsLength++] = pattern;
@@ -1623,31 +1656,37 @@ defineModule(module, ScratchNode = (function(superClass) {
     return true;
   };
 
+  ScratchNode.prototype._addToParentAsNonMatch = function() {
+    throw new Error("now what?");
+  };
+
   return ScratchNode;
 
 })(BaseClass));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(5)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
+var BabelBridgeCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-Rule = __webpack_require__(11);
+Rule = __webpack_require__(12);
 
-ref = __webpack_require__(13), getLineColumn = ref.getLineColumn, getLineColumnString = ref.getLineColumnString;
+ref = __webpack_require__(14), getLineColumn = ref.getLineColumn, getLineColumnString = ref.getLineColumnString;
 
 Node = __webpack_require__(2).Node;
 
-NonMatch = __webpack_require__(9);
+NonMatch = __webpack_require__(10);
 
 Stats = __webpack_require__(3);
 
 ref1 = __webpack_require__(0), isFunction = ref1.isFunction, peek = ref1.peek, log = ref1.log, isPlainObject = ref1.isPlainObject, isPlainArray = ref1.isPlainArray, merge = ref1.merge, compactFlatten = ref1.compactFlatten, objectLength = ref1.objectLength, inspect = ref1.inspect, inspectLean = ref1.inspectLean, pluralize = ref1.pluralize, isClass = ref1.isClass, isPlainArray = ref1.isPlainArray, upperCamelCase = ref1.upperCamelCase, mergeInto = ref1.mergeInto, objectWithout = ref1.objectWithout, uniqueValues = ref1.uniqueValues, formattedInspect = ref1.formattedInspect, max = ref1.max, inspect = ref1.inspect, pushIfNotPresent = ref1.pushIfNotPresent;
+
+BabelBridgeCompileError = __webpack_require__(6);
 
 module.exports = Parser = (function(superClass) {
   var addToExpectingInfo, firstLines, instanceRulesFunction, lastLines, rulesFunction;
@@ -1914,7 +1953,7 @@ module.exports = Parser = (function(superClass) {
     } else {
       if (!isSubparse) {
         if (logParsingFailures) {
-          throw new Error(result ? "parse only matched " + result.matchLength + " of " + this._source.length + " characters\n" + (this.getParseFailureInfo(this.options)) : this.getParseFailureInfo(this.options));
+          throw new BabelBridgeCompileError(result ? "parse only matched " + result.matchLength + " of " + this._source.length + " characters\n" + (this.getParseFailureInfo(this.options)) : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
         } else {
           return this.parse(this._source, merge(this.options, {
             logParsingFailures: true
@@ -1971,6 +2010,16 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.getter("nonMatches", {
+    failureUrl: function() {
+      return (this.options.sourceFile || '') + ":" + (getLineColumnString(this._source, this._failureIndex));
+    },
+    parseFailureInfoObject: function() {
+      return merge({
+        sourceFile: this.options.sourceFile,
+        failureIndex: this._failureIndex,
+        location: this.failureUrl
+      }, getLineColumn(this._source, this._failureIndex));
+    },
     parseFailureInfo: function(options) {
       var left, out, right, sourceAfter, sourceBefore, verbose;
       if (!this._source) {
@@ -1980,7 +2029,7 @@ module.exports = Parser = (function(superClass) {
       sourceBefore = lastLines(left = this._source.slice(0, this._failureIndex));
       sourceAfter = firstLines(right = this._source.slice(this._failureIndex));
       out = compactFlatten([
-        "Parsing error at " + (this.options.sourceFile || '') + ":" + (getLineColumnString(this._source, this._failureIndex)) + "\n\nSource:\n...\n" + sourceBefore + "<HERE>" + sourceAfter + "\n...\n", this.expectingInfo, verbose ? [
+        "Parsing error at " + this.failureUrl + "\n\nSource:\n...\n" + sourceBefore + "<HERE>" + sourceAfter + "\n...\n", this.expectingInfo, verbose ? [
           "", formattedInspect({
             "partial-parse-tree": this.partialParseTree
           })
@@ -2160,7 +2209,7 @@ module.exports = Parser = (function(superClass) {
     }
     offset = parseIntoNode.offset;
     if (this._logParsingFailures) {
-      parseIntoNode = (typeof parseIntoNode.createVariantNode === "function" ? parseIntoNode.createVariantNode() : void 0) || parseIntoNode;
+      parseIntoNode = parseIntoNode.getRealNode();
       return this._addNonMatch(offset, new NonMatch(parseIntoNode, patternElement));
     } else {
       return this._failureIndex = offset;
@@ -2181,35 +2230,36 @@ module.exports = Parser = (function(superClass) {
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(4).addModules({
-  NonMatch: __webpack_require__(9),
-  Parser: __webpack_require__(20),
-  PatternElement: __webpack_require__(10),
-  Rule: __webpack_require__(11),
-  RuleVariant: __webpack_require__(12),
+module.exports = __webpack_require__(5).addModules({
+  BabelBridgeCompileError: __webpack_require__(6),
+  NonMatch: __webpack_require__(10),
+  Parser: __webpack_require__(21),
+  PatternElement: __webpack_require__(11),
+  Rule: __webpack_require__(12),
+  RuleVariant: __webpack_require__(13),
   Stats: __webpack_require__(3),
-  Tools: __webpack_require__(13)
+  Tools: __webpack_require__(14)
 });
 
-__webpack_require__(16);
+__webpack_require__(17);
 
 __webpack_require__(2);
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports) {
 
 module.exports = require("neptune-namespaces");
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(14);
+module.exports = __webpack_require__(15);
 
 
 /***/ })

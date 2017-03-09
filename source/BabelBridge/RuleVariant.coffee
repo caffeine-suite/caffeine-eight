@@ -64,7 +64,7 @@ module.exports = class RuleVariant extends BaseClass
         return false
 
     scratchNode.checkin()
-    scratchNode.createVariantNode()
+    scratchNode.getRealNode()
 
   @getter
     variantNodeClassName: ->

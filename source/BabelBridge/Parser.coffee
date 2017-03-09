@@ -20,6 +20,8 @@ Stats = require './Stats'
   pushIfNotPresent
 } = require 'art-standard-lib'
 
+BabelBridgeCompileError = require './BabelBridgeCompileError'
+
 module.exports = class Parser extends require("art-class-system").BaseClass
 
   @parse: (@_source, options = {})->
@@ -208,10 +210,13 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     else
       unless isSubparse
         if logParsingFailures
-          throw new Error if result
-            "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
-          else
-            @getParseFailureInfo @options
+          throw new BabelBridgeCompileError(
+            if result
+              "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
+            else
+              @getParseFailureInfo @options
+            @parseFailureInfoObject
+          )
         else
           # rerun parse with parsing-failure-logging
           # NOTE: we could speed this up by not completely trashing the cache
@@ -251,6 +256,17 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   # Parsing Failure Info
   ##################
   @getter "nonMatches",
+
+    failureUrl: ->
+      "#{@options.sourceFile || ''}:#{getLineColumnString @_source, @_failureIndex}"
+
+    parseFailureInfoObject: ->
+      merge
+        sourceFile: @options.sourceFile
+        failureIndex: @_failureIndex
+        location: @failureUrl
+        getLineColumn @_source, @_failureIndex
+
     parseFailureInfo: (options)->
       return unless @_source
 
@@ -261,7 +277,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       out = compactFlatten [
         """
-        Parsing error at #{@options.sourceFile || ''}:#{getLineColumnString @_source, @_failureIndex}
+        Parsing error at #{@failureUrl}
 
         Source:
         ...
@@ -393,7 +409,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     {offset} = parseIntoNode
     # log _logParsingFailures: {offset}
     if @_logParsingFailures
-      parseIntoNode = parseIntoNode.createVariantNode?() || parseIntoNode
+      parseIntoNode = parseIntoNode.getRealNode()
       @_addNonMatch offset, new NonMatch parseIntoNode, patternElement
     else
       @_failureIndex = offset
