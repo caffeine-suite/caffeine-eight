@@ -41,6 +41,7 @@ defineModule module, class ScratchNode extends BaseClass
     @source.slice nextOffset, nextOffset + length
 
   @getter
+    firstPartialMatchParent: -> @realNode.firstPartialMatchParent
     realNode: ->
       @variantNode ||= new @ruleVariant.VariantNodeClass @parent.realNode || @_parser,
         ruleVariant:    @ruleVariant
