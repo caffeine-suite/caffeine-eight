@@ -65,4 +65,4 @@ defineModule module, class ScratchNode extends BaseClass
     true
 
   _addToParentAsNonMatch: ->
-    throw new Error "now what?"
+    @realNode._addToParentAsNonMatch()
