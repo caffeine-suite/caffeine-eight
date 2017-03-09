@@ -1622,6 +1622,9 @@ defineModule(module, ScratchNode = (function(superClass) {
   };
 
   ScratchNode.getter({
+    firstPartialMatchParent: function() {
+      return this.realNode.firstPartialMatchParent;
+    },
     realNode: function() {
       return this.variantNode || (this.variantNode = new this.ruleVariant.VariantNodeClass(this.parent.realNode || this._parser, {
         ruleVariant: this.ruleVariant,
