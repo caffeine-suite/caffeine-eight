@@ -1657,7 +1657,7 @@ defineModule(module, ScratchNode = (function(superClass) {
   };
 
   ScratchNode.prototype._addToParentAsNonMatch = function() {
-    throw new Error("now what?");
+    return this.realNode._addToParentAsNonMatch();
   };
 
   return ScratchNode;
