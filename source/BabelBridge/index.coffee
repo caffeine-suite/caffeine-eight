@@ -2,6 +2,7 @@
 # file: BabelBridge/index.coffee
 
 module.exports = require './namespace'
+.includeInNamespace require './BabelBridge'
 .addModules
   BabelBridgeCompileError: require './BabelBridgeCompileError'
   NonMatch:                require './NonMatch'               

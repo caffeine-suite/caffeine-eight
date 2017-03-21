@@ -1,0 +1,47 @@
+|caffeine-script
+import &ArtStandardLib, &BabelBridge
+
+babelBridgeRepl class JsonParser extends Parser
+
+  @rule
+    root: :array :object
+    {} evaluate: -> @matches[0].evaluate()
+
+  @rule
+    array:
+      "" '[' _? ']'
+      "" '[' _? value commaValue* _? ']'
+    {} evaluate: ->
+      array m in @matches when m.evaluate with m.evaluate()
+
+  @rule
+    object:
+      "" '{' _? '}'
+      "" '{' _? pair commaPair* _? '}'
+    {} evaluate: ->
+      each m in @matches into out = {} with m.evaluate? out
+
+  @rule
+    pair: "" string _? ':' _? value
+    {} evaluate: (intoObject) ->
+      intoObject[@string.evaluate()] = @value.evaluate()
+
+  @rule
+    commaValue: "" _? ',' _? v:value
+    commaPair:  "" _? ',' _? v:pair
+    {} evaluate: (out) -> @v.evaluate out
+
+  @rule
+    value: :object :array :number :string :true :false :null
+    {} evaluate: -> @matches[0].evaluate()
+
+  @rule
+    string: /"(?:[^"\\]|\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}))*"/
+    number: /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/
+    true:   /true/
+    false:  /false/
+    null:   /null/
+    {} evaluate: -> eval @text
+
+  @rule
+    _:      /\ +/
