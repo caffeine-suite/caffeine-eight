@@ -1,4 +1,4 @@
-{defineModule} = require 'art-standard-lib'
+{defineModule, formattedInspect, isClass, log} = require 'art-standard-lib'
 
 defineModule module, class Repl
   @babelBridgeRepl: (parser) ->
@@ -9,7 +9,11 @@ defineModule module, class Repl
         try
           parsed = parser.parse command.trim()
           try
-            callback null, parsed.evaluate?() || "parsed OK"
+            if result = parsed.evaluate?()
+              callback null, result
+            else
+              log parsed
+              callback()
           catch e
             callback e
         catch e
