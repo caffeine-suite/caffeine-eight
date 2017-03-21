@@ -64,7 +64,7 @@ module.exports =
 /******/ 	__webpack_require__.p = "";
 
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 24);
+/******/ 	return __webpack_require__(__webpack_require__.s = 26);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -85,9 +85,9 @@ module.exports = require("art-class-system");
 
 module.exports = __webpack_require__(9).addModules({
   EmptyNode: __webpack_require__(7),
-  EmptyOptionalNode: __webpack_require__(19),
+  EmptyOptionalNode: __webpack_require__(20),
   Node: __webpack_require__(8),
-  ScratchNode: __webpack_require__(20)
+  ScratchNode: __webpack_require__(21)
 });
 
 
@@ -164,7 +164,7 @@ var BabelBridge, Neptune,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-Neptune = __webpack_require__(23);
+Neptune = __webpack_require__(24);
 
 module.exports = Neptune.BabelBridge || Neptune.addNamespace('BabelBridge', BabelBridge = (function(superClass) {
   extend(BabelBridge, superClass);
@@ -1322,11 +1322,46 @@ module.exports = Tools = (function() {
 /* 15 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(22);
+module.exports = __webpack_require__(23);
 
 
 /***/ }),
 /* 16 */
+/***/ (function(module, exports, __webpack_require__) {
+
+var isClass, log, ref;
+
+ref = __webpack_require__(0), isClass = ref.isClass, log = ref.log;
+
+module.exports = {
+  babelBridgeRepl: function(parser) {
+    if (isClass(parser)) {
+      parser = new parser;
+    }
+    return __webpack_require__(25).start({
+      prompt: (parser.getClassName()) + "> ",
+      "eval": function(command, context, filename, callback) {
+        var e, parsed;
+        try {
+          parsed = parser.parse(command.trim());
+          try {
+            return callback(null, (typeof parsed.evaluate === "function" ? parsed.evaluate() : void 0) || "parsed OK");
+          } catch (error) {
+            e = error;
+            return callback(e);
+          }
+        } catch (error) {
+          e = error;
+          return callback(parser.parseFailureInfo.replace("<HERE>", "<HERE>".red));
+        }
+      }
+    });
+  }
+};
+
+
+/***/ }),
+/* 17 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var Node, array, defineModule, escapeJavascriptString, find, log, merge, ref;
@@ -1493,16 +1528,16 @@ defineModule(module, function() {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 17 */
+/* 18 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(18).addModules({
-  IndentBlocks: __webpack_require__(16)
+module.exports = __webpack_require__(19).addModules({
+  IndentBlocks: __webpack_require__(17)
 });
 
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BabelBridge, Extensions,
@@ -1524,7 +1559,7 @@ module.exports = BabelBridge.Extensions || BabelBridge.addNamespace('Extensions'
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var EmptyOptionalNode,
@@ -1550,7 +1585,7 @@ module.exports = EmptyOptionalNode = (function(superClass) {
 
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var BaseClass, ScratchNode, compactFlatten, defineModule, inspect, isPlainObject, isString, log, merge, pad, push, ref, toInspectedObjects, upperCamelCase,
@@ -1670,7 +1705,7 @@ defineModule(module, ScratchNode = (function(superClass) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BabelBridgeCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
@@ -2233,13 +2268,13 @@ module.exports = Parser = (function(superClass) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(5).addModules({
+module.exports = __webpack_require__(5).includeInNamespace(__webpack_require__(16)).addModules({
   BabelBridgeCompileError: __webpack_require__(6),
   NonMatch: __webpack_require__(10),
-  Parser: __webpack_require__(21),
+  Parser: __webpack_require__(22),
   PatternElement: __webpack_require__(11),
   Rule: __webpack_require__(12),
   RuleVariant: __webpack_require__(13),
@@ -2247,19 +2282,25 @@ module.exports = __webpack_require__(5).addModules({
   Tools: __webpack_require__(14)
 });
 
-__webpack_require__(17);
+__webpack_require__(18);
 
 __webpack_require__(2);
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports) {
 
 module.exports = require("neptune-namespaces");
 
 /***/ }),
-/* 24 */
+/* 25 */
+/***/ (function(module, exports) {
+
+module.exports = require("repl");
+
+/***/ }),
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(15);
