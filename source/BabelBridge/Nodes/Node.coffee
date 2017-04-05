@@ -125,7 +125,7 @@ module.exports = class Node extends BaseClass
     isMatch: -> !@nonMatch
 
     nonMatchingLeaf: ->
-      @nonMatch && @matches.length == 1 && @matches[0]
+      @nonMatch && peek @matches
 
     firstPartialMatchParent: ->
       # throw new Error unless @isNonMatch
@@ -134,7 +134,7 @@ module.exports = class Node extends BaseClass
       else
         @parent.firstPartialMatchParent
 
-    inspectedObjects: ->
+    inspectedObjects: (verbose) ->
       match = @
       matches = @presentMatches
       if matches.length > 0
@@ -147,18 +147,17 @@ module.exports = class Node extends BaseClass
 
         {label, ruleName, nonMatch} = match
 
-        path = if path.length == 1
-          path[0]
-        else
-          path.join " > "
+        path.push ruleName
+
+        path = path.join '.'
 
         hasOneOrMoreMatchingChildren = false
         children = for match in matches
           hasOneOrMoreMatchingChildren = true unless match.nonMatch
-          match.inspectedObjects
+          match.getInspectedObjects verbose
 
         parts = compactFlatten [
-          if path.length > 0   then path: path
+          # if path.length > 0   then path: path
           if label             then label: label
           if children.length > 0
             children
@@ -166,23 +165,27 @@ module.exports = class Node extends BaseClass
             match.toString()
         ]
         parts = parts[0] if parts.length == 1
-        ret = "#{
+        "#{
           if nonMatch
             if hasOneOrMoreMatchingChildren
               'partialMatch-'
             else 'nonMatch-'
           else
             ''
-          }#{ruleName}": parts
+          }#{path}": parts
 
         # ret = nonMatch: ret if nonMatch
 
 
-        ret
+        # ret
       else if @nonMatch
         nonMatch: offset: @offset, pattern: "#{@pattern?.pattern}"
       else
-        token: offset: @offset, length: @matchLength, text: @text, pattern: "#{@pattern?.pattern}", class: @class.getName(), ruleName: @ruleName
+
+        if verbose
+          token: offset: @offset, length: @matchLength, text: @text, pattern: "#{@pattern?.pattern}", class: @class.getName(), ruleName: @ruleName
+        else
+          @text
 
     detailedInspectedObjects: ->
       {matches} = @

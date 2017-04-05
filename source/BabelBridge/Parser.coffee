@@ -18,11 +18,15 @@ Stats = require './Stats'
   max
   inspect
   pushIfNotPresent
+  uniqueValues
+  objectHasKeys
 } = require 'art-standard-lib'
 
 BabelBridgeCompileError = require './BabelBridgeCompileError'
 
 module.exports = class Parser extends require("art-class-system").BaseClass
+  @repl: ->
+    (require './Repl').babelBridgeRepl @
 
   @parse: (@_source, options = {})->
     (new @).parse @_source, options
@@ -38,7 +42,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       extendableRules[ruleName] = newRule.clone()
     newRule
 
-  @addRule: (ruleName, definitions, nodeBaseClass = @nodeBaseClass) ->
+  @addRule: (ruleName, definitions, nodeBaseClass = @getNodeBaseClass()) ->
 
     rule = @extendRules()[ruleName] ||= new Rule ruleName, @
     if definitions.root
@@ -67,15 +71,23 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       sharedNodeBaseClass = b
 
     if isPlainObject sharedNodeBaseClass
-      sharedNodeBaseClass = (@nodeBaseClass || Node).createSubclass sharedNodeBaseClass
+      sharedNodeBaseClass = @getNodeBaseClass().createSubclass sharedNodeBaseClass
 
     for ruleName, definition of rules
-      @addRule ruleName, definition, sharedNodeBaseClass || @nodeBaseClass
+      @addRule ruleName, definition, sharedNodeBaseClass || @getNodeBaseClass()
 
   @rules: rulesFunction
 
   rule: instanceRulesFunction = (a, b) -> @class.rule a, b
   rules: instanceRulesFunction
+
+  @getNodeBaseClass: ->
+    @_nodeBaseClass ||= if isPlainObject @nodeBaseClass
+      log create: @getName() + "NodeBaseClass"
+      Node.createSubclass merge
+        name:        @getName() + "NodeBaseClass"
+        @nodeBaseClass
+    else @nodeBaseClass || Node
 
   @property "subparseInfo options"
   @getter "source parser",
@@ -285,11 +297,11 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         ...
 
         """
-        @expectingInfo
+        @getExpectingInfo options
         if verbose
           [
             "",
-            formattedInspect "partial-parse-tree": @partialParseTree
+            formattedInspect ("partial-parse-tree": @partialParseTree), options
           ]
         ""
       ]
@@ -312,7 +324,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       @_partialParseTree = rootNode
 
-    expectingInfo: ->
+    expectingInfo: (options)->
       return null unless objectLength(@_nonMatches) > 0
 
       ###
@@ -332,26 +344,27 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       couldMatchRuleNames = []
 
-      newOutput = for pmp in partialMatchingParents
+      expecting = {}
+      for pmp in partialMatchingParents
         for child in pmp.matches when child.isNonMatch
           couldMatchRuleNames.push ruleName if ruleName = child.nonMatchingLeaf.ruleNameOrNull
-          "  #{formattedInspect child.nonMatchingLeaf.ruleNameOrPattern} to complete '#{pmp.ruleName}' (which started at #{getLineColumnString @_source, pmp.absoluteOffset})"
+          expecting[child.nonMatchingLeaf.ruleNameOrPattern] =
+            toContinue: pmp.ruleName
+            startedAt: getLineColumnString @_source, pmp.absoluteOffset
 
-      if couldMatchRuleNames.length > 1
-        couldMatchRules = [
-          ""
-          "rules:"
+      expecting = if objectHasKeys expecting
+        out = {expecting}
+        if couldMatchRuleNames.length > 1
+          out.rules = {}
           for ruleName in couldMatchRuleNames
             for v in @rules[ruleName]._variants
-              "  #{ruleName}: #{formattedInspect v.patternString}"
-        ]
+              out.rules[ruleName] = v.patternString
 
-      newOutput = compactFlatten [newOutput, couldMatchRules]
-      newOutput = "  end of input" unless newOutput.length > 0
-      compactFlatten [
-        "expecting:"
-        newOutput
-      ]
+        out
+      else
+        expecting: "end of input"
+
+      formattedInspect expecting, options
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
     Stats.add "tryPatternElement"

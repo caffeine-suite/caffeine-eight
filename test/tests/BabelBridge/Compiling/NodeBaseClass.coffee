@@ -5,13 +5,22 @@ Foundation = require 'art-foundation'
 
 module.exports = suite: ->
 
-  test "one node with custom node class", ->
-    class IndentBlocksNode extends Node
-
-      toJs: -> @toString() + "!"
+  test "with class", ->
 
     class MyParser extends Parser
-      @nodeBaseClass: IndentBlocksNode
+      @nodeBaseClass: class IndentBlocksNode extends Node
+        toJs: -> @toString() + "!"
+
+      @rule
+        root: /boo/
+
+    mainNode = MyParser.parse "boo"
+    assert.eq mainNode.toJs(), "boo!"
+
+  test "with plainObject", ->
+    class MyParser extends Parser
+      @nodeBaseClass:
+        toJs: -> @toString() + "!"
 
       @rule
         root: /boo/

@@ -1,7 +1,5 @@
 |caffeine-script
-import &ArtStandardLib, &BabelBridge
-
-babelBridgeRepl class JsonParser extends Parser
+class JsonParser extends &BabelBridge.Parser
 
   @rule
     root: :array :object
@@ -27,3 +25,5 @@ babelBridgeRepl class JsonParser extends Parser
     null:   /null/
 
     _:      /\ +/
+
+.repl()
