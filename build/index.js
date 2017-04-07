@@ -3388,8 +3388,8 @@ module.exports = Parser = (function(superClass) {
             couldMatchRuleNames.push(ruleName);
           }
           expecting[child.nonMatchingLeaf.ruleNameOrPattern] = {
-            toContinue: pmp.ruleName,
-            startedAt: getLineColumnString(this._source, pmp.absoluteOffset)
+            "to-continue": pmp.ruleName,
+            "started-at": getLineColumnString(this._source, pmp.absoluteOffset)
           };
         }
       }

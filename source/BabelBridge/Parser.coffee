@@ -357,8 +357,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         for child in pmp.matches when child.isNonMatch
           couldMatchRuleNames.push ruleName if ruleName = child.nonMatchingLeaf.ruleNameOrNull
           expecting[child.nonMatchingLeaf.ruleNameOrPattern] =
-            toContinue: pmp.ruleName
-            startedAt: getLineColumnString @_source, pmp.absoluteOffset
+            "to-continue": pmp.ruleName
+            "started-at": getLineColumnString @_source, pmp.absoluteOffset
 
       expecting = if objectHasKeys expecting
         out = {expecting}
