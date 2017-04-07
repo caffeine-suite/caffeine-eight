@@ -199,6 +199,13 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   @getter
     failureIndexInParentParser: -> @offsetInParentParserSource @_failureIndex
 
+
+  colorString: (clr, str)->
+    if @options.color
+      "#{str}"[clr]
+    else
+      str
+
   ###
   OUT: on success, root Node of the parse tree, else null
   options:
@@ -224,7 +231,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         if logParsingFailures
           throw new BabelBridgeCompileError(
             if result
-              "parse only matched #{result.matchLength} of #{@_source.length} characters\n#{@getParseFailureInfo @options}"
+              [
+                @colorString "gray", "#{@class.name} only parsed: " +
+                  @colorString "black", "#{result.matchLength} of #{@_source.length} " +
+                  @colorString "gray", "characters"
+                @getParseFailureInfo @options
+              ].join "\n"
             else
               @getParseFailureInfo @options
             @parseFailureInfoObject
@@ -288,21 +300,17 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       sourceAfter = firstLines right = @_source.slice @_failureIndex
 
       out = compactFlatten [
-        """
-        Parsing error at #{@failureUrl}
-
-        Source:
-        ...
-        #{sourceBefore}<HERE>#{sourceAfter}
-        ...
-
-        """
+        ""
+        @colorString "gray", "Parsing error at #{@colorString "red", @failureUrl}"
+        ""
+        @colorString "gray", "Source:"
+        @colorString "gray", "..."
+        "#{sourceBefore}#{@colorString "red", "<HERE>"}#{sourceAfter.replace /[\s\n]+$/, ''}"
+        @colorString "gray", "..."
+        ""
         @getExpectingInfo options
         if verbose
-          [
-            "",
-            formattedInspect ("partial-parse-tree": @partialParseTree), options
-          ]
+          formattedInspect ("partial-parse-tree": @partialParseTree), options
         ""
       ]
       out.join "\n"

@@ -3212,6 +3212,14 @@ module.exports = Parser = (function(superClass) {
     }
   });
 
+  Parser.prototype.colorString = function(clr, str) {
+    if (this.options.color) {
+      return ("" + str)[clr];
+    } else {
+      return str;
+    }
+  };
+
 
   /*
   OUT: on success, root Node of the parse tree, else null
@@ -3235,7 +3243,7 @@ module.exports = Parser = (function(superClass) {
     } else {
       if (!isSubparse) {
         if (logParsingFailures) {
-          throw new BabelBridgeCompileError(result ? "parse only matched " + result.matchLength + " of " + this._source.length + " characters\n" + (this.getParseFailureInfo(this.options)) : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
+          throw new BabelBridgeCompileError(result ? [this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (result.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))), this.getParseFailureInfo(this.options)].join("\n") : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
         } else {
           return this.parse(this._source, merge(this.options, {
             logParsingFailures: true
@@ -3311,11 +3319,9 @@ module.exports = Parser = (function(superClass) {
       sourceBefore = lastLines(left = this._source.slice(0, this._failureIndex));
       sourceAfter = firstLines(right = this._source.slice(this._failureIndex));
       out = compactFlatten([
-        "Parsing error at " + this.failureUrl + "\n\nSource:\n...\n" + sourceBefore + "<HERE>" + sourceAfter + "\n...\n", this.getExpectingInfo(options), verbose ? [
-          "", formattedInspect({
-            "partial-parse-tree": this.partialParseTree
-          }, options)
-        ] : void 0, ""
+        "", this.colorString("gray", "Parsing error at " + (this.colorString("red", this.failureUrl))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), "" + sourceBefore + (this.colorString("red", "<HERE>")) + (sourceAfter.replace(/[\s\n]+$/, '')), this.colorString("gray", "..."), "", this.getExpectingInfo(options), verbose ? formattedInspect({
+          "partial-parse-tree": this.partialParseTree
+        }, options) : void 0, ""
       ]);
       return out.join("\n");
     },
