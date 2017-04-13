@@ -1,5 +1,4 @@
-Foundation = require 'art-foundation'
-{log, a, w, m, upperCamelCase, lowerCamelCase} = Foundation
+{log, a, w, m, upperCamelCase, lowerCamelCase} = Neptune.Art.StandardLib
 {Parser, Nodes} = Neptune.BabelBridge
 {Node} = Nodes
 

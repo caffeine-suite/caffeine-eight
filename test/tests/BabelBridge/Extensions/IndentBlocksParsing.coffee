@@ -1,5 +1,4 @@
-Foundation = require 'art-foundation'
-{w, array, log, a, peek, shallowClone, compactFlatten} = Foundation
+{w, array, log, a, peek, shallowClone, compactFlatten} = Neptune.Art.StandardLib
 {Parser, Nodes, Extensions} = Neptune.BabelBridge
 {Node} = Nodes
 

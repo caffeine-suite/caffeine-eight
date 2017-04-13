@@ -1,5 +1,5 @@
 {Parser, BabelBridgeCompileError} = Neptune.BabelBridge
-{log, defineModule, l, w, compactFlatten} = Neptune.Art.Foundation
+{log, defineModule, l, w, compactFlatten} = Neptune.Art.StandardLib
 
 validateCompileError = (error, testProps) ->
   assert.instanceof BabelBridgeCompileError, error

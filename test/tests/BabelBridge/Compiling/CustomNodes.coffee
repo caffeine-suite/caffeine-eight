@@ -1,4 +1,4 @@
-{log, wordsArray} = require 'art-foundation'
+{log, wordsArray} = Neptune.Art.StandardLib
 {Parser, Nodes} = Neptune.BabelBridge
 
 module.exports = suite: ->
