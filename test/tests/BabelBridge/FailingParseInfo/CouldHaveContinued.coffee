@@ -8,10 +8,12 @@ validateCompileError = (error, testProps) ->
 
 defineModule module, suite:
   info: ->
-    class MyParser extends Parser
-      @rule
-        root: "myRule+"
-        myRule: /foo\n?/
+    MyParser = null
+    setup ->
+      class MyParser extends Parser
+        @rule
+          root: "myRule+"
+          myRule: /foo\n?/
 
     test "baseline ok", ->
       myParser = new MyParser

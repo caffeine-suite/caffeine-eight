@@ -2942,7 +2942,8 @@ defineModule(module, ScratchNode = (function(superClass) {
 
 var BabelBridgeCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  hasProp = {}.hasOwnProperty;
+  hasProp = {}.hasOwnProperty,
+  slice = [].slice;
 
 Rule = __webpack_require__(13);
 
@@ -2996,7 +2997,7 @@ module.exports = Parser = (function(superClass) {
   });
 
   Parser.addRule = function(ruleName, definitions, nodeBaseClass) {
-    var array, base, definition, i, len, results, rule;
+    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref2, results, rule;
     if (nodeBaseClass == null) {
       nodeBaseClass = this.getNodeBaseClass();
     }
@@ -3010,15 +3011,35 @@ module.exports = Parser = (function(superClass) {
     if (!isPlainArray(array = definitions)) {
       definitions = [definitions];
     }
+    if (definitions.length > 1 && isPlainObject(last = peek(definitions)) && !last.pattern) {
+      ref2 = definitions, definitions = 2 <= ref2.length ? slice.call(ref2, 0, i = ref2.length - 1) : (i = 0, []), commonNodeProps = ref2[i++];
+    } else {
+      commonNodeProps = {};
+    }
+    commonNodeProps.nodeBaseClass || (commonNodeProps.nodeBaseClass = nodeBaseClass);
     results = [];
-    for (i = 0, len = definitions.length; i < len; i++) {
-      definition = definitions[i];
-      results.push(rule.addVariant(isPlainObject(definition) ? merge({
-        nodeBaseClass: nodeBaseClass
-      }, definition) : {
-        pattern: definition,
-        nodeBaseClass: nodeBaseClass
-      }));
+    for (j = 0, len = definitions.length; j < len; j++) {
+      definition = definitions[j];
+      if (!isPlainObject(definition)) {
+        definition = {
+          pattern: definition
+        };
+      }
+      if (isPlainArray(patterns = definition.pattern)) {
+        results.push((function() {
+          var l, len1, results1;
+          results1 = [];
+          for (l = 0, len1 = patterns.length; l < len1; l++) {
+            pattern = patterns[l];
+            results1.push(rule.addVariant(merge(commonNodeProps, definition, {
+              pattern: pattern
+            })));
+          }
+          return results1;
+        })());
+      } else {
+        results.push(rule.addVariant(merge(commonNodeProps, definition)));
+      }
     }
     return results;
   };

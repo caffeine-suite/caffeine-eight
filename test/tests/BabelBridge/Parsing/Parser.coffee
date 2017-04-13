@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{Parser, Nodes} = Neptune.BabelBridge
 {Node} = Nodes
 
 module.exports = suite:
@@ -185,3 +185,37 @@ module.exports = suite:
           root: "/foo/ /$/+"
 
       MyParser.parse "foo"
+
+  multiNotations: ->
+    test "rule root: []", ->
+      class MyParser extends Parser
+        @rule
+          root: [/foo/, /boo/]
+
+      MyParser.parse "foo"
+      MyParser.parse "boo"
+
+    test "rule root: [..., {}]", ->
+      class MyParser extends Parser
+        @rule
+          root: [
+            /foo/
+            /boo/
+            custom: -> @text.toUpperCase()
+          ]
+
+      assert.eq "FOO", MyParser.parse("foo").custom()
+      assert.eq "BOO", MyParser.parse("boo").custom()
+
+    test "rule root: pattern: [], ...", ->
+      class MyParser extends Parser
+        @rule
+          root:
+            pattern: [
+              /foo/
+              /boo/
+            ]
+            custom: -> @text.toUpperCase()
+
+      assert.eq "FOO", MyParser.parse("foo").custom()
+      assert.eq "BOO", MyParser.parse("boo").custom()

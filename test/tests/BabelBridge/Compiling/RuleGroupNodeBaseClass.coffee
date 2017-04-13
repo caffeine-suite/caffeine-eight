@@ -1,31 +1,33 @@
 Foundation = require 'art-foundation'
 {log, a, w, m, upperCamelCase, lowerCamelCase} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{Parser, Nodes} = Neptune.BabelBridge
 {Node} = Nodes
 
 module.exports = suite: ->
+  MyParser = null
+  setup ->
 
-  class MyParser extends Parser
-    @nodeBaseClass: class MyNode extends Node
-      compile: -> (a.compile() for a in @matches when a.compile).join ''
+    class MyParser extends Parser
+      @nodeBaseClass: class MyNode extends Node
+        compile: -> (a.compile() for a in @matches when a.compile).join ''
 
-    @rule
-      root: "noun _ verb _ noun"
+      @rule
+        root: "noun _ verb _ noun"
 
-      _: pattern: / +/, compile: -> " "
+        _: pattern: / +/, compile: -> " "
 
-      noun: w "bugs butterflies"
+        noun: w "bugs butterflies"
 
-    @rule
-      bugs: /bugs|ladybugs|beetles/i
-      butterflies: /butterflies|skippers|swallowtails/i
-    ,
-      compile: -> upperCamelCase @toString()
+      @rule
+        bugs: /bugs|ladybugs|beetles/i
+        butterflies: /butterflies|skippers|swallowtails/i
+      ,
+        compile: -> upperCamelCase @toString()
 
-    @rule
-      verb:
-        pattern: /eat|shun/i
-        compile: -> lowerCamelCase @toString()
+      @rule
+        verb:
+          pattern: /eat|shun/i
+          compile: -> lowerCamelCase @toString()
 
   test "one rule multiple patters shares a nodeBaseClass", ->
     mainNode = MyParser.parse "ladybugs eat beetles"

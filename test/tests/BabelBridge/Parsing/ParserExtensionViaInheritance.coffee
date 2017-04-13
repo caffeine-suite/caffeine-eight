@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 {log, wordsArray} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{Parser, Nodes} = Neptune.BabelBridge
 {Node} = Nodes
 
 module.exports =suite:  ->

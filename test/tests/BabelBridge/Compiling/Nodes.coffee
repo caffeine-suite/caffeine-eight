@@ -1,6 +1,6 @@
 Foundation = require 'art-foundation'
 {log, w} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{Parser, Nodes} = Neptune.BabelBridge
 
 module.exports = suite:
   regressions: ->

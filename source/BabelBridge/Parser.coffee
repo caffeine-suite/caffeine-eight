@@ -50,12 +50,20 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       @_rootRuleName = ruleName
 
     definitions = [definitions] unless isPlainArray array = definitions
+    if definitions.length > 1 && isPlainObject(last = peek definitions) && !last.pattern
+      [definitions..., commonNodeProps] = definitions
+    else
+      commonNodeProps = {}
+
+    commonNodeProps.nodeBaseClass ||= nodeBaseClass
 
     for definition in definitions
-      rule.addVariant if isPlainObject definition
-        merge nodeBaseClass: nodeBaseClass, definition
+      definition = pattern: definition unless isPlainObject definition
+      if isPlainArray patterns = definition.pattern
+        for pattern in patterns
+          rule.addVariant merge commonNodeProps, definition, {pattern}
       else
-        pattern: definition, nodeBaseClass: nodeBaseClass
+        rule.addVariant merge commonNodeProps, definition
 
   ###
   IN:

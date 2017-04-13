@@ -1,6 +1,5 @@
-Foundation = require 'art-foundation'
-{log, wordsArray} = Foundation
-{Parser, Nodes} = require 'babel-bridge'
+{log, wordsArray} = require 'art-foundation'
+{Parser, Nodes} = Neptune.BabelBridge
 
 module.exports = suite: ->
 
@@ -12,6 +11,38 @@ module.exports = suite: ->
           myMember: -> 123
 
     mainNode = MyParser.parse "boo"
+    assert.eq mainNode.myMember(), 123
+
+  test "multi-pattern type 1", ->
+    class MyParser extends Parser
+      @rule
+        root:
+          pattern: [
+            /boo/
+            /bad/
+          ]
+          myMember: -> 123
+
+    mainNode = MyParser.parse "boo"
+    assert.eq mainNode.myMember(), 123
+
+    mainNode = MyParser.parse "bad"
+    assert.eq mainNode.myMember(), 123
+
+
+  test "multi-pattern type 2", ->
+    class MyParser extends Parser
+      @rule
+        root: [
+          /boo/
+          /bad/
+          myMember: -> 123
+        ]
+
+    mainNode = MyParser.parse "boo"
+    assert.eq mainNode.myMember(), 123
+
+    mainNode = MyParser.parse "bad"
     assert.eq mainNode.myMember(), 123
 
   test "simple math", ->

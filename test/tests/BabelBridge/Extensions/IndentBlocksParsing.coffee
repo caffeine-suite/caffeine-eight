@@ -1,24 +1,25 @@
 Foundation = require 'art-foundation'
-{array, log, a, m, peek, shallowClone, compactFlatten} = Foundation
+{w, array, log, a, peek, shallowClone, compactFlatten} = Foundation
 {Parser, Nodes, Extensions} = Neptune.BabelBridge
 {Node} = Nodes
 
 module.exports = suite:
   blockParsing: ->
+    MyParser = null
+    setup ->
+      class MyParser extends Parser
 
-    class MyParser extends Parser
+        @rule
+          root: 'line+'
+          line: [
+            '/!!!/'
+            'end'
+            'expression block? end'
+          ]
+          expression: '/[a-z0-9A-Z]+/'
+          end: '/\n|$/'
 
-      @rule
-        root: 'line+'
-        line: [
-          '/!!!/'
-          'end'
-          'expression block? end'
-        ]
-        expression: '/[a-z0-9A-Z]+/'
-        end: '/\n|$/'
-
-        block: Extensions.IndentBlocks.getPropsToSubparseBlock()
+          block: Extensions.IndentBlocks.getPropsToSubparseBlock()
 
     test "simple expression", ->
       MyParser.parse "one"
@@ -127,15 +128,16 @@ module.exports = suite:
             assert.eq parser._failureIndex, 28
 
   eolOrblockParsing: ->
+    MyParser = null
+    setup ->
+      class MyParser extends Parser
 
-    class MyParser extends Parser
+        @rule
+          root: 'expression block? end'
+          expression: '/[a-z0-9A-Z]+/'
+          end: '/\n|$/'
 
-      @rule
-        root: 'expression block? end'
-        expression: '/[a-z0-9A-Z]+/'
-        end: '/\n|$/'
-
-        block: Extensions.IndentBlocks.getPropsToSubparseToEolAndBlock()
+          block: Extensions.IndentBlocks.getPropsToSubparseToEolAndBlock()
 
     test "simple expression", ->
       MyParser.parse "one"
@@ -170,83 +172,82 @@ module.exports = suite:
         """
 
   CaffeineScriptObjectNotation: ->
+    IndentBlocksNode = MyParser = null
 
-    class IndentBlocksNode extends Node
+    setup ->
 
-      toJs: ->
-        for match in @matches when match.toJs
-          return match.toJs()
-        log "no matches have toJs": self: @, class: @class, matches: @matches, parseTreePath: @parseTreePath
-        throw new Error "no matches have toJs"
+      class IndentBlocksNode extends Node
 
-    class MyParser extends Parser
-      @nodeBaseClass: IndentBlocksNode
+        toJs: ->
+          for match in @matches when match.toJs
+            return match.toJs()
+          log "no matches have toJs": self: @, class: @class, matches: @matches, parseTreePath: @parseTreePath
+          throw new Error "no matches have toJs"
+
+      class MyParser extends Parser
+        @nodeBaseClass: IndentBlocksNode
 
 
-      @rules
-        root: 'statement+'
-        block: Extensions.IndentBlocks.getPropsToSubparseBlock()
+        @rules
+          root: 'statement+'
+          block: Extensions.IndentBlocks.getPropsToSubparseBlock()
 
-        expression: [
-          'object'
-          'array'
-          'block'
-          pattern: 'literal'
-          toJs: -> @text
-        ]
+          expression: w 'object array block literal'
 
-        literal:          ['string', 'number']
-        end:              ['block end', '/\n+|$/']
-        statement:        ['objectStatement end', 'expression end']
-        string:           /"([^"]|\\.)*"/
-        number:           /-?(\.[0-9]+|[0-9]+(\.[0-9]+)?)/
-
-        array: a
-          pattern: "'[]' block"
-          toJs: ->
-            "[#{(node.toJs() for node in @block.statements).join ', '}]"
-          m
-            pattern: "'[]' _? arrayElementWithDelimiter* expression"
-            toJs: -> "[#{(node.toJs() for node in compactFlatten [@arrayElementWithDelimiters, @expression]).join ', '}]"
-          m
-            pattern: "'[]'"
+          literal:
+            pattern: w 'string number'
             toJs: -> @text
 
-        arrayElementWithDelimiter: "expression _? ',' _?"
+          end:              ['block end', '/\n+|$/']
+          statement:        ['objectStatement end', 'expression end']
+          string:           /"([^"]|\\.)*"/
+          number:           /-?(\.[0-9]+|[0-9]+(\.[0-9]+)?)/
 
-        object: [
-          "'{}' block"
-          pattern: "'{}'? _? objectPropList"
-          toJs: -> @objectPropList.toJs()
-        ]
+          array: a
+            pattern: "'[]' block"
+            toJs: ->
+              "[#{(node.toJs() for node in @block.statements).join ', '}]"
+            {
+              pattern: "'[]' _? arrayElementWithDelimiter* expression"
+              toJs: -> "[#{(node.toJs() for node in compactFlatten [@arrayElementWithDelimiters, @expression]).join ', '}]"
+            }
+            {
+              pattern: "'[]'"
+              toJs: -> @text
+            }
 
-        objectStatement:
-          pattern: "objectProp objectPropLine*"
-          toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropLines]).join ', '}}"
+          arrayElementWithDelimiter: "expression _? ',' _?"
 
-        objectPropLine:
-          pattern: "end objectProp"
-          toJs: -> @objectProp.toJs()
+          object: [
+            "'{}' block"
+            pattern: "'{}'? _? objectPropList"
+            toJs: -> (@objectPropList || @block).toJs()
+          ]
 
-        objectPropList:
-          pattern: "objectProp objectPropListItem*"
-          toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropListItems]).join ', '}}"
+          objectStatement:
+            pattern: "objectProp objectPropLine*"
+            toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropLines]).join ', '}}"
 
-        objectPropListItem: [
-          {
+          objectPropLine:
+            pattern: "end objectProp"
+            toJs: -> @objectProp.toJs()
+
+          objectPropList:
+            pattern: "objectProp objectPropListItem*"
+            toJs: -> "{#{(m.toJs() for m in compactFlatten [@objectProp, @objectPropListItems]).join ', '}}"
+
+          objectPropListItem:
             pattern: '"," _? objectProp'
             toJs: -> @objectProp.toJs()
-          }
-        ]
 
-        objectProp:
-          pattern: 'objectPropLabel _? colon _? expression'
-          toJs: -> "#{@objectPropLabel}: #{@expression.toJs()}"
+          objectProp:
+            pattern: 'objectPropLabel _? colon _? expression'
+            toJs: -> "#{@objectPropLabel}: #{@expression.toJs()}"
 
-        commaOrEnd: ["',' _?", "end"]
-        objectPropLabel:  /[_a-zA-Z][_a-zA-Z0-9.]*/
-        colon:            /\:/
-        _:                / +/
+          commaOrEnd: ["',' _?", "end"]
+          objectPropLabel:  /[_a-zA-Z][_a-zA-Z0-9.]*/
+          colon:            /\:/
+          _:                / +/
 
     suite "parsing literals", ->
       test "string expression", ->
