@@ -362,7 +362,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       expecting = {}
       for pmp in partialMatchingParents
-        for child in pmp.matches when child.isNonMatch
+        for child in pmp.matches when child.isNonMatch && child.nonMatchingLeaf
           couldMatchRuleNames.push ruleName if ruleName = child.nonMatchingLeaf.ruleNameOrNull
           expecting[child.nonMatchingLeaf.ruleNameOrPattern] =
             "to-continue": pmp.ruleName
