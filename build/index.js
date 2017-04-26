@@ -3402,7 +3402,7 @@ module.exports = Parser = (function(superClass) {
         ref3 = pmp.matches;
         for (l = 0, len2 = ref3.length; l < len2; l++) {
           child = ref3[l];
-          if (!child.isNonMatch) {
+          if (!(child.isNonMatch && child.nonMatchingLeaf)) {
             continue;
           }
           if (ruleName = child.nonMatchingLeaf.ruleNameOrNull) {
