@@ -2,7 +2,7 @@
   "author": "Shane Brinkman-Davis Delamore, Imikimi LLC",
   "dependencies": {
     "art-build-configurator": "^1.8.1",
-    "art-class-system": "^1.0.1",
+    "art-class-system": "^1.5.1",
     "art-config": "^1.0.0",
     "art-standard-lib": "^1.0.0",
     "art-testbench": "^1.0.0",
@@ -12,6 +12,7 @@
     "coffee-script": "^1.12.3",
     "color": "^0.11.4",
     "css-loader": "^0.26.1",
+    "detect-node": "^2.0.3",
     "json-loader": "^0.5.4",
     "neptune-namespaces": "^2.0.0",
     "script-loader": "^0.7.0",
@@ -26,7 +27,8 @@
   "scripts": {
     "build": "webpack --progress",
     "start": "webpack-dev-server --hot --inline --progress",
-    "test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register"
+    "test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register",
+    "testInBrowser": "webpack-dev-server --progress"
   },
   "version": "1.12.2"
 }
