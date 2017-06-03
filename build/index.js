@@ -2,41 +2,41 @@ module.exports =
 /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
-
+/******/
 /******/ 	// The require function
 /******/ 	function __webpack_require__(moduleId) {
-
+/******/
 /******/ 		// Check if module is in cache
-/******/ 		if(installedModules[moduleId])
+/******/ 		if(installedModules[moduleId]) {
 /******/ 			return installedModules[moduleId].exports;
-
+/******/ 		}
 /******/ 		// Create a new module (and put it into the cache)
 /******/ 		var module = installedModules[moduleId] = {
 /******/ 			i: moduleId,
 /******/ 			l: false,
 /******/ 			exports: {}
 /******/ 		};
-
+/******/
 /******/ 		// Execute the module function
 /******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
-
+/******/
 /******/ 		// Flag the module as loaded
 /******/ 		module.l = true;
-
+/******/
 /******/ 		// Return the exports of the module
 /******/ 		return module.exports;
 /******/ 	}
-
-
+/******/
+/******/
 /******/ 	// expose the modules object (__webpack_modules__)
 /******/ 	__webpack_require__.m = modules;
-
+/******/
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
-
+/******/
 /******/ 	// identity function for calling harmony imports with the correct context
 /******/ 	__webpack_require__.i = function(value) { return value; };
-
+/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -47,7 +47,7 @@ module.exports =
 /******/ 			});
 /******/ 		}
 /******/ 	};
-
+/******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
 /******/ 	__webpack_require__.n = function(module) {
 /******/ 		var getter = module && module.__esModule ?
@@ -56,15 +56,15 @@ module.exports =
 /******/ 		__webpack_require__.d(getter, 'a', getter);
 /******/ 		return getter;
 /******/ 	};
-
+/******/
 /******/ 	// Object.prototype.hasOwnProperty.call
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
-
+/******/
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
-
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 27);
+/******/ 	return __webpack_require__(__webpack_require__.s = 18);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -87,9 +87,9 @@ module.exports = __webpack_require__(5);
 
 module.exports.addModules({
   EmptyNode: __webpack_require__(10),
-  EmptyOptionalNode: __webpack_require__(21),
+  EmptyOptionalNode: __webpack_require__(22),
   Node: __webpack_require__(11),
-  ScratchNode: __webpack_require__(22)
+  ScratchNode: __webpack_require__(23)
 });
 
 
@@ -188,7 +188,7 @@ module.exports = BabelBridge.Nodes || BabelBridge.addNamespace('Nodes', Nodes = 
 
 ref = __webpack_require__(0), defineModule = ref.defineModule, formattedInspect = ref.formattedInspect, isClass = ref.isClass, log = ref.log;
 
-__webpack_require__(24);
+__webpack_require__(25);
 
 defineModule(module, Repl = (function() {
   function Repl() {}
@@ -197,7 +197,7 @@ defineModule(module, Repl = (function() {
     if (isClass(parser)) {
       parser = new parser;
     }
-    return __webpack_require__(26).start({
+    return __webpack_require__(27).start({
       prompt: ((parser.getClassName()) + "> ").grey,
       "eval": function(command, context, filename, callback) {
         var e, parsed, result;
@@ -240,7 +240,7 @@ var BabelBridge, Neptune,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-Neptune = __webpack_require__(25);
+Neptune = __webpack_require__(26);
 
 module.exports = Neptune.BabelBridge || Neptune.addNamespace('BabelBridge', BabelBridge = (function(superClass) {
   extend(BabelBridge, superClass);
@@ -1406,10 +1406,10 @@ module.exports = Tools = (function() {
 
 module.exports = __webpack_require__(7);
 
-module.exports.includeInNamespace(__webpack_require__(18)).addModules({
+module.exports.includeInNamespace(__webpack_require__(19)).addModules({
   BabelBridgeCompileError: __webpack_require__(8),
   NonMatch: __webpack_require__(12),
-  Parser: __webpack_require__(23),
+  Parser: __webpack_require__(24),
   PatternElement: __webpack_require__(13),
   Repl: __webpack_require__(6),
   Rule: __webpack_require__(14),
@@ -1418,13 +1418,20 @@ module.exports.includeInNamespace(__webpack_require__(18)).addModules({
   Tools: __webpack_require__(16)
 });
 
-__webpack_require__(20);
+__webpack_require__(21);
 
 __webpack_require__(2);
 
 
 /***/ }),
 /* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(17);
+
+
+/***/ }),
+/* 19 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var isClass, log, ref;
@@ -1435,7 +1442,7 @@ module.exports = __webpack_require__(6);
 
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var Node, array, defineModule, escapeJavascriptString, find, log, merge, ref;
@@ -1602,18 +1609,18 @@ defineModule(module, function() {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(9);
 
 module.exports.addModules({
-  IndentBlocks: __webpack_require__(19)
+  IndentBlocks: __webpack_require__(20)
 });
 
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var EmptyOptionalNode,
@@ -1639,7 +1646,7 @@ module.exports = EmptyOptionalNode = (function(superClass) {
 
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /* WEBPACK VAR INJECTION */(function(module) {var BaseClass, ScratchNode, compactFlatten, defineModule, inspect, isPlainObject, isString, log, merge, pad, push, ref, toInspectedObjects, upperCamelCase,
@@ -1759,7 +1766,7 @@ defineModule(module, ScratchNode = (function(superClass) {
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var BabelBridgeCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
@@ -2353,29 +2360,22 @@ module.exports = Parser = (function(superClass) {
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = require("color");
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports) {
 
 module.exports = require("neptune-namespaces");
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports) {
 
 module.exports = require("repl");
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(17);
-
 
 /***/ })
 /******/ ]);
