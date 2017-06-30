@@ -2,4 +2,7 @@ require '../index.coffee'
 require "art-testbench/testing"
 .init
   synchronous: true
-  defineTests: -> require './tests'
+  defineTests: ->
+    tests = require './tests'
+    Neptune.BabelBridge = require '../source/BabelBridge'
+    tests

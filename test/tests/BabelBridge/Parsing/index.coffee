@@ -5,5 +5,6 @@ module.exports = require './namespace'
 module.exports
 .addModules
   Labels:                        require './Labels'                       
+  LeftRecursive:                 require './LeftRecursive'                
   Parser:                        require './Parser'                       
   ParserExtensionViaInheritance: require './ParserExtensionViaInheritance'

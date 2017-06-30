@@ -49,22 +49,38 @@ module.exports = class RuleVariant extends BaseClass
     patternString: -> @pattern || (@options.parse && 'function()')
 
 
+  # depth = 0
   ###
   see: BabelBridge.Rule#parse
   ###
   parse: (parentNode) ->
-    Stats.add "parseVariant"
+    {name} = @
+    {parser, nextOffset} = parentNode
+    # log "RuleVariant.parse #{name} @#{nextOffset}"
+    # if depth > 3
+    #   throw new Error "max depth"
+    # depth++
+    activeParserOffset = parser.activeRuleVariantParsers[name]
+    if activeParserOffset == nextOffset
+      throw new Error "leftRecursion detected: #{name} @#{activeParserOffset}"
+    parser.activeRuleVariantParsers[name] = parentNode.nextOffset
 
-    scratchNode = ScratchNode.checkout parentNode, @
+    try
+      Stats.add "parseVariant"
 
-    {parser} = parentNode
-    for patternElement in @patternElements
-      unless parser.tryPatternElement patternElement, scratchNode, @
-        scratchNode.checkin()
-        return false
+      scratchNode = ScratchNode.checkout parentNode, @
 
-    scratchNode.checkin()
-    scratchNode.getRealNode()
+      {parser} = parentNode
+      for patternElement in @patternElements
+        unless parser.tryPatternElement patternElement, scratchNode, @
+          scratchNode.checkin()
+          return false
+
+      scratchNode.checkin()
+      scratchNode.getRealNode()
+    finally
+      parser.activeRuleVariantParsers[name] = activeParserOffset
+      # depth--
 
   @getter
     variantNodeClassName: ->
