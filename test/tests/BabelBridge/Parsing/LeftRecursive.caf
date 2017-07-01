@@ -1,16 +1,29 @@
 import &StandardImport
 
-suite: ->
-  test "simplest" ->
-    throw new Error Parser.namespace.version
-    class MyLeftRecursiveParser extends Parser
-      @rule
-        root: "leftRecursiveRule"
+suite:
+  simplest: ->
+    test "depth 1" ->
+      class MyLeftRecursiveParser extends Parser
+        @rule
+          root: "leftRecursiveRule"
 
-        leftRecursiveRule:
-          "leftRecursiveRule '.'"
-          "'&'"
+          leftRecursiveRule:
+            "leftRecursiveRule '.'"
+            "'&'"
 
-    p = new MyLeftRecursiveParser
+      p = new MyLeftRecursiveParser
 
-    p.parse "&."
+      assert.rejects -> p.parse "&."
+
+    test "depth 2" ->
+      class MyLeftRecursiveParser extends Parser
+        @rule
+          root: "leftRecursiveRule"
+
+          leftRecursiveRule:
+            "leftRecursiveRule '.'"
+            "'&'"
+
+      p = new MyLeftRecursiveParser
+
+      assert.rejects -> p.parse "&.."

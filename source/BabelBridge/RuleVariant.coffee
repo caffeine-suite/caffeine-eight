@@ -56,14 +56,12 @@ module.exports = class RuleVariant extends BaseClass
   parse: (parentNode) ->
     {name} = @
     {parser, nextOffset} = parentNode
-    # log "RuleVariant.parse #{name} @#{nextOffset}"
-    # if depth > 3
-    #   throw new Error "max depth"
-    # depth++
-    activeParserOffset = parser.activeRuleVariantParsers[name]
-    if activeParserOffset == nextOffset
-      throw new Error "leftRecursion detected: #{name} @#{activeParserOffset}"
-    parser.activeRuleVariantParsers[name] = parentNode.nextOffset
+    {activeRuleVariantParserOffsets} = parser
+
+    if nextOffset == previousActiveRuleVariantParserOffset = activeRuleVariantParserOffsets[name]
+      throw new Error "leftRecursion detected: RuleVariant: #{name}, offset: #{nextOffset}"
+
+    activeRuleVariantParserOffsets[name] = nextOffset
 
     try
       Stats.add "parseVariant"
@@ -78,9 +76,9 @@ module.exports = class RuleVariant extends BaseClass
 
       scratchNode.checkin()
       scratchNode.getRealNode()
+
     finally
-      parser.activeRuleVariantParsers[name] = activeParserOffset
-      # depth--
+      activeRuleVariantParserOffsets[name] = previousActiveRuleVariantParserOffset
 
   @getter
     variantNodeClassName: ->

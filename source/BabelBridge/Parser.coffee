@@ -411,7 +411,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     null
 
   _resetParserTracking: ->
-    @_activeRuleVariantParsers = {}
+    @_activeRuleVariantParserOffsets = {}
     @_subparseInfo = null
     @_logParsingFailures = false
     @_partialParseTreeNodes = null
@@ -423,7 +423,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     @_parseCache = {}
     @_parentParserRootOffset = null
 
-  @getter "activeRuleVariantParsers failureIndex",
+  @getter "activeRuleVariantParserOffsets activeRuleVariantParserAreLeftRecursive failureIndex",
     isMatchingNegative: -> @_matchingNegativeDepth > 0
 
   _matchNegative: (f) ->
