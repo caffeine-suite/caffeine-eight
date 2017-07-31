@@ -1,7 +1,7 @@
 ## BabelBridgeJs [![Build Status](https://travis-ci.org/shanebdavis/babel-bridge-js.svg?branch=master)](https://travis-ci.org/shanebdavis/babel-bridge-js)
 
-* Create parsers with ease 100% in JavaScript, or better yet, CoffeeScript!
-* Powered by [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar)
+BabelBridge empowers you to write parsers quickly, elegantly and with very little code. BabelBridge is based on [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar) (PEG), but unlike other libraries, BabelBridge is not a parser-generator. There is no build step. All you need to do is extend a class, add some rules and you are ready to parse. The result is you can create and, more importantly, extend your parsers at runtime.
+
 * Inspired by my earlier [Babel Bridge Ruby Gem](http://babel-bridge.rubyforge.org/index.html), the JavaScript version is turning out to be even more awesome!
 
 #### Motivating Example
@@ -25,8 +25,6 @@
 * Runtime-extensible parsers
 * Reasonably fast
 * No globals - each parser instance parses in its own space
-
-This is NOT a parser-generator. There is no pre-compile step. Unlike other PEG libraries, BB enables you to *create and extend parsers at runtime*.
 
 ## Features
 
