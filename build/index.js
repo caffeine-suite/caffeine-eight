@@ -200,16 +200,10 @@ defineModule(module, Repl = (function() {
       "eval": function(command, context, filename, callback) {
         var e, parsed, result;
         try {
-          parsed = parser.parse(command.trim());
+          result = parsed = parser.parse(command.trim());
           try {
-            if (result = typeof parsed.evaluate === "function" ? parsed.evaluate() : void 0) {
-              return callback(null, result);
-            } else {
-              log(formattedInspect(parsed, {
-                color: true
-              }));
-              return callback();
-            }
+            log(result = (typeof parsed.evaluate === "function" ? parsed.evaluate() : void 0) || parsed);
+            return callback();
           } catch (error) {
             e = error;
             return callback(e);
@@ -2475,7 +2469,7 @@ module.exports = {
 		"test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register",
 		"testInBrowser": "webpack-dev-server --progress"
 	},
-	"version": "2.0.0"
+	"version": "2.0.1"
 };
 
 /***/ }),
