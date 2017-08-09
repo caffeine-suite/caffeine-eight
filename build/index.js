@@ -191,7 +191,7 @@ __webpack_require__(32);
 defineModule(module, Repl = (function() {
   function Repl() {}
 
-  Repl.babelBridgeRepl = function(parser) {
+  Repl.caffeineEightRepl = function(parser) {
     if (isClass(parser)) {
       parser = new parser;
     }
@@ -234,20 +234,20 @@ defineModule(module, Repl = (function() {
 /* 7 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var BabelBridge,
+var Eight,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-module.exports = (__webpack_require__(33)).addNamespace('BabelBridge', BabelBridge = (function(superClass) {
-  extend(BabelBridge, superClass);
+module.exports = (__webpack_require__(33)).addNamespace('Caffeine.Eight', Eight = (function(superClass) {
+  extend(Eight, superClass);
 
-  function BabelBridge() {
-    return BabelBridge.__super__.constructor.apply(this, arguments);
+  function Eight() {
+    return Eight.__super__.constructor.apply(this, arguments);
   }
 
-  BabelBridge.version = __webpack_require__(19).version;
+  Eight.version = __webpack_require__(19).version;
 
-  return BabelBridge;
+  return Eight;
 
 })(Neptune.PackageNamespace));
 
@@ -260,20 +260,20 @@ __webpack_require__(5);
 /* 8 */
 /***/ (function(module, exports, __webpack_require__) {
 
-/* WEBPACK VAR INJECTION */(function(module) {var BabelBridgeCompileError, ErrorWithInfo, defineModule, formattedInspect, isFunction, log, mergeInto, ref,
+/* WEBPACK VAR INJECTION */(function(module) {var CaffeineEightCompileError, ErrorWithInfo, defineModule, formattedInspect, isFunction, log, mergeInto, ref,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
 ref = __webpack_require__(0), defineModule = ref.defineModule, log = ref.log, mergeInto = ref.mergeInto, isFunction = ref.isFunction, formattedInspect = ref.formattedInspect, ErrorWithInfo = ref.ErrorWithInfo;
 
-defineModule(module, BabelBridgeCompileError = (function(superClass) {
-  extend(BabelBridgeCompileError, superClass);
+defineModule(module, CaffeineEightCompileError = (function(superClass) {
+  extend(CaffeineEightCompileError, superClass);
 
-  function BabelBridgeCompileError(message, info) {
-    BabelBridgeCompileError.__super__.constructor.call(this, message, info, "BabelBridgeCompileError");
+  function CaffeineEightCompileError(message, info) {
+    CaffeineEightCompileError.__super__.constructor.call(this, message, info, "CaffeineEightCompileError");
   }
 
-  return BabelBridgeCompileError;
+  return CaffeineEightCompileError;
 
 })(ErrorWithInfo));
 
@@ -1299,7 +1299,7 @@ module.exports = RuleVariant = (function(superClass) {
 
 
   /*
-  see: BabelBridge.Rule#parse
+  see: Caffeine.Eight.Rule#parse
    */
 
   RuleVariant.prototype.parse = function(parentNode) {
@@ -2468,14 +2468,14 @@ module.exports = {
 	},
 	"description": "a 'runtime' parsing expression grammar parser",
 	"license": "ISC",
-	"name": "babel-bridge",
+	"name": "caffeine-eight",
 	"scripts": {
 		"build": "webpack --progress",
 		"start": "webpack-dev-server --hot --inline --progress",
 		"test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register",
 		"testInBrowser": "webpack-dev-server --progress"
 	},
-	"version": "1.12.8"
+	"version": "1.13.0"
 };
 
 /***/ }),
@@ -2485,7 +2485,7 @@ module.exports = {
 module.exports = __webpack_require__(7);
 
 module.exports.includeInNamespace(__webpack_require__(23)).addModules({
-  BabelBridgeCompileError: __webpack_require__(8),
+  CaffeineEightCompileError: __webpack_require__(8),
   NonMatch: __webpack_require__(12),
   Parser: __webpack_require__(28),
   PatternElement: __webpack_require__(13),
@@ -3017,7 +3017,7 @@ defineModule(module, ScratchNode = (function(superClass) {
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var BabelBridgeCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
+var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   slice = [].slice;
@@ -3034,7 +3034,7 @@ Stats = __webpack_require__(3);
 
 ref1 = __webpack_require__(0), isFunction = ref1.isFunction, peek = ref1.peek, log = ref1.log, isPlainObject = ref1.isPlainObject, isPlainArray = ref1.isPlainArray, merge = ref1.merge, compactFlatten = ref1.compactFlatten, objectLength = ref1.objectLength, inspect = ref1.inspect, inspectLean = ref1.inspectLean, pluralize = ref1.pluralize, isClass = ref1.isClass, isPlainArray = ref1.isPlainArray, upperCamelCase = ref1.upperCamelCase, mergeInto = ref1.mergeInto, objectWithout = ref1.objectWithout, uniqueValues = ref1.uniqueValues, formattedInspect = ref1.formattedInspect, max = ref1.max, inspect = ref1.inspect, pushIfNotPresent = ref1.pushIfNotPresent, uniqueValues = ref1.uniqueValues, objectHasKeys = ref1.objectHasKeys;
 
-BabelBridgeCompileError = __webpack_require__(8);
+CaffeineEightCompileError = __webpack_require__(8);
 
 module.exports = Parser = (function(superClass) {
   var addToExpectingInfo, firstLines, instanceRulesFunction, lastLines, rulesFunction;
@@ -3042,7 +3042,7 @@ module.exports = Parser = (function(superClass) {
   extend(Parser, superClass);
 
   Parser.repl = function() {
-    return (__webpack_require__(6)).babelBridgeRepl(this);
+    return (__webpack_require__(6)).caffeineEightRepl(this);
   };
 
   Parser.parse = function(_source, options) {
@@ -3125,7 +3125,7 @@ module.exports = Parser = (function(superClass) {
   /*
   IN:
     rules: plain object mapping rule-names to definitions
-    nodeClass: optional, must extend BabelBridge.Node or be a plain object
+    nodeClass: optional, must extend Caffeine.Eight.Node or be a plain object
    */
 
   Parser.rule = rulesFunction = function(a, b) {
@@ -3341,7 +3341,7 @@ module.exports = Parser = (function(superClass) {
     } else {
       if (!isSubparse) {
         if (logParsingFailures) {
-          throw new BabelBridgeCompileError(result ? [this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (result.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))), this.getParseFailureInfo(this.options)].join("\n") : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
+          throw new CaffeineEightCompileError(result ? [this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (result.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))), this.getParseFailureInfo(this.options)].join("\n") : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
         } else {
           return this.parse(this._source, merge(this.options, {
             logParsingFailures: true
