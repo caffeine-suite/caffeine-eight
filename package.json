@@ -33,7 +33,7 @@
   },
   "description": "a 'runtime' parsing expression grammar parser",
   "license": "ISC",
-  "name": "babel-bridge",
+  "name": "caffeine-eight",
   "scripts": {
     "build": "webpack --progress",
     "start": "webpack-dev-server --hot --inline --progress",

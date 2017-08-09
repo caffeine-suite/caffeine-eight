@@ -1,19 +1,15 @@
-# RENAME
+## CaffeineEight [![Build Status](https://travis-ci.org/shanebdavis/caffeine-eight-js.svg?branch=master)](https://travis-ci.org/shanebdavis/caffeine-eight-js)
 
-BabelBridgeJs is now [CaffeineEight](https://www.npmjs.com/package/caffeine-eight)
+CaffeineEight empowers you to write parsers quickly, elegantly and with very little code. CaffeineEight is based on [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar) (PEG), but unlike other libraries, CaffeineEight is not a parser-generator. There is no build step. Just extend a class, add some rules and you are ready to parse. With CaffeineEight you can create and, more importantly, extend your parsers at runtime.
 
-## BabelBridgeJs [![Build Status](https://travis-ci.org/shanebdavis/babel-bridge-js.svg?branch=master)](https://travis-ci.org/shanebdavis/babel-bridge-js)
-
-BabelBridge empowers you to write parsers quickly, elegantly and with very little code. BabelBridge is based on [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar) (PEG), but unlike other libraries, BabelBridge is not a parser-generator. There is no build step. Just extend a class, add some rules and you are ready to parse. With BabelBridge you can create and, more importantly, extend your parsers at runtime.
-
-* Inspired by my earlier [Babel Bridge Ruby Gem](http://babel-bridge.rubyforge.org/index.html), the JavaScript version is turning out to be even more awesome!
+* Inspired by my earlier [Babel Bridge Ruby Gem](http://caffeine-eight.rubyforge.org/index.html), the JavaScript version is turning out to be even more awesome!
 
 #### Motivating Example
 
 ```coffeescript
-  BabelBridge = require 'babel-bridge'
+  CaffeineEight = require 'caffeine-eight'
 
-  class MyParser extends BabelBridge.Parser
+  class MyParser extends CaffeineEight.Parser
     @rule foo: "/foo/ bar?"
     @rule bar: /bar/
 
@@ -39,3 +35,7 @@ BabelBridge empowers you to write parsers quickly, elegantly and with very littl
 * Detailed information about parsing failures
 * Custom sub-parser hooks
   * Which enable indention-based block parsing for languages like Python, CoffeeScript, or my own CaffeineScript
+
+## Rename History
+
+CaffeineEight was formally called [BabelBridgeJs](https://www.npmjs.com/package/caffeine-eight)
