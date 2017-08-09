@@ -22,9 +22,9 @@ class JsonParser extends &CaffeineEight.Parser
       "'{' _? '}'"
       "'{' _? pair commaPair* _? '}'"
 
-    commaValue: " _? ',' _? value"
-    commaPair:  " _? ',' _? pair"
-    pair:       " string _? ':' _? value"
+    commaValue: "_? ',' _? value"
+    commaPair:  "_? ',' _? pair"
+    pair:       "string _? ':' _? value"
 
     value: :object :array :number :string :true :false :null
 
