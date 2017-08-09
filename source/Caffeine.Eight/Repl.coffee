@@ -8,13 +8,10 @@ defineModule module, class Repl
       prompt: "#{parser.getClassName()}> ".grey
       eval: (command, context, filename, callback) ->
         try
-          parsed = parser.parse command.trim()
+          result = parsed = parser.parse command.trim()
           try
-            if result = parsed.evaluate?()
-              callback null, result
-            else
-              log formattedInspect parsed, color: true
-              callback()
+            log result = parsed.evaluate?() || parsed
+            callback()
           catch e
             callback e
         catch e
