@@ -1,4 +1,4 @@
-if (true) {
+if (false) {
   module.exports = require("./build");
 } else {
   require('./register');
