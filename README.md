@@ -2,21 +2,41 @@
 
 CaffeineEight empowers you to write parsers quickly, elegantly and with very little code. CaffeineEight is based on [Parsing Expression Grammars](https://en.wikipedia.org/wiki/Parsing_expression_grammar) (PEG), but unlike other libraries, CaffeineEight is not a parser-generator. There is no build step. Just extend a class, add some rules and you are ready to parse. With CaffeineEight you can create and, more importantly, extend your parsers at runtime.
 
-* Inspired by my earlier [Babel Bridge Ruby Gem](http://caffeine-eight.rubyforge.org/index.html), the JavaScript version is turning out to be even more awesome!
 
 #### Motivating Example
 
+A complete JSON parser in less than 30 lines of code.
+
 ```coffeescript
-  CaffeineEight = require 'caffeine-eight'
+# CaffeineScript
+class JsonParser extends &CaffeineEight.Parser
 
-  class MyParser extends CaffeineEight.Parser
-    @rule foo: "/foo/ bar?"
-    @rule bar: /bar/
+  @rule
+    root: :array :object
 
-  myParser = new MyParser
-  myParser.parse "foo"
-  myParser.parse "foobar"
-  # yay! it worked
+    array:
+      "'[' _? ']'"
+      "'[' _? value commaValue* _? ']'"
+
+    object:
+      "'{' _? '}'"
+      "'{' _? pair commaPair* _? '}'"
+
+    commaValue: " _? ',' _? value"
+    commaPair:  " _? ',' _? pair"
+    pair:       " string _? ':' _? value"
+
+    value: :object :array :number :string :true :false :null
+
+    string: /"(?:[^"\\]|\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4}))*"/
+    number: /-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/
+    true:   /true/
+    false:  /false/
+    null:   /null/
+
+    _:      /\ +/
+    
+.repl()
 ```
 
 ## Goals
@@ -28,7 +48,7 @@ CaffeineEight empowers you to write parsers quickly, elegantly and with very lit
 
 ## Features
 
-* Full parsing expression grammer support with memoizing
+* Full parsing expression grammar support with memoizing
 * Full JavaScript regular expressions support for terminals
 * Simple, convention-over-configuration parse-tree class structure
 * Human-readable parse-tree dumps
@@ -36,6 +56,11 @@ CaffeineEight empowers you to write parsers quickly, elegantly and with very lit
 * Custom sub-parser hooks
   * Which enable indention-based block parsing for languages like Python, CoffeeScript, or my own CaffeineScript
 
+## Learn More
+
+* [Wiki Home](https://github.com/caffeine-suite/caffeine-eight/wiki)
+
 ## Rename History
 
-CaffeineEight was formally called [BabelBridgeJs](https://www.npmjs.com/package/caffeine-eight)
+* CaffeineEight was formally called [BabelBridgeJs](https://www.npmjs.com/package/caffeine-eight)
+* CaffeineEight was inspired by my earlier [Babel Bridge Ruby Gem](http://caffeine-eight.rubyforge.org/index.html), the JavaScript version turned out to be even more awesome!
