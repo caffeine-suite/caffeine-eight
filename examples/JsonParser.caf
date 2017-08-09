@@ -1,5 +1,5 @@
 |caffeine-script
-class JsonParser extends &BabelBridge.Parser
+class JsonParser extends &CaffeineEight.Parser
 
   @rule
     root: :array :object
