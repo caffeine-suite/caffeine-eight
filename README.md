@@ -1,6 +1,6 @@
 ## CaffeineEight [![Build Status](https://travis-ci.org/caffeine-suite/caffeine-eight.svg?branch=master)](https://travis-ci.org/caffeine-suite/caffeine-eight)
 
-Come to C8 because you want an elegant, declarative API that makes parsing as easy as humanly possible. Stay for super powers like detailed parsing errors, predictable []PEG-based](https://en.wikipedia.org/wiki/Parsing_expression_grammar)  parsing and runtime parser extendability.
+Come to C8 because you want an elegant, declarative API that makes parsing as easy as humanly possible. Stay for super powers like detailed parsing errors, predictable [PEG-based](https://en.wikipedia.org/wiki/Parsing_expression_grammar)  parsing and runtime parser extendability.
 
 Unlike other parsing libraries, CaffeineEight is not a parser-generator. There is no build step. Just extend a class, add some rules and you are ready to parse. With CaffeineEight you can create and, more importantly, extend your parsers at runtime.
 
@@ -36,7 +36,7 @@ class JsonParser extends &CaffeineEight.Parser
     null:   /null/
 
     _:      /\ +/
-    
+
 .repl()
 ```
 
