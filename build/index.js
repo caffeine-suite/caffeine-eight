@@ -2469,7 +2469,7 @@ module.exports = {
 		"test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register",
 		"testInBrowser": "webpack-dev-server --progress"
 	},
-	"version": "2.0.1"
+	"version": "2.0.3"
 };
 
 /***/ }),
