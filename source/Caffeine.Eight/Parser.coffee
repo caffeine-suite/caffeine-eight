@@ -227,32 +227,36 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     @_resetParserTracking()
     @_logParsingFailures = logParsingFailures
 
-    if (result = startRule.parse @) &&
+    if (rootParseTreeNode = startRule.parse @) &&
         (
-          result.matchLength == @_source.length ||
-          (allowPartialMatch && result.matchLength > 0)
+          rootParseTreeNode.matchLength == @_source.length ||
+          (allowPartialMatch && rootParseTreeNode.matchLength > 0)
         )
-      result.applyLabels() unless isSubparse
-      result
+      rootParseTreeNode.applyLabels() unless isSubparse
+      rootParseTreeNode
     else
       unless isSubparse
         if logParsingFailures
-          throw new CaffeineEightCompileError(
-            if result
-              [
-                @colorString "gray", "#{@class.name} only parsed: " +
-                  @colorString "black", "#{result.matchLength} of #{@_source.length} " +
-                  @colorString "gray", "characters"
-                @getParseFailureInfo @options
-              ].join "\n"
-            else
-              @getParseFailureInfo @options
-            @parseFailureInfoObject
-          )
+          throw @generateCompileError merge @options, {rootParseTreeNode}
         else
           # rerun parse with parsing-failure-logging
           # NOTE: we could speed this up by not completely trashing the cache
           @parse @_source, merge @options, logParsingFailures: true
+
+  generateCompileError: (options) ->
+      {message, info, rootParseTreeNode, failureIndex, failureOffset} = options
+      failureIndex ?= failureOffset
+      new CaffeineEightCompileError(
+        compactFlatten([
+          if rootParseTreeNode?.matchLength < @_source.length
+            @colorString "gray", "#{@class.name} only parsed: " +
+              @colorString "black", "#{rootParseTreeNode.matchLength} of #{@_source.length} " +
+              @colorString "gray", "characters"
+          @getParseFailureInfo options
+          message
+        ]).join "\n"
+        merge @getParseFailureInfoObject(options), info
+      )
 
   getRule: (ruleName) ->
     ruleName ||= @rootRuleName
@@ -289,27 +293,27 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   ##################
   @getter "nonMatches",
 
-    failureUrl: ->
-      "#{@options.sourceFile || ''}:#{getLineColumnString @_source, @_failureIndex}"
+    failureUrl: (failureIndex = @_failureIndex) ->
+      "#{@options.sourceFile || ''}:#{getLineColumnString @_source, failureIndex}"
 
-    parseFailureInfoObject: ->
+    parseFailureInfoObject: (failureIndex = @_failureIndex) ->
       merge
         sourceFile: @options.sourceFile
         failureIndex: @_failureIndex
-        location: @failureUrl
+        location: @getFailureUrl failureIndex
         getLineColumn @_source, @_failureIndex
 
-    parseFailureInfo: (options)->
+    parseFailureInfo: (options = {})->
       return unless @_source
 
-      verbose = options?.verbose
+      {failureIndex = @_failureIndex, verbose, errorType = "Parsing"} = options
 
-      sourceBefore = lastLines left = @_source.slice 0, @_failureIndex
-      sourceAfter = firstLines right = @_source.slice @_failureIndex
+      sourceBefore = lastLines left = @_source.slice 0, failureIndex
+      sourceAfter = firstLines right = @_source.slice failureIndex
 
       out = compactFlatten [
         ""
-        @colorString "gray", "Parsing error at #{@colorString "red", @failureUrl}"
+        @colorString "gray", "#{errorType} error at #{@colorString "red", @getFailureUrl failureIndex}"
         ""
         @colorString "gray", "Source:"
         @colorString "gray", "..."
