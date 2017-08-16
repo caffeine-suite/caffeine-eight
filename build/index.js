@@ -2427,50 +2427,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {
-	"author": "Shane Brinkman-Davis Delamore, Imikimi LLC",
-	"dependencies": {
-		"art-build-configurator": "*",
-		"art-class-system": "*",
-		"art-config": "*",
-		"art-standard-lib": "*",
-		"art-testbench": "*",
-		"bluebird": "^3.5.0",
-		"caffeine-script": "*",
-		"caffeine-script-runtime": "*",
-		"case-sensitive-paths-webpack-plugin": "^2.1.1",
-		"chai": "^4.0.1",
-		"coffee-loader": "^0.7.3",
-		"coffee-script": "^1.12.6",
-		"colors": "^1.1.2",
-		"commander": "^2.9.0",
-		"css-loader": "^0.28.4",
-		"dateformat": "^2.0.0",
-		"detect-node": "^2.0.3",
-		"fs-extra": "^3.0.1",
-		"glob": "^7.1.2",
-		"glob-promise": "^3.1.0",
-		"json-loader": "^0.5.4",
-		"mocha": "^3.4.2",
-		"neptune-namespaces": "*",
-		"script-loader": "^0.7.0",
-		"style-loader": "^0.18.1",
-		"webpack": "^2.6.1",
-		"webpack-dev-server": "^2.4.5",
-		"webpack-merge": "^4.1.0",
-		"webpack-node-externals": "^1.6.0"
-	},
-	"description": "a 'runtime' parsing expression grammar parser",
-	"license": "ISC",
-	"name": "caffeine-eight",
-	"scripts": {
-		"build": "webpack --progress",
-		"start": "webpack-dev-server --hot --inline --progress",
-		"test": "nn -s;mocha -u tdd --compilers coffee:coffee-script/register",
-		"testInBrowser": "webpack-dev-server --progress"
-	},
-	"version": "2.0.3"
-};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.1.0"}
 
 /***/ }),
 /* 20 */
@@ -3320,22 +3277,24 @@ module.exports = Parser = (function(superClass) {
    */
 
   Parser.prototype.parse = function(_source, options1) {
-    var allowPartialMatch, isSubparse, logParsingFailures, ref2, result, rule, startRule;
+    var allowPartialMatch, isSubparse, logParsingFailures, ref2, rootParseTreeNode, rule, startRule;
     this._source = _source;
     this.options = options1 != null ? options1 : {};
     ref2 = this.options, this.parentParser = ref2.parentParser, allowPartialMatch = ref2.allowPartialMatch, rule = ref2.rule, isSubparse = ref2.isSubparse, logParsingFailures = ref2.logParsingFailures;
     startRule = this.getRule(rule);
     this._resetParserTracking();
     this._logParsingFailures = logParsingFailures;
-    if ((result = startRule.parse(this)) && (result.matchLength === this._source.length || (allowPartialMatch && result.matchLength > 0))) {
+    if ((rootParseTreeNode = startRule.parse(this)) && (rootParseTreeNode.matchLength === this._source.length || (allowPartialMatch && rootParseTreeNode.matchLength > 0))) {
       if (!isSubparse) {
-        result.applyLabels();
+        rootParseTreeNode.applyLabels();
       }
-      return result;
+      return rootParseTreeNode;
     } else {
       if (!isSubparse) {
         if (logParsingFailures) {
-          throw new CaffeineEightCompileError(result ? [this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (result.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))), this.getParseFailureInfo(this.options)].join("\n") : this.getParseFailureInfo(this.options), this.parseFailureInfoObject);
+          throw this.generateCompileError(merge(this.options, {
+            rootParseTreeNode: rootParseTreeNode
+          }));
         } else {
           return this.parse(this._source, merge(this.options, {
             logParsingFailures: true
@@ -3343,6 +3302,15 @@ module.exports = Parser = (function(superClass) {
         }
       }
     }
+  };
+
+  Parser.prototype.generateCompileError = function(options) {
+    var failureIndex, failureOffset, info, message, rootParseTreeNode;
+    message = options.message, info = options.info, rootParseTreeNode = options.rootParseTreeNode, failureIndex = options.failureIndex, failureOffset = options.failureOffset;
+    if (failureIndex == null) {
+      failureIndex = failureOffset;
+    }
+    return new CaffeineEightCompileError(compactFlatten([(rootParseTreeNode != null ? rootParseTreeNode.matchLength : void 0) < this._source.length ? this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (rootParseTreeNode.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))) : void 0, this.getParseFailureInfo(options), message]).join("\n"), merge(this.getParseFailureInfoObject(options), info));
   };
 
   Parser.prototype.getRule = function(ruleName) {
@@ -3392,26 +3360,35 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.getter("nonMatches", {
-    failureUrl: function() {
-      return (this.options.sourceFile || '') + ":" + (getLineColumnString(this._source, this._failureIndex));
+    failureUrl: function(failureIndex) {
+      if (failureIndex == null) {
+        failureIndex = this._failureIndex;
+      }
+      return (this.options.sourceFile || '') + ":" + (getLineColumnString(this._source, failureIndex));
     },
-    parseFailureInfoObject: function() {
+    parseFailureInfoObject: function(failureIndex) {
+      if (failureIndex == null) {
+        failureIndex = this._failureIndex;
+      }
       return merge({
         sourceFile: this.options.sourceFile,
         failureIndex: this._failureIndex,
-        location: this.failureUrl
+        location: this.getFailureUrl(failureIndex)
       }, getLineColumn(this._source, this._failureIndex));
     },
     parseFailureInfo: function(options) {
-      var left, out, right, sourceAfter, sourceBefore, verbose;
+      var errorType, failureIndex, left, out, ref2, ref3, right, sourceAfter, sourceBefore, verbose;
+      if (options == null) {
+        options = {};
+      }
       if (!this._source) {
         return;
       }
-      verbose = options != null ? options.verbose : void 0;
-      sourceBefore = lastLines(left = this._source.slice(0, this._failureIndex));
-      sourceAfter = firstLines(right = this._source.slice(this._failureIndex));
+      failureIndex = (ref2 = options.failureIndex) != null ? ref2 : this._failureIndex, verbose = options.verbose, errorType = (ref3 = options.errorType) != null ? ref3 : "Parsing";
+      sourceBefore = lastLines(left = this._source.slice(0, failureIndex));
+      sourceAfter = firstLines(right = this._source.slice(failureIndex));
       out = compactFlatten([
-        "", this.colorString("gray", "Parsing error at " + (this.colorString("red", this.failureUrl))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), "" + sourceBefore + (this.colorString("red", "<HERE>")) + (sourceAfter.replace(/[\s\n]+$/, '')), this.colorString("gray", "..."), "", this.getExpectingInfo(options), verbose ? formattedInspect({
+        "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), "" + sourceBefore + (this.colorString("red", "<HERE>")) + (sourceAfter.replace(/[\s\n]+$/, '')), this.colorString("gray", "..."), "", this.getExpectingInfo(options), verbose ? formattedInspect({
           "partial-parse-tree": this.partialParseTree
         }, options) : void 0, ""
       ]);
