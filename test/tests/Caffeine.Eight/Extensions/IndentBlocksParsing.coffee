@@ -3,6 +3,33 @@
 {Node} = Nodes
 
 module.exports = suite:
+  toEolSubparsing: ->
+    MyParser = null
+    setup ->
+      class MyParser extends Parser
+
+        @rule
+          root: 'line+'
+          line: "linePart end"
+          linePart: [
+            "lineLabel lineEnd"
+            "'(' linePart ')'"
+          ]
+          end: '/\n|$/'
+
+          lineEnd: Extensions.IndentBlocks.getPropsToSubparseToEol rule: "word", allowPartialMatch: true
+          lineLabel: /[0-9]+\: */
+          word: /[a-z]+/
+
+    test "simple expression", ->
+      MyParser.parse "1: hi"
+
+    test "partial toEol match works", ->
+      MyParser.parse "(1: hi)"
+
+    test "extra nesting", ->
+      MyParser.parse "((1: hi))"
+
   blockParsing: ->
     MyParser = null
     setup ->

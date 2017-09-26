@@ -111,6 +111,20 @@ defineModule module, -> class IndentBlocks
     else
       matchBlock source, offset
 
+  @matchToEol: matchToEol = (source, offset) ->
+    toEolContent.lastIndex = offset
+    if eolMatch = toEolContent.exec source
+
+      [sourceMatched, spaces] = eolMatch
+      matchLength = sourceMatched.length
+
+      if blockMatch = matchBlock source, offset + matchLength, true
+        matchLength += blockMatch.matchLength
+
+      subsource:    source.slice offset + spaces.length, offset + matchLength
+      sourceMap:    (suboffset) -> offset + spaces.length + suboffset
+      matchLength:  matchLength
+
   @getParseFunction: (matcher, subparseOptions) ->
     parse: (parentNode) ->
       {nextOffset:offset, source} = parentNode
@@ -121,6 +135,8 @@ defineModule module, -> class IndentBlocks
           originalOffset:       offset
           originalMatchLength:  matchLength
           sourceMap:            sourceMap
+
+  @getPropsToSubparseToEol: (subparseOptions = {}) => @getParseFunction @matchToEol, subparseOptions
 
   @getPropsToSubparseBlock: (subparseOptions = {}) => @getParseFunction @matchBlock, subparseOptions
   @getPropsToSubparseToEolAndBlock: (subparseOptions = {}) => @getParseFunction @matchToEolAndBlock, subparseOptions

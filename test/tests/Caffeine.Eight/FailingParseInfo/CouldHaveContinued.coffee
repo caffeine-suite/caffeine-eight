@@ -1,10 +1,19 @@
-{Parser, CaffeineEightCompileError} = Neptune.Caffeine.Eight
+{Parser, CaffeineEightCompileError, Extensions} = Neptune.Caffeine.Eight
 {log, defineModule, l, w, compactFlatten} = Neptune.Art.StandardLib
 
 validateCompileError = (error, testProps) ->
   assert.instanceof CaffeineEightCompileError, error
   assert.selectedPropsEq testProps, error
   assert.match error.message, /<HERE>/
+
+validateCompileError2 = (parser, text, testedProps) ->
+  myParser = new parser
+  assert.rejects -> myParser.parse text
+  .then (error)->
+    assert.instanceof CaffeineEightCompileError, error
+    assert.selectedPropsEq testedProps, error
+    assert.match error.message, /<HERE>/
+
 
 defineModule module, suite:
   info: ->
@@ -58,6 +67,33 @@ defineModule module, suite:
           failureIndex: 7
           line: 2
           column: 4
+
+  infoOnNonFirstPattern: ->
+    MyParser = null
+    setup ->
+      class MyParser extends Parser
+
+        @rule
+          root: 'number _ /[a-z]+/'
+          number: /[0-9]+/
+          _: /\s+/
+
+    test "baseline", ->
+      MyParser.parse "1 hi"
+
+    test "fail on first pattern", ->
+      validateCompileError2 MyParser, "- hi",
+        failureIndex: 0
+        line: 1
+        column: 1
+        expectingInfo: expecting: "/[0-9]+/": "to-continue": "root", "started-at": "1:1"
+
+    test "fail on second pattern", ->
+      validateCompileError2 MyParser, "1 HI",
+        failureIndex: 2
+        line: 1
+        column: 3
+        expectingInfo: expecting: "/[a-z]+/": "to-continue": "root", "started-at": "1:1"
 
   misc: ->
 

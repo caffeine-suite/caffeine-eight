@@ -297,11 +297,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       "#{@options.sourceFile || ''}:#{getLineColumnString @_source, failureIndex}"
 
     parseFailureInfoObject: (failureIndex = @_failureIndex) ->
-      merge
+      merge {
         sourceFile: @options.sourceFile
         failureIndex: @_failureIndex
         location: @getFailureUrl failureIndex
-        getLineColumn @_source, @_failureIndex
+        @expectingInfo
+      }, getLineColumn @_source, @_failureIndex
 
     parseFailureInfo: (options = {})->
       return unless @_source
@@ -320,7 +321,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         "#{sourceBefore}#{@colorString "red", "<HERE>"}#{sourceAfter.replace /[\s\n]+$/, ''}"
         @colorString "gray", "..."
         ""
-        @getExpectingInfo options
+        formattedInspect @expectingInfo, options
         if verbose
           formattedInspect ("partial-parse-tree": @partialParseTree), options
         ""
@@ -344,8 +345,9 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       @_partialParseTree = rootNode
 
-    expectingInfo: (options)->
+    expectingInfo: ->
       return null unless objectLength(@_nonMatches) > 0
+      return @_expectingInfo if @_expectingInfo
 
       ###
       I know how to do this right!
@@ -372,7 +374,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
             "to-continue": pmp.ruleName
             "started-at": getLineColumnString @_source, pmp.absoluteOffset
 
-      expecting = if objectHasKeys expecting
+      @_expectingInfo = if objectHasKeys expecting
         out = {expecting}
         if couldMatchRuleNames.length > 1
           out.rules = {}
@@ -383,8 +385,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         out
       else
         expecting: "end of input"
-
-      formattedInspect expecting, options
 
   tryPatternElement: (patternElement, parseIntoNode, ruleVariant) ->
     Stats.add "tryPatternElement"
@@ -423,6 +423,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     @_matchingNegativeDepth = 0
     @_parsingDidNotMatchEntireInput = false
     @_failureIndex = 0
+    @_expectingInfo = null
     @_nonMatches = {}
     @_parseCache = {}
     @_parentParserRootOffset = null
@@ -437,15 +438,14 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     result
 
   _logParsingFailure: (parseIntoNode, patternElement) ->
-    return unless @_matchingNegativeDepth == 0 && parseIntoNode.offset >= @_failureIndex && patternElement.isTokenPattern
+    {nextOffset} = parseIntoNode
+    return unless @_matchingNegativeDepth == 0 && nextOffset >= @_failureIndex && patternElement.isTokenPattern
 
-    {offset} = parseIntoNode
-    # log _logParsingFailures: {offset}
     if @_logParsingFailures
       parseIntoNode = parseIntoNode.getRealNode()
-      @_addNonMatch offset, new NonMatch parseIntoNode, patternElement
+      @_addNonMatch nextOffset, new NonMatch parseIntoNode, patternElement
     else
-      @_failureIndex = offset
+      @_failureIndex = nextOffset
 
   _addNonMatch: (offset, nonMatch) ->
     if offset > @_failureIndex

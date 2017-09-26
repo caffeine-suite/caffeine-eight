@@ -61,6 +61,7 @@ module.exports = class Node extends BaseClass
     matches: -> @_matches ||= []
     source: -> @_parser.source
     isRoot: -> @_parser == @_parent
+    hasMatches: -> @_matches?.length > 0
     absoluteOffset: -> @_parser.offsetInRootParserSource @_offset
     ancestors: (into = [])->
       @parent.getAncestors into
@@ -125,7 +126,7 @@ module.exports = class Node extends BaseClass
     isMatch: -> !@nonMatch
 
     nonMatchingLeaf: ->
-      @nonMatch && peek @matches
+      @nonMatch && (peek @matches) || @
 
     firstPartialMatchParent: ->
       # throw new Error unless @isNonMatch
