@@ -416,6 +416,10 @@ module.exports = Node = (function(superClass) {
     isRoot: function() {
       return this._parser === this._parent;
     },
+    hasMatches: function() {
+      var ref1;
+      return ((ref1 = this._matches) != null ? ref1.length : void 0) > 0;
+    },
     absoluteOffset: function() {
       return this._parser.offsetInRootParserSource(this._offset);
     },
@@ -537,7 +541,7 @@ module.exports = Node = (function(superClass) {
       return !this.nonMatch;
     },
     nonMatchingLeaf: function() {
-      return this.nonMatch && peek(this.matches);
+      return this.nonMatch && (peek(this.matches)) || this;
     },
     firstPartialMatchParent: function() {
       if (this.parent === this.parser || this.isPartialMatch) {
@@ -2427,7 +2431,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.1.0"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.2.0"}
 
 /***/ }),
 /* 20 */
@@ -2653,7 +2657,7 @@ Node = __webpack_require__(2).Node;
 defineModule(module, function() {
   var IndentBlocks;
   return IndentBlocks = (function() {
-    var blockLinesRegExp, blockStartRegExp, computeSubsourceToParentSourceMap, matchBlock, matchToEolAndBlock, toEolContent;
+    var blockLinesRegExp, blockStartRegExp, computeSubsourceToParentSourceMap, matchBlock, matchToEol, matchToEolAndBlock, toEolContent;
 
     function IndentBlocks() {}
 
@@ -2769,6 +2773,25 @@ defineModule(module, function() {
       }
     };
 
+    IndentBlocks.matchToEol = matchToEol = function(source, offset) {
+      var blockMatch, eolMatch, matchLength, sourceMatched, spaces;
+      toEolContent.lastIndex = offset;
+      if (eolMatch = toEolContent.exec(source)) {
+        sourceMatched = eolMatch[0], spaces = eolMatch[1];
+        matchLength = sourceMatched.length;
+        if (blockMatch = matchBlock(source, offset + matchLength, true)) {
+          matchLength += blockMatch.matchLength;
+        }
+        return {
+          subsource: source.slice(offset + spaces.length, offset + matchLength),
+          sourceMap: function(suboffset) {
+            return offset + spaces.length + suboffset;
+          },
+          matchLength: matchLength
+        };
+      }
+    };
+
     IndentBlocks.getParseFunction = function(matcher, subparseOptions) {
       return {
         parse: function(parentNode) {
@@ -2784,6 +2807,13 @@ defineModule(module, function() {
           }
         }
       };
+    };
+
+    IndentBlocks.getPropsToSubparseToEol = function(subparseOptions) {
+      if (subparseOptions == null) {
+        subparseOptions = {};
+      }
+      return IndentBlocks.getParseFunction(IndentBlocks.matchToEol, subparseOptions);
     };
 
     IndentBlocks.getPropsToSubparseBlock = function(subparseOptions) {
@@ -3373,7 +3403,8 @@ module.exports = Parser = (function(superClass) {
       return merge({
         sourceFile: this.options.sourceFile,
         failureIndex: this._failureIndex,
-        location: this.getFailureUrl(failureIndex)
+        location: this.getFailureUrl(failureIndex),
+        expectingInfo: this.expectingInfo
       }, getLineColumn(this._source, this._failureIndex));
     },
     parseFailureInfo: function(options) {
@@ -3388,7 +3419,7 @@ module.exports = Parser = (function(superClass) {
       sourceBefore = lastLines(left = this._source.slice(0, failureIndex));
       sourceAfter = firstLines(right = this._source.slice(failureIndex));
       out = compactFlatten([
-        "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), "" + sourceBefore + (this.colorString("red", "<HERE>")) + (sourceAfter.replace(/[\s\n]+$/, '')), this.colorString("gray", "..."), "", this.getExpectingInfo(options), verbose ? formattedInspect({
+        "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), "" + sourceBefore + (this.colorString("red", "<HERE>")) + (sourceAfter.replace(/[\s\n]+$/, '')), this.colorString("gray", "..."), "", formattedInspect(this.expectingInfo, options), verbose ? formattedInspect({
           "partial-parse-tree": this.partialParseTree
         }, options) : void 0, ""
       ]);
@@ -3423,10 +3454,13 @@ module.exports = Parser = (function(superClass) {
       }).call(this);
       return this._partialParseTree = rootNode;
     },
-    expectingInfo: function(options) {
+    expectingInfo: function() {
       var child, couldMatchRuleNames, expecting, firstPartialMatchParent, i, j, l, len, len1, len2, node, out, partialMatchingParents, pmp, ref2, ref3, ruleName, v;
       if (!(objectLength(this._nonMatches) > 0)) {
         return null;
+      }
+      if (this._expectingInfo) {
+        return this._expectingInfo;
       }
 
       /*
@@ -3462,7 +3496,7 @@ module.exports = Parser = (function(superClass) {
           };
         }
       }
-      expecting = (function() {
+      return this._expectingInfo = (function() {
         var len3, len4, o, q, ref4;
         if (objectHasKeys(expecting)) {
           out = {
@@ -3486,7 +3520,6 @@ module.exports = Parser = (function(superClass) {
           };
         }
       }).call(this);
-      return formattedInspect(expecting, options);
     }
   });
 
@@ -3530,6 +3563,7 @@ module.exports = Parser = (function(superClass) {
     this._matchingNegativeDepth = 0;
     this._parsingDidNotMatchEntireInput = false;
     this._failureIndex = 0;
+    this._expectingInfo = null;
     this._nonMatches = {};
     this._parseCache = {};
     return this._parentParserRootOffset = null;
@@ -3550,16 +3584,16 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype._logParsingFailure = function(parseIntoNode, patternElement) {
-    var offset;
-    if (!(this._matchingNegativeDepth === 0 && parseIntoNode.offset >= this._failureIndex && patternElement.isTokenPattern)) {
+    var nextOffset;
+    nextOffset = parseIntoNode.nextOffset;
+    if (!(this._matchingNegativeDepth === 0 && nextOffset >= this._failureIndex && patternElement.isTokenPattern)) {
       return;
     }
-    offset = parseIntoNode.offset;
     if (this._logParsingFailures) {
       parseIntoNode = parseIntoNode.getRealNode();
-      return this._addNonMatch(offset, new NonMatch(parseIntoNode, patternElement));
+      return this._addNonMatch(nextOffset, new NonMatch(parseIntoNode, patternElement));
     } else {
-      return this._failureIndex = offset;
+      return this._failureIndex = nextOffset;
     }
   };
 
