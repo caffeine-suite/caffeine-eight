@@ -156,17 +156,17 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     options.parentParser = @
     if match = subparser.parse subsource, merge(options, isSubparse: true, logParsingFailures: @_logParsingFailures)
       {offset, matchLength, source, parser} = match
-      # log subsource: SUCCESS: {offset, matchLength, source, parser}
       match.subparseInfo = {offset, matchLength, source, parser}
 
-
-      # if options.allowPartialMatch was requested - and the match was partial...
       if match.matchLength < subsource.length
+        # options.allowPartialMatch was requested and the match was partial...
 
-        if match.text != parentNode.getNextText match.matchLength
-          throw new Error "INTERNAL TODO: SubParse was a partial match, but a source-map is required to determine the matchLength in the original source."
-
-        originalMatchLength = match.matchLength
+        originalMatchLength = if sourceMap
+          sourceMap(match.matchLength) - parentNode.nextOffset
+        else if match.text == parentNode.getNextText match.matchLength
+          match.matchLength
+        else
+          throw new Error "Subparse requires a sourceMap to determine the match-length in the parent text for partial-matches."
 
       match.offset      = parentNode.nextOffset
       match.matchLength = originalMatchLength
