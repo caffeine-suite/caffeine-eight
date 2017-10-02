@@ -3046,6 +3046,7 @@ module.exports = Parser = (function(superClass) {
   Parser.extendableProperty({
     rules: {}
   }, {
+    noSetter: true,
     extend: function(extendableRules, newRules) {
       var newRule, ruleName;
       for (ruleName in newRules) {
