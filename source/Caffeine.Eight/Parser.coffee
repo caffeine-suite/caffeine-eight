@@ -37,10 +37,10 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
   @extendableProperty
     rules: {}
-  , (extendableRules, newRules) ->
-    for ruleName, newRule of a
+  , extend: (extendableRules, newRules) ->
+    for ruleName, newRule of newRules
       extendableRules[ruleName] = newRule.clone()
-    newRule
+    extendableRules
 
   @addRule: (ruleName, definitions, nodeBaseClass = @getNodeBaseClass()) ->
 
