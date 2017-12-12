@@ -64,4 +64,4 @@ class JsonParser extends &CaffeineEight.Parser
 ## Rename History
 
 * CaffeineEight was formally called [BabelBridgeJs](https://www.npmjs.com/package/caffeine-eight)
-* CaffeineEight was inspired by my earlier [Babel Bridge Ruby Gem](http://caffeine-eight.rubyforge.org/index.html), the JavaScript version turned out to be even more awesome!
+* CaffeineEight was inspired by my earlier [Babel Bridge Ruby Gem](https://github.com/shanebdavis/Babel-Bridge), the JavaScript version turned out to be even more awesome!
