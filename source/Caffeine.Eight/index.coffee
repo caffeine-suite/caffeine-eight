@@ -12,7 +12,7 @@ module.exports
   Repl:                      require './Repl'                     
   Rule:                      require './Rule'                     
   RuleVariant:               require './RuleVariant'              
+  SourceLineColumnMap:       require './SourceLineColumnMap'      
   Stats:                     require './Stats'                    
-  Tools:                     require './Tools'                    
 require './Extensions'
 require './Nodes'

@@ -35,8 +35,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 0
-          line: 1
-          column: 1
+          line: 0
+          column: 0
 
     test "line 1, col 3", ->
       myParser = new MyParser
@@ -44,8 +44,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 3
-          line: 1
-          column: 4
+          line: 0
+          column: 3
 
     test "line 2, col 1", ->
       myParser = new MyParser
@@ -53,8 +53,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 4
-          line: 2
-          column: 1
+          line: 1
+          column: 0
 
     test "line 2, col 4", ->
       myParser = new MyParser
@@ -65,8 +65,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 7
-          line: 2
-          column: 4
+          line: 1
+          column: 3
 
   infoOnNonFirstPattern: ->
     MyParser = null
@@ -84,15 +84,15 @@ defineModule module, suite:
     test "fail on first pattern", ->
       validateCompileError2 MyParser, "- hi",
         failureIndex: 0
-        line: 1
-        column: 1
+        line: 0
+        column: 0
         expectingInfo: expecting: "/[0-9]+/": "to-continue": "root", "started-at": "1:1"
 
     test "fail on second pattern", ->
       validateCompileError2 MyParser, "1 HI",
         failureIndex: 2
-        line: 1
-        column: 3
+        line: 0
+        column: 2
         expectingInfo: expecting: "/[a-z]+/": "to-continue": "root", "started-at": "1:1"
 
   misc: ->
@@ -110,8 +110,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 0
-          line: 1
-          column: 1
+          line: 0
+          column: 0
 
         # log myParser.nonMatches
         assert.eq Object.keys(myParser.nonMatches).sort(), [
@@ -134,8 +134,8 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 3
-          line: 1
-          column: 4
+          line: 0
+          column: 3
 
     test "matchingNegative", ->
       class MyParser extends Parser
@@ -152,5 +152,5 @@ defineModule module, suite:
       .then (error)->
         validateCompileError error,
           failureIndex: 3
-          line: 1
-          column: 4
+          line: 0
+          column: 3

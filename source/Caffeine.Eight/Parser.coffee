@@ -1,8 +1,8 @@
 Rule = require './Rule'
-{getLineColumn, getLineColumnString} = require './Tools'
 {Node} = require './Nodes'
 NonMatch = require './NonMatch'
 Stats = require './Stats'
+SourceLineColumnMap = require './SourceLineColumnMap'
 
 {
   isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
@@ -298,7 +298,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   @getter "nonMatches",
 
     failureUrl: (failureIndex = @_failureIndex) ->
-      "#{@options.sourceFile || ''}:#{getLineColumnString @_source, failureIndex}"
+      "#{@options.sourceFile || ''}:#{@getLineColumnString failureIndex}"
 
     parseFailureInfoObject: (failureIndex = @_failureIndex) ->
       merge {
@@ -306,7 +306,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         failureIndex: @_failureIndex
         location: @getFailureUrl failureIndex
         @expectingInfo
-      }, getLineColumn @_source, @_failureIndex
+      }, @getLineColumn @_failureIndex
 
     parseFailureInfo: (options = {})->
       return unless @_source
@@ -376,7 +376,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
           couldMatchRuleNames.push ruleName if ruleName = child.nonMatchingLeaf.ruleNameOrNull
           expecting[child.nonMatchingLeaf.ruleNameOrPattern] =
             "to-continue": pmp.ruleName
-            "started-at": getLineColumnString @_source, pmp.absoluteOffset
+            "started-at": @getLineColumnString pmp.absoluteOffset
 
       @_expectingInfo = if objectHasKeys expecting
         out = {expecting}
@@ -397,6 +397,18 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     else
       @_logParsingFailure parseIntoNode, patternElement
       false
+
+  # FAST!
+  # SEE: SourceLineColumnMap#getLineColumn
+  getLineColumn: (offset, into) ->
+    (@_sourceLineColumnMap ||= new SourceLineColumnMap @_source)
+    .getLineColumn offset, into
+
+  getLineColumnString: (offset, into)->
+    {line, column} = @getLineColumn offset, into
+    "#{line + 1}:#{column + 1}"
+
+
 
   ##################
   # PRIVATE

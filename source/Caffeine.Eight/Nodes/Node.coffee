@@ -48,6 +48,9 @@ module.exports = class Node extends BaseClass
 
   toString: -> @text
 
+  # SEE: SourceLineColumnMap#getLineColumn
+  getSourceLineColumn: (into) -> @parser.getLineColumn @offset, into
+
   emptyArray = []
   @setter "matches offset matchLength ruleVariant pattern matchPatterns"
   @getter "

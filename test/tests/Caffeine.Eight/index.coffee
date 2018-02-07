@@ -3,6 +3,8 @@
 
 module.exports = require './namespace'
 module.exports
+.addModules
+  SourceLineColumnMap: require './SourceLineColumnMap'
 require './Compiling'
 require './Extensions'
 require './FailingParseInfo'
