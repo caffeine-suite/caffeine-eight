@@ -81,6 +81,34 @@ module.exports = require("art-class-system");
 
 /***/ }),
 /* 2 */
+/***/ (function(module, exports) {
+
+module.exports = function(module) {
+	if(!module.webpackPolyfill) {
+		module.deprecate = function() {};
+		module.paths = [];
+		// module.parent = undefined by default
+		if(!module.children) module.children = [];
+		Object.defineProperty(module, "loaded", {
+			enumerable: true,
+			get: function() {
+				return module.l;
+			}
+		});
+		Object.defineProperty(module, "id", {
+			enumerable: true,
+			get: function() {
+				return module.i;
+			}
+		});
+		module.webpackPolyfill = 1;
+	}
+	return module;
+};
+
+
+/***/ }),
+/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = __webpack_require__(5);
@@ -94,7 +122,7 @@ module.exports.addModules({
 
 
 /***/ }),
-/* 3 */
+/* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var Stats,
@@ -128,34 +156,6 @@ module.exports = Stats = (function(superClass) {
   return Stats;
 
 })(__webpack_require__(1).BaseClass);
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports) {
-
-module.exports = function(module) {
-	if(!module.webpackPolyfill) {
-		module.deprecate = function() {};
-		module.paths = [];
-		// module.parent = undefined by default
-		if(!module.children) module.children = [];
-		Object.defineProperty(module, "loaded", {
-			enumerable: true,
-			get: function() {
-				return module.l;
-			}
-		});
-		Object.defineProperty(module, "id", {
-			enumerable: true,
-			get: function() {
-				return module.i;
-			}
-		});
-		module.webpackPolyfill = 1;
-	}
-	return module;
-};
 
 
 /***/ }),
@@ -222,7 +222,7 @@ defineModule(module, Repl = (function() {
 
 })());
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 7 */
@@ -271,7 +271,7 @@ defineModule(module, CaffeineEightCompileError = (function(superClass) {
 
 })(ErrorWithInfo));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 9 */
@@ -333,7 +333,7 @@ Nodes = __webpack_require__(5);
 
 BaseClass = __webpack_require__(1).BaseClass;
 
-Stats = __webpack_require__(3);
+Stats = __webpack_require__(4);
 
 module.exports = Node = (function(superClass) {
   var emptyArray;
@@ -391,6 +391,10 @@ module.exports = Node = (function(superClass) {
 
   Node.prototype.toString = function() {
     return this.text;
+  };
+
+  Node.prototype.getSourceLineColumn = function(into) {
+    return this.parser.getLineColumn(this.offset, into);
   };
 
   emptyArray = [];
@@ -818,7 +822,7 @@ defineModule(module, NonMatch = (function(superClass) {
 
 })(BaseClass));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 13 */
@@ -828,7 +832,7 @@ var EmptyNode, EmptyOptionalNode, Node, PatternElement, inspect, isPlainObject, 
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
-ref = __webpack_require__(2), Node = ref.Node, EmptyNode = ref.EmptyNode, EmptyOptionalNode = ref.EmptyOptionalNode;
+ref = __webpack_require__(3), Node = ref.Node, EmptyNode = ref.EmptyNode, EmptyOptionalNode = ref.EmptyOptionalNode;
 
 ref1 = __webpack_require__(0), isPlainObject = ref1.isPlainObject, isString = ref1.isString, isRegExp = ref1.isRegExp, inspect = ref1.inspect, log = ref1.log;
 
@@ -1100,7 +1104,7 @@ var Rule, RuleVariant, Stats, log, merge, objectName, ref, upperCamelCase,
 
 RuleVariant = __webpack_require__(15);
 
-Stats = __webpack_require__(3);
+Stats = __webpack_require__(4);
 
 ref = __webpack_require__(0), merge = ref.merge, upperCamelCase = ref.upperCamelCase, objectName = ref.objectName, log = ref.log;
 
@@ -1198,9 +1202,9 @@ var BaseClass, Node, PatternElement, RuleVariant, ScratchNode, Stats, allPattern
 
 PatternElement = __webpack_require__(13);
 
-Stats = __webpack_require__(3);
+Stats = __webpack_require__(4);
 
-ref = __webpack_require__(2), Node = ref.Node, ScratchNode = ref.ScratchNode;
+ref = __webpack_require__(3), Node = ref.Node, ScratchNode = ref.ScratchNode;
 
 ref1 = __webpack_require__(0), log = ref1.log, toInspectedObjects = ref1.toInspectedObjects, isPlainObject = ref1.isPlainObject, push = ref1.push, isString = ref1.isString, compactFlatten = ref1.compactFlatten, inspect = ref1.inspect, pad = ref1.pad, upperCamelCase = ref1.upperCamelCase, merge = ref1.merge;
 
@@ -1370,40 +1374,72 @@ module.exports = RuleVariant = (function(superClass) {
 /* 16 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Tools, peek;
+/* WEBPACK VAR INJECTION */(function(module) {var BaseClass, SourceLineColumnMap, defineModule,
+  extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+  hasProp = {}.hasOwnProperty;
 
-peek = __webpack_require__(0).peek;
+BaseClass = __webpack_require__(1).BaseClass;
 
-module.exports = Tools = (function() {
-  var getLineColumn;
+defineModule = __webpack_require__(0).defineModule;
 
-  function Tools() {}
+defineModule(module, SourceLineColumnMap = (function(superClass) {
+  extend(SourceLineColumnMap, superClass);
 
-  Tools.getLineColumn = getLineColumn = function(string, offset) {
-    var lines;
-    if (string.length === 0 || offset === 0) {
+  function SourceLineColumnMap(_source) {
+    var count, k, len, line, ref;
+    this._source = _source;
+    count = 0;
+    this._lineOffsets = [];
+    ref = this._source.split("\n");
+    for (k = 0, len = ref.length; k < len; k++) {
+      line = ref[k];
+      this._lineOffsets.push(count);
+      count += line.length + 1;
+    }
+    null;
+  }
+
+  SourceLineColumnMap.getter("source");
+
+  SourceLineColumnMap.prototype.getLineColumn = function(offset, into) {
+    var column, i, j, line, los, m;
+    los = this._lineOffsets;
+    i = 0;
+    j = los.length - 1;
+    while (i < j) {
+      if (i === j - 1) {
+        if (los[j] <= offset) {
+          i = j;
+        } else {
+          j = i;
+        }
+      } else {
+        m = (i + j) / 2 | 0;
+        if (los[m] > offset) {
+          j = m;
+        } else {
+          i = m;
+        }
+      }
+    }
+    column = offset - los[line = i];
+    if (into) {
+      into.column = column;
+      into.line = line;
+      return into;
+    } else {
       return {
-        line: 1,
-        column: 1
+        column: column,
+        line: line
       };
     }
-    lines = (string.slice(0, offset)).split("\n");
-    return {
-      line: lines.length,
-      column: peek(lines).length + 1
-    };
   };
 
-  Tools.getLineColumnString = function(string, offset) {
-    var column, line, ref;
-    ref = getLineColumn(string, offset), line = ref.line, column = ref.column;
-    return line + ":" + column;
-  };
+  return SourceLineColumnMap;
 
-  return Tools;
+})(BaseClass));
 
-})();
-
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 17 */
@@ -2274,7 +2310,10 @@ convert.rgb.gray = function (rgb) {
 
 /***/ }),
 /* 18 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 
 module.exports = {
 	"aliceblue": [240, 248, 255],
@@ -2427,11 +2466,12 @@ module.exports = {
 	"yellowgreen": [154, 205, 50]
 };
 
+
 /***/ }),
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.2.3"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.0"}
 
 /***/ }),
 /* 20 */
@@ -2447,13 +2487,13 @@ module.exports.includeInNamespace(__webpack_require__(23)).addModules({
   Repl: __webpack_require__(6),
   Rule: __webpack_require__(14),
   RuleVariant: __webpack_require__(15),
-  Stats: __webpack_require__(3),
-  Tools: __webpack_require__(16)
+  SourceLineColumnMap: __webpack_require__(16),
+  Stats: __webpack_require__(4)
 });
 
 __webpack_require__(25);
 
-__webpack_require__(2);
+__webpack_require__(3);
 
 
 /***/ }),
@@ -2652,7 +2692,7 @@ module.exports = [
 
 ref = __webpack_require__(0), array = ref.array, defineModule = ref.defineModule, log = ref.log, merge = ref.merge, escapeJavascriptString = ref.escapeJavascriptString, find = ref.find;
 
-Node = __webpack_require__(2).Node;
+Node = __webpack_require__(3).Node;
 
 defineModule(module, function() {
   var IndentBlocks;
@@ -2835,7 +2875,7 @@ defineModule(module, function() {
   })();
 });
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 25 */
@@ -2992,28 +3032,28 @@ defineModule(module, ScratchNode = (function(superClass) {
 
 })(BaseClass));
 
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)(module)))
 
 /***/ }),
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, Stats, compactFlatten, formattedInspect, getLineColumn, getLineColumnString, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
+var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, SourceLineColumnMap, Stats, compactFlatten, formattedInspect, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   slice = [].slice;
 
 Rule = __webpack_require__(14);
 
-ref = __webpack_require__(16), getLineColumn = ref.getLineColumn, getLineColumnString = ref.getLineColumnString;
-
-Node = __webpack_require__(2).Node;
+Node = __webpack_require__(3).Node;
 
 NonMatch = __webpack_require__(12);
 
-Stats = __webpack_require__(3);
+Stats = __webpack_require__(4);
 
-ref1 = __webpack_require__(0), isFunction = ref1.isFunction, peek = ref1.peek, log = ref1.log, isPlainObject = ref1.isPlainObject, isPlainArray = ref1.isPlainArray, merge = ref1.merge, compactFlatten = ref1.compactFlatten, objectLength = ref1.objectLength, inspect = ref1.inspect, inspectLean = ref1.inspectLean, pluralize = ref1.pluralize, isClass = ref1.isClass, isPlainArray = ref1.isPlainArray, upperCamelCase = ref1.upperCamelCase, mergeInto = ref1.mergeInto, objectWithout = ref1.objectWithout, uniqueValues = ref1.uniqueValues, formattedInspect = ref1.formattedInspect, max = ref1.max, inspect = ref1.inspect, pushIfNotPresent = ref1.pushIfNotPresent, uniqueValues = ref1.uniqueValues, objectHasKeys = ref1.objectHasKeys;
+SourceLineColumnMap = __webpack_require__(16);
+
+ref = __webpack_require__(0), isFunction = ref.isFunction, peek = ref.peek, log = ref.log, isPlainObject = ref.isPlainObject, isPlainArray = ref.isPlainArray, merge = ref.merge, compactFlatten = ref.compactFlatten, objectLength = ref.objectLength, inspect = ref.inspect, inspectLean = ref.inspectLean, pluralize = ref.pluralize, isClass = ref.isClass, isPlainArray = ref.isPlainArray, upperCamelCase = ref.upperCamelCase, mergeInto = ref.mergeInto, objectWithout = ref.objectWithout, uniqueValues = ref.uniqueValues, formattedInspect = ref.formattedInspect, max = ref.max, inspect = ref.inspect, pushIfNotPresent = ref.pushIfNotPresent, uniqueValues = ref.uniqueValues, objectHasKeys = ref.objectHasKeys;
 
 CaffeineEightCompileError = __webpack_require__(8);
 
@@ -3058,7 +3098,7 @@ module.exports = Parser = (function(superClass) {
   });
 
   Parser.addRule = function(ruleName, definitions, nodeBaseClass) {
-    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref2, results, rule;
+    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref1, results, rule;
     if (nodeBaseClass == null) {
       nodeBaseClass = this.getNodeBaseClass();
     }
@@ -3073,7 +3113,7 @@ module.exports = Parser = (function(superClass) {
       definitions = [definitions];
     }
     if (definitions.length > 1 && isPlainObject(last = peek(definitions)) && !last.pattern) {
-      ref2 = definitions, definitions = 2 <= ref2.length ? slice.call(ref2, 0, i = ref2.length - 1) : (i = 0, []), commonNodeProps = ref2[i++];
+      ref1 = definitions, definitions = 2 <= ref1.length ? slice.call(ref1, 0, i = ref1.length - 1) : (i = 0, []), commonNodeProps = ref1[i++];
     } else {
       commonNodeProps = {};
     }
@@ -3161,8 +3201,8 @@ module.exports = Parser = (function(superClass) {
       return 0;
     },
     rootParser: function() {
-      var ref2;
-      return ((ref2 = this.parentParser) != null ? ref2.rootParser : void 0) || this;
+      var ref1;
+      return ((ref1 = this.parentParser) != null ? ref1.rootParser : void 0) || this;
     },
     ancestors: function(into) {
       into.push(this);
@@ -3217,7 +3257,7 @@ module.exports = Parser = (function(superClass) {
    */
 
   Parser.prototype.subparse = function(subsource, options) {
-    var failureIndex, k, match, matchLength, nonMatch, offset, originalMatchLength, originalOffset, parentNode, parser, ref2, rootNode, source, sourceMap, subparser;
+    var failureIndex, k, match, matchLength, nonMatch, offset, originalMatchLength, originalOffset, parentNode, parser, ref1, rootNode, source, sourceMap, subparser;
     if (options == null) {
       options = {};
     }
@@ -3253,9 +3293,9 @@ module.exports = Parser = (function(superClass) {
       return match;
     } else {
       failureIndex = subparser.failureIndexInParentParser;
-      ref2 = subparser._nonMatches;
-      for (k in ref2) {
-        nonMatch = ref2[k];
+      ref1 = subparser._nonMatches;
+      for (k in ref1) {
+        nonMatch = ref1[k];
         rootNode = nonMatch.node;
         while (rootNode !== parentNode && rootNode.parent instanceof Node) {
           rootNode = rootNode.parent;
@@ -3274,8 +3314,8 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype.offsetInParentParserSource = function(suboffset) {
-    var originalOffset, ref2, ref3, sourceMap;
-    ref2 = this.options, sourceMap = ref2.sourceMap, originalOffset = (ref3 = ref2.originalOffset) != null ? ref3 : 0;
+    var originalOffset, ref1, ref2, sourceMap;
+    ref1 = this.options, sourceMap = ref1.sourceMap, originalOffset = (ref2 = ref1.originalOffset) != null ? ref2 : 0;
     if (sourceMap) {
       return sourceMap(suboffset);
     } else if (this.parentParser) {
@@ -3315,10 +3355,10 @@ module.exports = Parser = (function(superClass) {
    */
 
   Parser.prototype.parse = function(_source, options1) {
-    var allowPartialMatch, isSubparse, logParsingFailures, ref2, rootParseTreeNode, rule, startRule;
+    var allowPartialMatch, isSubparse, logParsingFailures, ref1, rootParseTreeNode, rule, startRule;
     this._source = _source;
     this.options = options1 != null ? options1 : {};
-    ref2 = this.options, this.parentParser = ref2.parentParser, allowPartialMatch = ref2.allowPartialMatch, rule = ref2.rule, isSubparse = ref2.isSubparse, logParsingFailures = ref2.logParsingFailures;
+    ref1 = this.options, this.parentParser = ref1.parentParser, allowPartialMatch = ref1.allowPartialMatch, rule = ref1.rule, isSubparse = ref1.isSubparse, logParsingFailures = ref1.logParsingFailures;
     startRule = this.getRule(rule);
     this._resetParserTracking();
     this._logParsingFailures = logParsingFailures;
@@ -3364,11 +3404,11 @@ module.exports = Parser = (function(superClass) {
   };
 
   addToExpectingInfo = function(node, into, value) {
-    var m, name1, p, pm, ref2;
+    var m, name1, p, pm, ref1;
     if (node.parent) {
       into = addToExpectingInfo(node.parent, into);
     }
-    return into[name1 = node.parseInfo] || (into[name1] = value ? value : (p = {}, ((ref2 = (pm = node.presentMatches)) != null ? ref2.length : void 0) > 0 ? p.matches = (function() {
+    return into[name1 = node.parseInfo] || (into[name1] = value ? value : (p = {}, ((ref1 = (pm = node.presentMatches)) != null ? ref1.length : void 0) > 0 ? p.matches = (function() {
       var i, len, results;
       results = [];
       for (i = 0, len = pm.length; i < len; i++) {
@@ -3402,7 +3442,7 @@ module.exports = Parser = (function(superClass) {
       if (failureIndex == null) {
         failureIndex = this._failureIndex;
       }
-      return (this.options.sourceFile || '') + ":" + (getLineColumnString(this._source, failureIndex));
+      return (this.options.sourceFile || '') + ":" + (this.getLineColumnString(failureIndex));
     },
     parseFailureInfoObject: function(failureIndex) {
       if (failureIndex == null) {
@@ -3413,17 +3453,17 @@ module.exports = Parser = (function(superClass) {
         failureIndex: this._failureIndex,
         location: this.getFailureUrl(failureIndex),
         expectingInfo: this.expectingInfo
-      }, getLineColumn(this._source, this._failureIndex));
+      }, this.getLineColumn(this._failureIndex));
     },
     parseFailureInfo: function(options) {
-      var errorType, failureIndex, left, out, ref2, ref3, right, sourceAfter, sourceBefore, verbose;
+      var errorType, failureIndex, left, out, ref1, ref2, right, sourceAfter, sourceBefore, verbose;
       if (options == null) {
         options = {};
       }
       if (!this._source) {
         return;
       }
-      failureIndex = (ref2 = options.failureIndex) != null ? ref2 : this._failureIndex, verbose = options.verbose, errorType = (ref3 = options.errorType) != null ? ref3 : "Parsing";
+      failureIndex = (ref1 = options.failureIndex) != null ? ref1 : this._failureIndex, verbose = options.verbose, errorType = (ref2 = options.errorType) != null ? ref2 : "Parsing";
       sourceBefore = lastLines(left = this._source.slice(0, failureIndex));
       sourceAfter = firstLines(right = this._source.slice(failureIndex));
       out = compactFlatten([
@@ -3447,11 +3487,11 @@ module.exports = Parser = (function(superClass) {
       }
       expectingInfoTree = {};
       this._partialParseTreeNodes = (function() {
-        var ref2, ref3, results;
-        ref2 = this._nonMatches;
+        var ref1, ref2, results;
+        ref1 = this._nonMatches;
         results = [];
-        for (k in ref2) {
-          ref3 = ref2[k], patternElement = ref3.patternElement, node = ref3.node;
+        for (k in ref1) {
+          ref2 = ref1[k], patternElement = ref2.patternElement, node = ref2.node;
           addToExpectingInfo(node, expectingInfoTree, patternElement.pattern.toString());
           n = new Node(node);
           n.pattern = patternElement;
@@ -3463,7 +3503,7 @@ module.exports = Parser = (function(superClass) {
       return this._partialParseTree = rootNode;
     },
     expectingInfo: function() {
-      var child, couldMatchRuleNames, expecting, firstPartialMatchParent, i, j, l, len, len1, len2, node, out, partialMatchingParents, pmp, ref2, ref3, ruleName, v;
+      var child, couldMatchRuleNames, expecting, firstPartialMatchParent, i, j, l, len, len1, len2, node, out, partialMatchingParents, pmp, ref1, ref2, ruleName, v;
       if (!(objectLength(this._nonMatches) > 0)) {
         return null;
       }
@@ -3479,9 +3519,9 @@ module.exports = Parser = (function(superClass) {
         - it may be time to do a custom inspect
        */
       partialMatchingParents = [];
-      ref2 = this.partialParseTreeLeafNodes;
-      for (i = 0, len = ref2.length; i < len; i++) {
-        node = ref2[i];
+      ref1 = this.partialParseTreeLeafNodes;
+      for (i = 0, len = ref1.length; i < len; i++) {
+        node = ref1[i];
         firstPartialMatchParent = node.firstPartialMatchParent;
         pushIfNotPresent(partialMatchingParents, firstPartialMatchParent);
       }
@@ -3489,9 +3529,9 @@ module.exports = Parser = (function(superClass) {
       expecting = {};
       for (j = 0, len1 = partialMatchingParents.length; j < len1; j++) {
         pmp = partialMatchingParents[j];
-        ref3 = pmp.matches;
-        for (l = 0, len2 = ref3.length; l < len2; l++) {
-          child = ref3[l];
+        ref2 = pmp.matches;
+        for (l = 0, len2 = ref2.length; l < len2; l++) {
+          child = ref2[l];
           if (!(child.isNonMatch && child.nonMatchingLeaf)) {
             continue;
           }
@@ -3500,12 +3540,12 @@ module.exports = Parser = (function(superClass) {
           }
           expecting[child.nonMatchingLeaf.ruleNameOrPattern] = {
             "to-continue": pmp.ruleName,
-            "started-at": getLineColumnString(this._source, pmp.absoluteOffset)
+            "started-at": this.getLineColumnString(pmp.absoluteOffset)
           };
         }
       }
       return this._expectingInfo = (function() {
-        var len3, len4, o, q, ref4;
+        var len3, len4, o, q, ref3;
         if (objectHasKeys(expecting)) {
           out = {
             expecting: expecting
@@ -3514,9 +3554,9 @@ module.exports = Parser = (function(superClass) {
             out.rules = {};
             for (o = 0, len3 = couldMatchRuleNames.length; o < len3; o++) {
               ruleName = couldMatchRuleNames[o];
-              ref4 = this.rules[ruleName]._variants;
-              for (q = 0, len4 = ref4.length; q < len4; q++) {
-                v = ref4[q];
+              ref3 = this.rules[ruleName]._variants;
+              for (q = 0, len4 = ref3.length; q < len4; q++) {
+                v = ref3[q];
                 out.rules[ruleName] = v.patternString;
               }
             }
@@ -3539,6 +3579,16 @@ module.exports = Parser = (function(superClass) {
       this._logParsingFailure(parseIntoNode, patternElement);
       return false;
     }
+  };
+
+  Parser.prototype.getLineColumn = function(offset, into) {
+    return (this._sourceLineColumnMap || (this._sourceLineColumnMap = new SourceLineColumnMap(this._source))).getLineColumn(offset, into);
+  };
+
+  Parser.prototype.getLineColumnString = function(offset, into) {
+    var column, line, ref1;
+    ref1 = this.getLineColumn(offset, into), line = ref1.line, column = ref1.column;
+    return (line + 1) + ":" + (column + 1);
   };
 
   Parser.prototype._getRuleParseCache = function(ruleName) {
@@ -3719,11 +3769,10 @@ var conversions = __webpack_require__(17);
 	conversions that are not possible simply are not included.
 */
 
-// https://jsperf.com/object-keys-vs-for-in-with-closure/3
-var models = Object.keys(conversions);
-
 function buildGraph() {
 	var graph = {};
+	// https://jsperf.com/object-keys-vs-for-in-with-closure/3
+	var models = Object.keys(conversions);
 
 	for (var len = models.length, i = 0; i < len; i++) {
 		graph[models[i]] = {
