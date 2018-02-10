@@ -170,6 +170,34 @@ module.exports = suite:
       MyParser.parse "a"
       assert.throws -> MyParser.parse "A"
 
+    test "alternate custom parsers", ->
+      class MyParser extends Parser
+        @rule
+          root: [
+            {
+              parse: (parentNode) ->
+                {nextOffset, source} = parentNode
+                if source[nextOffset] == "a"
+                  new Node parentNode,
+                    offset: nextOffset
+                    matchLength: 1
+                    ruleVariant: @
+            }
+            {
+              parse: (parentNode) ->
+                {nextOffset, source} = parentNode
+                if source[nextOffset] == "b"
+                  new Node parentNode,
+                    offset: nextOffset
+                    matchLength: 1
+                    ruleVariant: @
+            }
+          ]
+
+      MyParser.parse "a"
+      MyParser.parse "b"
+      assert.throws -> MyParser.parse "A"
+
   "prevent simple infinite loops": ->
     test "/foo/ /$/*", ->
       class MyParser extends Parser
