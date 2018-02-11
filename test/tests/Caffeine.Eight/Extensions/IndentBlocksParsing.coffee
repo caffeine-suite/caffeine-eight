@@ -31,9 +31,10 @@ module.exports = suite:
       MyParser.parse "((1: hi))"
 
   blockParsing: ->
-    MyParser = null
+    MyBlockParser = null
+
     setup ->
-      class MyParser extends Parser
+      class MyBlockParser extends Parser
 
         @rule
           root: 'line+'
@@ -48,16 +49,16 @@ module.exports = suite:
           block: Extensions.IndentBlocks.getPropsToSubparseBlock()
 
     test "simple expression", ->
-      MyParser.parse "one"
+      MyBlockParser.parse "one"
 
     test "one block", ->
-      MyParser.parse """
+      MyBlockParser.parse """
         one
           two
         """
 
     test "nested blocks", ->
-      MyParser.parse """
+      MyBlockParser.parse """
         one
           two
             three
@@ -66,7 +67,7 @@ module.exports = suite:
     suite "failure location", ->
       suite 'baseline without block', ->
         test "before first line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             -abc
             """
@@ -75,7 +76,7 @@ module.exports = suite:
             assert.eq parser._failureIndex, 0
 
         test "first line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc-
             """
@@ -84,7 +85,7 @@ module.exports = suite:
             assert.eq parser._failureIndex, 3
 
         test "second line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
             foo-
@@ -95,7 +96,7 @@ module.exports = suite:
 
       suite 'in block', ->
         test "before line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
               -def
@@ -106,7 +107,7 @@ module.exports = suite:
             assert.eq parser._failureIndex, 6
 
         test "first line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
               def-
@@ -117,7 +118,7 @@ module.exports = suite:
             assert.eq parser._failureIndex, 9
 
         test "second line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
               def
@@ -129,7 +130,7 @@ module.exports = suite:
 
       suite "in nested block", ->
         test "first line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
               def
@@ -141,7 +142,7 @@ module.exports = suite:
             assert.eq parser._failureIndex, 18
 
         test "second line", ->
-          parser = new MyParser
+          parser = new MyBlockParser
           assert.rejects -> parser.parse """
             abc
               def2
@@ -153,10 +154,10 @@ module.exports = suite:
             # log {rejectsWith, parser}
             assert.eq parser._failureIndex, 28
 
-  eolOrblockParsing: ->
-    MyParser = null
+  eolOrBlockParsing: ->
+    MyEolOrBlockParser = null
     setup ->
-      class MyParser extends Parser
+      class MyEolOrBlockParser extends Parser
 
         @rule
           root: 'expression block? end'
@@ -166,36 +167,63 @@ module.exports = suite:
           block: Extensions.IndentBlocks.getPropsToSubparseToEolAndBlock()
 
     test "simple expression", ->
-      MyParser.parse "one"
+      MyEolOrBlockParser.parse "one"
 
     test "simple block", ->
-      MyParser.parse """
+      MyEolOrBlockParser.parse """
         one
           two
         """
 
     test "simple eol", ->
-      MyParser.parse """
+      MyEolOrBlockParser.parse """
         one two
         """
 
     test "nested blocks", ->
-      MyParser.parse """
+      MyEolOrBlockParser.parse """
         one
           two
             three
         """
 
     test "nested eols", ->
-      MyParser.parse """
+      MyEolOrBlockParser.parse """
         one two three
         """
 
     test "nested eols and blocks", ->
-      MyParser.parse """
+      MyEolOrBlockParser.parse """
         one two
           three
         """
+
+    suite "failure location", ->
+      test "in EOL content", ->
+        parser = new MyEolOrBlockParser
+        assert.rejects -> parser.parse """
+          one -two
+          """
+        .then (rejectsWith) ->
+          assert.eq parser._failureIndex, 4
+
+      test "in block with EOL content", ->
+        parser = new MyEolOrBlockParser
+        assert.rejects -> parser.parse """
+          one two
+            -abc
+          """
+        .then (rejectsWith) ->
+          assert.eq parser._failureIndex, 10
+
+      test "in block without EOL content", ->
+        parser = new MyEolOrBlockParser
+        assert.rejects -> parser.parse """
+          one
+            -abc
+          """
+        .then (rejectsWith) ->
+          assert.eq parser._failureIndex, 6
 
   CaffeineScriptObjectNotation: ->
     IndentBlocksNode = MyParser = null
