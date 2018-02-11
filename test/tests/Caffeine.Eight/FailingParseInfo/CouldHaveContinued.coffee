@@ -38,6 +38,7 @@ defineModule module, suite:
           line: 0
           column: 0
 
+
     test "line 1, col 3", ->
       myParser = new MyParser
       assert.rejects -> myParser.parse "foobad"
@@ -46,6 +47,7 @@ defineModule module, suite:
           failureIndex: 3
           line: 0
           column: 3
+          location: ":1:4"
 
     test "line 2, col 1", ->
       myParser = new MyParser

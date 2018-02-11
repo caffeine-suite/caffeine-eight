@@ -5,6 +5,7 @@ Stats = require './Stats'
 SourceLineColumnMap = require './SourceLineColumnMap'
 
 {
+  isNumber
   isFunction, peek, log, isPlainObject, isPlainArray, merge, compactFlatten, objectLength, inspect,
   inspectLean
   pluralize
@@ -301,11 +302,11 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     failureUrl: (failureIndex = @_failureIndex) ->
       "#{@options.sourceFile || ''}:#{@getLineColumnString failureIndex}"
 
-    parseFailureInfoObject: (failureIndex = @_failureIndex) ->
+    parseFailureInfoObject: ->
       merge {
         sourceFile: @options.sourceFile
         failureIndex: @_failureIndex
-        location: @getFailureUrl failureIndex
+        location: @getFailureUrl @_failureIndex
         @expectingInfo
       }, @getLineColumn @_failureIndex
 
@@ -406,7 +407,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     .getLineColumn offset, into
 
   getLineColumnString: (offset, into)->
-    {line, column} = @getLineColumn offset, into
+    {line, column} = a = @getLineColumn offset, into
     "#{line + 1}:#{column + 1}"
 
 
