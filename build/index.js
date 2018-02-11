@@ -1402,27 +1402,27 @@ defineModule(module, SourceLineColumnMap = (function(superClass) {
   SourceLineColumnMap.getter("source");
 
   SourceLineColumnMap.prototype.getLineColumn = function(offset, into) {
-    var column, i, j, line, los, m;
-    los = this._lineOffsets;
+    var column, i, j, line, lineOffsets, m;
+    lineOffsets = this._lineOffsets;
     i = 0;
-    j = los.length - 1;
+    j = lineOffsets.length - 1;
     while (i < j) {
       if (i === j - 1) {
-        if (los[j] <= offset) {
+        if (lineOffsets[j] <= offset) {
           i = j;
         } else {
           j = i;
         }
       } else {
         m = (i + j) / 2 | 0;
-        if (los[m] > offset) {
+        if (lineOffsets[m] > offset) {
           j = m;
         } else {
           i = m;
         }
       }
     }
-    column = offset - los[line = i];
+    column = offset - lineOffsets[line = i];
     if (into) {
       into.column = column;
       into.line = line;
@@ -2471,7 +2471,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.1"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.2"}
 
 /***/ }),
 /* 20 */
@@ -3038,7 +3038,7 @@ defineModule(module, ScratchNode = (function(superClass) {
 /* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, SourceLineColumnMap, Stats, compactFlatten, formattedInspect, inspect, inspectLean, isClass, isFunction, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, uniqueValues, upperCamelCase,
+var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, SourceLineColumnMap, Stats, compactFlatten, formattedInspect, inspect, inspectLean, isClass, isFunction, isNumber, isPlainArray, isPlainObject, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, pushIfNotPresent, ref, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   slice = [].slice;
@@ -3053,7 +3053,7 @@ Stats = __webpack_require__(4);
 
 SourceLineColumnMap = __webpack_require__(16);
 
-ref = __webpack_require__(0), isFunction = ref.isFunction, peek = ref.peek, log = ref.log, isPlainObject = ref.isPlainObject, isPlainArray = ref.isPlainArray, merge = ref.merge, compactFlatten = ref.compactFlatten, objectLength = ref.objectLength, inspect = ref.inspect, inspectLean = ref.inspectLean, pluralize = ref.pluralize, isClass = ref.isClass, isPlainArray = ref.isPlainArray, upperCamelCase = ref.upperCamelCase, mergeInto = ref.mergeInto, objectWithout = ref.objectWithout, uniqueValues = ref.uniqueValues, formattedInspect = ref.formattedInspect, max = ref.max, inspect = ref.inspect, pushIfNotPresent = ref.pushIfNotPresent, uniqueValues = ref.uniqueValues, objectHasKeys = ref.objectHasKeys;
+ref = __webpack_require__(0), isNumber = ref.isNumber, isFunction = ref.isFunction, peek = ref.peek, log = ref.log, isPlainObject = ref.isPlainObject, isPlainArray = ref.isPlainArray, merge = ref.merge, compactFlatten = ref.compactFlatten, objectLength = ref.objectLength, inspect = ref.inspect, inspectLean = ref.inspectLean, pluralize = ref.pluralize, isClass = ref.isClass, isPlainArray = ref.isPlainArray, upperCamelCase = ref.upperCamelCase, mergeInto = ref.mergeInto, objectWithout = ref.objectWithout, uniqueValues = ref.uniqueValues, formattedInspect = ref.formattedInspect, max = ref.max, inspect = ref.inspect, pushIfNotPresent = ref.pushIfNotPresent, uniqueValues = ref.uniqueValues, objectHasKeys = ref.objectHasKeys;
 
 CaffeineEightCompileError = __webpack_require__(8);
 
@@ -3444,14 +3444,11 @@ module.exports = Parser = (function(superClass) {
       }
       return (this.options.sourceFile || '') + ":" + (this.getLineColumnString(failureIndex));
     },
-    parseFailureInfoObject: function(failureIndex) {
-      if (failureIndex == null) {
-        failureIndex = this._failureIndex;
-      }
+    parseFailureInfoObject: function() {
       return merge({
         sourceFile: this.options.sourceFile,
         failureIndex: this._failureIndex,
-        location: this.getFailureUrl(failureIndex),
+        location: this.getFailureUrl(this._failureIndex),
         expectingInfo: this.expectingInfo
       }, this.getLineColumn(this._failureIndex));
     },
@@ -3586,8 +3583,8 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype.getLineColumnString = function(offset, into) {
-    var column, line, ref1;
-    ref1 = this.getLineColumn(offset, into), line = ref1.line, column = ref1.column;
+    var a, column, line, ref1;
+    ref1 = a = this.getLineColumn(offset, into), line = ref1.line, column = ref1.column;
     return (line + 1) + ":" + (column + 1);
   };
 
