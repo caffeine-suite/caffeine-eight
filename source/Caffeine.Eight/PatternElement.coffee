@@ -58,6 +58,7 @@ module.exports = class PatternElement extends require("art-class-system").BaseCl
     props: ->
       props = pattern: @pattern
 
+      props.ruleVariant = @ruleVariant.inspectedObjects if @ruleVariant
       props.ruleName = @ruleName if @ruleName
       props.negative = true if @negative
       props.zeroOrMore = true if @zeroOrMore

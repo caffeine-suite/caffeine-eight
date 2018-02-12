@@ -183,7 +183,8 @@ module.exports = class Node extends BaseClass
 
         # ret
       else if @nonMatch
-        nonMatch: offset: @offset, pattern: "#{@pattern?.pattern}"
+        nonMatch: merge {offset: @offset, @ruleName, pattern: "#{@pattern?.pattern ? @ruleVariant?.pattern}"}
+        # nonMatch: offset: @offset, pattern: "#{@pattern?.pattern}"
       else
 
         if verbose

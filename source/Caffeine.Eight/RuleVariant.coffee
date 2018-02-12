@@ -22,6 +22,8 @@ module.exports = class RuleVariant extends BaseClass
 
   @setter "variantNodeClassName"
   @getter
+    ruleName: -> @rule.name
+    inspectedObjects: -> {rule: @ruleName, @pattern}
     isPassThrough: -> @_passThroughRuleName
     name: -> @variantNodeClassName + "Variant"
     numVariants: -> @rule.numVariants
