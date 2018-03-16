@@ -299,6 +299,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   ##################
   @getter "nonMatches",
 
+    sourceFile: -> @options.sourceFile
+
     failureUrl: (failureIndex = @_failureIndex) ->
       "#{@options.sourceFile || ''}:#{@getLineColumnString failureIndex}"
 

@@ -71,6 +71,8 @@ module.exports = class Node extends BaseClass
       into.push @
       into
 
+    sourceFile: -> @_parser.sourceFile
+
     parseInfo: ->
       if @subparseInfo
         "subparse:#{@ruleName}:#{@offset}"
