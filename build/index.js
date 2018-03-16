@@ -435,6 +435,9 @@ module.exports = Node = (function(superClass) {
       into.push(this);
       return into;
     },
+    sourceFile: function() {
+      return this._parser.sourceFile;
+    },
     parseInfo: function() {
       if (this.subparseInfo) {
         return "subparse:" + this.ruleName + ":" + this.offset;
@@ -555,7 +558,7 @@ module.exports = Node = (function(superClass) {
       }
     },
     inspectedObjects: function(verbose) {
-      var children, hasOneOrMoreMatchingChildren, label, match, matches, nonMatch, obj, parts, path, ref1, ref2, ref3, ruleName;
+      var children, hasOneOrMoreMatchingChildren, label, match, matches, nonMatch, obj, parts, path, ref1, ref2, ref3, ref4, ref5, ruleName;
       match = this;
       matches = this.presentMatches;
       if (matches.length > 0) {
@@ -596,10 +599,11 @@ module.exports = Node = (function(superClass) {
         );
       } else if (this.nonMatch) {
         return {
-          nonMatch: {
+          nonMatch: merge({
             offset: this.offset,
-            pattern: "" + ((ref2 = this.pattern) != null ? ref2.pattern : void 0)
-          }
+            ruleName: this.ruleName,
+            pattern: "" + ((ref2 = (ref3 = this.pattern) != null ? ref3.pattern : void 0) != null ? ref2 : (ref4 = this.ruleVariant) != null ? ref4.pattern : void 0)
+          })
         };
       } else {
         if (verbose) {
@@ -608,7 +612,7 @@ module.exports = Node = (function(superClass) {
               offset: this.offset,
               length: this.matchLength,
               text: this.text,
-              pattern: "" + ((ref3 = this.pattern) != null ? ref3.pattern : void 0),
+              pattern: "" + ((ref5 = this.pattern) != null ? ref5.pattern : void 0),
               "class": this["class"].getName(),
               ruleName: this.ruleName
             }
@@ -898,6 +902,9 @@ module.exports = PatternElement = (function(superClass) {
       props = {
         pattern: this.pattern
       };
+      if (this.ruleVariant) {
+        props.ruleVariant = this.ruleVariant.inspectedObjects;
+      }
       if (this.ruleName) {
         props.ruleName = this.ruleName;
       }
@@ -1239,6 +1246,15 @@ module.exports = RuleVariant = (function(superClass) {
   RuleVariant.setter("variantNodeClassName");
 
   RuleVariant.getter({
+    ruleName: function() {
+      return this.rule.name;
+    },
+    inspectedObjects: function() {
+      return {
+        rule: this.ruleName,
+        pattern: this.pattern
+      };
+    },
     isPassThrough: function() {
       return this._passThroughRuleName;
     },
@@ -2471,7 +2487,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.2"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.3"}
 
 /***/ }),
 /* 20 */
@@ -3438,6 +3454,9 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.getter("nonMatches", {
+    sourceFile: function() {
+      return this.options.sourceFile;
+    },
     failureUrl: function(failureIndex) {
       if (failureIndex == null) {
         failureIndex = this._failureIndex;
