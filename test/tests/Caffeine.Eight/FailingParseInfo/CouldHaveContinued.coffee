@@ -97,6 +97,72 @@ defineModule module, suite:
         column: 2
         expectingInfo: expecting: "/[a-z]+/": "to-continue": "root", "started-at": "1:1"
 
+  basic: ->
+    test "no match at all simple", ->
+      class MyParser extends Parser
+        @rule
+          root: "foo"
+          foo: "bar"
+          bar: /bar/
+
+      myParser = new MyParser
+      assert.rejects -> myParser.parse "bad"
+      .then (error)->
+        validateCompileError error,
+          failureIndex: 0
+          line: 0
+          column: 0
+
+        # log myParser.nonMatches
+        assert.eq Object.keys(myParser.nonMatches).sort(), [
+            "FooRuleFooVariant: 'foo'"
+          ]
+
+  couldMatchKeys: ->
+    test "no match at all", ->
+      class MyParser extends Parser
+        @rule
+          root: "foo"
+          foo: "bar? baz"
+          bar: /bar/
+          baz: /baz/
+
+      myParser = new MyParser
+      assert.rejects -> myParser.parse "bad"
+      .then (error)->
+        validateCompileError error,
+          failureIndex: 0
+          line: 0
+          column: 0
+
+        # log myParser.nonMatches
+        assert.eq Object.keys(myParser.nonMatches).sort(), [
+            "FooRuleFooVariant: 'foo'"
+          ]
+
+    test "partial match", ->
+      class MyParser extends Parser
+        @rule
+          root: "foo"
+          foo:  "duh? bar? baz"
+          duh:  /duh/
+          bar:  /bar/
+          baz:  /baz/
+
+      myParser = new MyParser
+      assert.rejects -> myParser.parse "duhbad"
+      .then (error)->
+        validateCompileError error,
+          failureIndex: 3
+          line: 0
+          column: 3
+
+        # log myParser.nonMatches
+        assert.eq Object.keys(myParser.nonMatches).sort(), [
+            "BarRuleBarVariant: /bar/"
+            'BazRuleBazVariant: /baz/'
+          ]
+
   misc: ->
 
     test "nonMatches keys", ->
