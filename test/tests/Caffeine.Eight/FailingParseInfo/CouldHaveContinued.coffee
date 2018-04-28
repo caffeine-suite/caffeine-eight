@@ -115,7 +115,7 @@ defineModule module, suite:
 
         # log myParser.nonMatches
         assert.eq Object.keys(myParser.nonMatches).sort(), [
-            "FooRuleFooVariant: 'foo'"
+            "BarRuleBarVariant: /bar/"
           ]
 
   couldMatchKeys: ->
@@ -137,7 +137,8 @@ defineModule module, suite:
 
         # log myParser.nonMatches
         assert.eq Object.keys(myParser.nonMatches).sort(), [
-            "FooRuleFooVariant: 'foo'"
+           "BarRuleBarVariant: /bar/"
+           "BazRuleBazVariant: /baz/"
           ]
 
     test "partial match", ->
