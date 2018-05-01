@@ -250,8 +250,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
           @parse @_source, merge @options, logParsingFailures: true
 
   generateCompileError: (options) ->
-      {message, info, rootParseTreeNode, failureIndex, failureOffset} = options
-      failureIndex ?= failureOffset
+      log generateCompileError: options
+      {message, info, rootParseTreeNode} = options
       new CaffeineEightCompileError(
         compactFlatten([
           if rootParseTreeNode?.matchLength < @_source.length
@@ -315,7 +315,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     parseFailureInfo: (options = {})->
       return unless @_source
 
-      {failureIndex = @_failureIndex, verbose, errorType = "Parsing"} = options
+      {failureOffset, failureIndex = @_failureIndex, verbose, errorType = "Parsing"} = options
+      throw new Error "DEPRICATED: failureOffset" if failureOffset?
 
       sourceBefore = lastLines left = @_source.slice 0, failureIndex
       sourceAfter = firstLines right = @_source.slice failureIndex
