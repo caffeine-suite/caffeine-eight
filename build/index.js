@@ -2487,7 +2487,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.1","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.1.2","commander":"^2.9.0","css-loader":"^0.28.4","dateformat":"^2.0.0","detect-node":"^2.0.3","fs-extra":"^3.0.1","glob":"^7.1.2","glob-promise":"^3.1.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.3"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.2","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.2.1","commander":"^2.15.1","css-loader":"^0.28.4","dateformat":"^3.0.3","detect-node":"^2.0.3","fs-extra":"^5.0.0","glob":"^7.1.2","glob-promise":"^3.4.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.5"}
 
 /***/ }),
 /* 20 */
@@ -2581,7 +2581,13 @@ function clone(parent, circular, depth, prototype) {
     } else if (clone.__isDate(parent)) {
       child = new Date(parent.getTime());
     } else if (useBuffer && Buffer.isBuffer(parent)) {
-      child = new Buffer(parent.length);
+      if (Buffer.allocUnsafe) {
+        // Node.js >= 4.5.0
+        child = Buffer.allocUnsafe(parent.length);
+      } else {
+        // Older Node.js versions
+        child = new Buffer(parent.length);
+      }
       parent.copy(child);
       return child;
     } else {
@@ -3399,11 +3405,11 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype.generateCompileError = function(options) {
-    var failureIndex, failureOffset, info, message, rootParseTreeNode;
-    message = options.message, info = options.info, rootParseTreeNode = options.rootParseTreeNode, failureIndex = options.failureIndex, failureOffset = options.failureOffset;
-    if (failureIndex == null) {
-      failureIndex = failureOffset;
-    }
+    var info, message, rootParseTreeNode;
+    log({
+      generateCompileError: options
+    });
+    message = options.message, info = options.info, rootParseTreeNode = options.rootParseTreeNode;
     return new CaffeineEightCompileError(compactFlatten([(rootParseTreeNode != null ? rootParseTreeNode.matchLength : void 0) < this._source.length ? this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (rootParseTreeNode.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))) : void 0, this.getParseFailureInfo(options), message]).join("\n"), merge(this.getParseFailureInfoObject(options), info));
   };
 
@@ -3472,14 +3478,17 @@ module.exports = Parser = (function(superClass) {
       }, this.getLineColumn(this._failureIndex));
     },
     parseFailureInfo: function(options) {
-      var errorType, failureIndex, left, out, ref1, ref2, right, sourceAfter, sourceBefore, verbose;
+      var errorType, failureIndex, failureOffset, left, out, ref1, ref2, right, sourceAfter, sourceBefore, verbose;
       if (options == null) {
         options = {};
       }
       if (!this._source) {
         return;
       }
-      failureIndex = (ref1 = options.failureIndex) != null ? ref1 : this._failureIndex, verbose = options.verbose, errorType = (ref2 = options.errorType) != null ? ref2 : "Parsing";
+      failureOffset = options.failureOffset, failureIndex = (ref1 = options.failureIndex) != null ? ref1 : this._failureIndex, verbose = options.verbose, errorType = (ref2 = options.errorType) != null ? ref2 : "Parsing";
+      if (failureOffset != null) {
+        throw new Error("DEPRICATED: failureOffset");
+      }
       sourceBefore = lastLines(left = this._source.slice(0, failureIndex));
       sourceAfter = firstLines(right = this._source.slice(failureIndex));
       out = compactFlatten([

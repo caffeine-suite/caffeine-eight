@@ -250,7 +250,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
           @parse @_source, merge @options, logParsingFailures: true
 
   generateCompileError: (options) ->
-      log generateCompileError: options
       {message, info, rootParseTreeNode} = options
       new CaffeineEightCompileError(
         compactFlatten([
