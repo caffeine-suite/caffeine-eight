@@ -4,6 +4,7 @@
 module.exports = require './namespace'
 module.exports
 .addModules
+  Lib:                 require './Lib'                
   SourceLineColumnMap: require './SourceLineColumnMap'
 require './Compiling'
 require './Extensions'

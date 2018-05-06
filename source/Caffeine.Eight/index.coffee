@@ -6,6 +6,7 @@ module.exports
 .includeInNamespace require './Eight'
 .addModules
   CaffeineEightCompileError: require './CaffeineEightCompileError'
+  Lib:                       require './Lib'                      
   NonMatch:                  require './NonMatch'                 
   Parser:                    require './Parser'                   
   PatternElement:            require './PatternElement'           

@@ -2487,7 +2487,7 @@ module.exports = {
 /* 19 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.2","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.2.1","commander":"^2.15.1","css-loader":"^0.28.4","dateformat":"^3.0.3","detect-node":"^2.0.3","fs-extra":"^5.0.0","glob":"^7.1.2","glob-promise":"^3.4.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.5"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.2","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.2.1","commander":"^2.15.1","css-loader":"^0.28.4","dateformat":"^3.0.3","detect-node":"^2.0.3","fs-extra":"^5.0.0","glob":"^7.1.2","glob-promise":"^3.4.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.3.6"}
 
 /***/ }),
 /* 20 */
@@ -3406,9 +3406,6 @@ module.exports = Parser = (function(superClass) {
 
   Parser.prototype.generateCompileError = function(options) {
     var info, message, rootParseTreeNode;
-    log({
-      generateCompileError: options
-    });
     message = options.message, info = options.info, rootParseTreeNode = options.rootParseTreeNode;
     return new CaffeineEightCompileError(compactFlatten([(rootParseTreeNode != null ? rootParseTreeNode.matchLength : void 0) < this._source.length ? this.colorString("gray", (this["class"].name + " only parsed: ") + this.colorString("black", (rootParseTreeNode.matchLength + " of " + this._source.length + " ") + this.colorString("gray", "characters"))) : void 0, this.getParseFailureInfo(options), message]).join("\n"), merge(this.getParseFailureInfoObject(options), info));
   };

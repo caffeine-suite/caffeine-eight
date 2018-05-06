@@ -23,6 +23,8 @@ SourceLineColumnMap = require './SourceLineColumnMap'
   objectHasKeys
 } = require 'art-standard-lib'
 
+{firstLines, lastLines, presentSourceLocation} = require './Lib'
+
 CaffeineEightCompileError = require './CaffeineEightCompileError'
 
 module.exports = class Parser extends require("art-class-system").BaseClass
@@ -213,7 +215,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   @getter
     failureIndexInParentParser: -> @offsetInParentParserSource @_failureIndex
 
-
   colorString: (clr, str)->
     if @options.color
       "#{str}"[clr]
@@ -282,15 +283,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         p.matches = (m.parseInfo for m in pm)
       p
 
-  lastLines = (string, count = 5) ->
-    a = string.split "\n"
-    a.slice max(0, a.length - count), a.length
-    .join "\n"
-
-  firstLines = (string, count = 5) ->
-    a = string.split "\n"
-    a.slice 0, count
-    .join "\n"
 
 
   ##################
@@ -317,16 +309,18 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       {failureOffset, failureIndex = @_failureIndex, verbose, errorType = "Parsing"} = options
       throw new Error "DEPRICATED: failureOffset" if failureOffset?
 
-      sourceBefore = lastLines left = @_source.slice 0, failureIndex
-      sourceAfter = firstLines right = @_source.slice failureIndex
-
       out = compactFlatten [
         ""
         @colorString "gray", "#{errorType} error at #{@colorString "red", @getFailureUrl failureIndex}"
         ""
         @colorString "gray", "Source:"
         @colorString "gray", "..."
-        "#{sourceBefore}#{@colorString "red", "<HERE>"}#{sourceAfter.replace /[\s\n]+$/, ''}"
+
+        presentSourceLocation @_source,
+          failureIndex
+          maxLines: 10
+          color: @options.color
+
         @colorString "gray", "..."
         ""
         formattedInspect @expectingInfo, options
