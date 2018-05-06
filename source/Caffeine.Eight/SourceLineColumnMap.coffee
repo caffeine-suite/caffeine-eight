@@ -45,3 +45,6 @@ defineModule module, class SourceLineColumnMap extends BaseClass
       into
     else
       {column, line}
+
+  # line and column are 0-based
+  getIndex: (line, column) -> @_lineOffsets[line] + column

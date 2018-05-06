@@ -42,3 +42,11 @@ defineModule module, suite:
       map = new SourceLineColumnMap "hi\nthere\nfriend"
       assert.equal into, map.getLineColumn 2, into
       assert.equal into, map.getLineColumn 3, into
+
+  getIndex: ->
+    test "three-line-source", ->
+      map = new SourceLineColumnMap "hi\nthere\nfriend"
+
+      for index in [2,3,8,9,100]
+        {line, column} = map.getLineColumn index
+        assert.eq index, map.getIndex(line, column), {index, line, column}
