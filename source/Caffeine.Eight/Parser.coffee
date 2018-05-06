@@ -225,6 +225,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   OUT: on success, root Node of the parse tree, else null
   options:
     allowPartialMatch: true/false
+    color:    (default: false)  show errors in color (console colors)
+    maxLines: (default: 10)     max total source lines to show when showing errors
   ###
   parse: (@_source, @options = {})->
     {@parentParser, allowPartialMatch, rule, isSubparse, logParsingFailures} = @options
