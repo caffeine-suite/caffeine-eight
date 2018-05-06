@@ -318,8 +318,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
         presentSourceLocation @_source,
           failureIndex
-          maxLines: 10
-          color: @options.color
+          @options
 
         @colorString "gray", "..."
         ""
