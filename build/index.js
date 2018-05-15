@@ -405,7 +405,11 @@ module.exports = Node = (function(superClass) {
     Stats.add("newNode");
     this._parent = parent;
     this._parser = parent._parser;
+    this._absoluteOffset = -1;
     this._offset = ((ref1 = options != null ? options.offset : void 0) != null ? ref1 : this._parent.getNextOffset()) | 0;
+    if (this._offset > this._parser.source.length) {
+      throw new Error("bad offset " + this.inspectedName + " - offset:" + this._offset + " > sourceLength:" + this._parser.source.length);
+    }
     this._matchLength = 0;
     this._ruleName = this._pluralRuleName = this._label = this._pluralLabel = this._pattern = this._nonMatches = this._ruleVariant = this._matches = this._matchPatterns = null;
     this._labelsApplied = this._nonMatch = false;
@@ -484,7 +488,11 @@ module.exports = Node = (function(superClass) {
       return ((ref1 = this._matches) != null ? ref1.length : void 0) > 0;
     },
     absoluteOffset: function() {
-      return this._parser.offsetInRootParserSource(this._offset);
+      if (this._absoluteOffset >= 0) {
+        return this._absoluteOffset;
+      } else {
+        return this._absoluteOffset = this._parser.offsetInRootParserSource(this._offset);
+      }
     },
     ancestors: function(into) {
       if (into == null) {
@@ -616,6 +624,22 @@ module.exports = Node = (function(superClass) {
         return this.parent.firstPartialMatchParent;
       }
     },
+    inspectedName: function() {
+      var l;
+      return "" + ((l = this.label) ? l + ":" : "") + this.ruleName;
+    },
+    children: function() {
+      var j, len, match, ref1, results;
+      ref1 = this.presentMatches;
+      results = [];
+      for (j = 0, len = ref1.length; j < len; j++) {
+        match = ref1[j];
+        if ((typeof match.getPresent === "function" ? match.getPresent() : void 0) && !match.nonMatch) {
+          results.push(match);
+        }
+      }
+      return results;
+    },
     inspectedObjects: function(verbose) {
       var children, hasOneOrMoreMatchingChildren, label, match, matches, nonMatch, obj, parts, path, ref1, ref2, ref3, ref4, ref5, ruleName;
       match = this;
@@ -623,7 +647,7 @@ module.exports = Node = (function(superClass) {
       if (matches.length > 0) {
         path = [];
         while (matches.length === 1 && ((ref1 = matches[0].matches) != null ? ref1.length : void 0) > 0) {
-          path.push("" + (match.label ? match.label + ":" : "") + match.ruleName);
+          path.push(match.inspectedName);
           match = matches[0];
           matches = match.presentMatches;
         }
@@ -646,7 +670,10 @@ module.exports = Node = (function(superClass) {
         parts = compactFlatten([
           label ? {
             label: label
-          } : void 0, children.length > 0 ? children : match.toString()
+          } : void 0, {
+            offset: this.offset,
+            absoluteOffset: this.absoluteOffset
+          }, children.length > 0 ? children : match.toString()
         ]);
         if (parts.length === 1) {
           parts = parts[0];
@@ -2550,7 +2577,7 @@ module.exports = {
 /* 20 */
 /***/ (function(module, exports) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.2","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.2.1","commander":"^2.15.1","css-loader":"^0.28.4","dateformat":"^3.0.3","detect-node":"^2.0.3","fs-extra":"^5.0.0","glob":"^7.1.2","glob-promise":"^3.4.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.0"}
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*","art-class-system":"*","art-config":"*","art-standard-lib":"*","art-testbench":"*","bluebird":"^3.5.0","caffeine-script":"*","caffeine-script-runtime":"*","case-sensitive-paths-webpack-plugin":"^2.1.2","chai":"^4.0.1","coffee-loader":"^0.7.3","coffee-script":"^1.12.6","colors":"^1.2.1","commander":"^2.15.1","css-loader":"^0.28.4","dateformat":"^3.0.3","detect-node":"^2.0.3","fs-extra":"^5.0.0","glob":"^7.1.2","glob-promise":"^3.4.0","json-loader":"^0.5.4","mocha":"^3.4.2","neptune-namespaces":"*","script-loader":"^0.7.0","style-loader":"^0.18.1","webpack":"^2.6.1","webpack-dev-server":"^2.4.5","webpack-merge":"^4.1.0","webpack-node-externals":"^1.6.0"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd --compilers coffee:coffee-script/register","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.1"}
 
 /***/ }),
 /* 21 */
@@ -2834,6 +2861,21 @@ defineModule(module, function() {
                 return entry;
               }
             });
+            if (!bestMapEntry) {
+              log({
+                bestMapEntryNotFound: {
+                  source: source,
+                  rawSubsource: rawSubsource,
+                  subsourceToParentSourceMap: subsourceToParentSourceMap,
+                  suboffset: suboffset,
+                  sourceLength: source.length,
+                  rawSubsourceLength: rawSubsource.length,
+                  sourceOffset: sourceOffset,
+                  indent: indent
+                }
+              });
+              throw new Error("error getting source location from subparse sourceMap");
+            }
             return suboffset + bestMapEntry.toSourceDelta;
           }
         };
@@ -3292,6 +3334,9 @@ module.exports = Parser = (function(superClass) {
       var ref2;
       return ((ref2 = this.parentParser) != null ? ref2.rootParser : void 0) || this;
     },
+    rootSource: function() {
+      return this.rootParser.source;
+    },
     ancestors: function(into) {
       into.push(this);
       return into;
@@ -3377,6 +3422,7 @@ module.exports = Parser = (function(superClass) {
       }
       match.offset = parentNode.nextOffset;
       match.matchLength = originalMatchLength;
+      match._parser = parentNode._parser;
       match._parent = parentNode;
       return match;
     } else {
@@ -3405,6 +3451,9 @@ module.exports = Parser = (function(superClass) {
     var originalOffset, ref2, ref3, sourceMap;
     ref2 = this.options, sourceMap = ref2.sourceMap, originalOffset = (ref3 = ref2.originalOffset) != null ? ref3 : 0;
     if (sourceMap) {
+      if (!(suboffset <= this.source.length)) {
+        throw new Error("suboffset (" + suboffset + ") > source.length (" + this.source.length + ")");
+      }
       return sourceMap(suboffset);
     } else if (this.parentParser) {
       return this.options.originalOffset + suboffset;
