@@ -30,6 +30,59 @@ module.exports = suite:
     test "extra nesting", ->
       MyParser.parse "((1: hi))"
 
+  absoluteOffset: ->
+    MyBlockParser = null
+
+    setup ->
+      class MyBlockParser extends Parser
+
+        @rule
+          root: 'line+'
+          line: [
+            'end'
+            'expression block? end'
+          ]
+          expression: '/[a-z0-9A-Z]+/'
+          end: '/\n|$/'
+
+          block: Extensions.IndentBlocks.getPropsToSubparseBlock()
+
+    validateAbsoluteOffsets = (node) ->
+      {absoluteOffset} = node
+      if node.ruleName == "expression"
+        sourceValue = node.toString()
+        assert.eq absoluteOffset, node.parser.rootSource.indexOf(sourceValue), {sourceValue}
+      for child in node.children
+        assert.lte(
+          absoluteOffset
+          validateAbsoluteOffsets child
+          message: "parent node's absoluteOffset should be <= all of its children"
+          node: node.toString()
+          child: child.toString()
+        )
+      absoluteOffset
+
+    test "simple", ->
+      validateAbsoluteOffsets MyBlockParser.parse """
+        alpha
+        """
+
+    test "one block", ->
+      validateAbsoluteOffsets MyBlockParser.parse """
+        alpha
+          beautlful
+          colorful
+        """
+
+    test "nested blocks", ->
+      validateAbsoluteOffsets p = MyBlockParser.parse """
+        alpha
+          beautlful
+          colorful
+            and
+            delightful
+        """
+
   blockParsing: ->
     MyBlockParser = null
 

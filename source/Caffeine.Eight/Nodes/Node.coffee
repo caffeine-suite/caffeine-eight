@@ -14,7 +14,11 @@ module.exports = class Node extends BaseClass
     @_parent = parent
     {@_parser} = parent
 
+    @_absoluteOffset = -1
+
     @_offset = (options?.offset ? @_parent.getNextOffset()) | 0
+    if @_offset > @_parser.source.length
+      throw new Error "bad offset #{@inspectedName} - offset:#{@_offset} > sourceLength:#{@_parser.source.length}"
     @_matchLength = 0
 
     @_ruleName = @_pluralRuleName =
@@ -65,7 +69,13 @@ module.exports = class Node extends BaseClass
     source: -> @_parser.source
     isRoot: -> @_parser == @_parent
     hasMatches: -> @_matches?.length > 0
-    absoluteOffset: -> @_parser.offsetInRootParserSource @_offset
+    absoluteOffset: ->
+      if @_absoluteOffset >= 0
+        @_absoluteOffset
+      else
+        # log "=== get absoluteOffset --- #{@inspectedName} --- #{@_offset}/#{@parser.source.length} --- subparsed: #{!!@parser.parentParser}"
+        @_absoluteOffset = @_parser.offsetInRootParserSource @_offset
+
     ancestors: (into = [])->
       @parent.getAncestors into
       into.push @
@@ -140,6 +150,12 @@ module.exports = class Node extends BaseClass
       else
         @parent.firstPartialMatchParent
 
+    inspectedName: -> "#{if l = @label then "#{l}:" else ""}#{@ruleName}"
+
+    children: ->
+      for match in @presentMatches when match.getPresent?() && !match.nonMatch
+        match
+
     inspectedObjects: (verbose) ->
       match = @
       matches = @presentMatches
@@ -147,7 +163,7 @@ module.exports = class Node extends BaseClass
 
         path = []
         while matches.length == 1 && matches[0].matches?.length > 0
-          path.push "#{if match.label then "#{match.label}:" else ""}#{match.ruleName}"
+          path.push match.inspectedName
           [match] = matches
           matches = match.presentMatches
 
@@ -165,6 +181,7 @@ module.exports = class Node extends BaseClass
         parts = compactFlatten [
           # if path.length > 0   then path: path
           if label             then label: label
+          {@offset, @absoluteOffset}
           if children.length > 0
             children
           else

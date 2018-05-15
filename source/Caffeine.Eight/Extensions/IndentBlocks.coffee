@@ -49,6 +49,10 @@ defineModule module, -> class IndentBlocks
           bestMapEntry = find subsourceToParentSourceMap, (entry) ->
             entry if suboffset < entry.subsourceEndOffset
 
+          unless bestMapEntry
+            log bestMapEntryNotFound: {source, rawSubsource, subsourceToParentSourceMap, suboffset, sourceLength: source.length, rawSubsourceLength: rawSubsource.length, sourceOffset, indent}
+            throw new Error "error getting source location from subparse sourceMap"
+
           suboffset + bestMapEntry.toSourceDelta
 
   computeSubsourceToParentSourceMap = (sourceBaseOffset, replaceRegExp, indent, rawSubsource)->

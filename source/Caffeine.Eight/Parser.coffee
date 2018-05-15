@@ -111,6 +111,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     rootRule:     -> @class.getRootRule()
     nextOffset:   -> 0
     rootParser:   -> @parentParser?.rootParser || @
+    rootSource:   -> @rootParser.source
     ancestors:    (into) ->
       into.push @
       into
@@ -178,7 +179,8 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       match.offset      = parentNode.nextOffset
       match.matchLength = originalMatchLength
-      match._parent = parentNode
+      match._parser     = parentNode._parser
+      match._parent     = parentNode
       match
     else
       failureIndex = subparser.failureIndexInParentParser
@@ -200,9 +202,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   offsetInParentParserSource: (suboffset) ->
     {sourceMap, originalOffset = 0} = @options
     if sourceMap
+      throw new Error "suboffset (#{suboffset}) > source.length (#{@source.length})" unless suboffset <= @source.length
       sourceMap suboffset
+
     else if @parentParser
       @options.originalOffset + suboffset
+
     else
       suboffset
 
