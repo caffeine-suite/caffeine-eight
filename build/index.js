@@ -172,7 +172,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.3"};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.4"};
 
 /***/ }),
 /* 5 */
@@ -1137,7 +1137,7 @@ module.exports = Parser = (function(superClass) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Rule, RuleVariant, Stats, log, merge, objectName, ref, upperCamelCase,
+var Rule, RuleVariant, Stats, log, merge, objectName, ref, toInspectedObjects, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -1145,7 +1145,7 @@ RuleVariant = __webpack_require__(/*! ./RuleVariant */ 19);
 
 Stats = __webpack_require__(/*! ./Stats */ 24);
 
-ref = __webpack_require__(/*! art-standard-lib */ 8), merge = ref.merge, upperCamelCase = ref.upperCamelCase, objectName = ref.objectName, log = ref.log;
+ref = __webpack_require__(/*! art-standard-lib */ 8), toInspectedObjects = ref.toInspectedObjects, merge = ref.merge, upperCamelCase = ref.upperCamelCase, objectName = ref.objectName, log = ref.log;
 
 module.exports = Rule = (function(superClass) {
   extend(Rule, superClass);
@@ -1173,16 +1173,8 @@ module.exports = Rule = (function(superClass) {
   };
 
   Rule.getter({
-    inspectObjects: function() {
-      return [
-        {
-          inspect: (function(_this) {
-            return function() {
-              return "<Rule: " + _this._name + ">";
-            };
-          })(this)
-        }, this._variants
-      ];
+    inspectedObjects: function() {
+      return toInspectedObjects(this._variants);
     }
   });
 
@@ -1286,10 +1278,7 @@ module.exports = RuleVariant = (function(superClass) {
       return this.rule.name;
     },
     inspectedObjects: function() {
-      return {
-        rule: this.ruleName,
-        pattern: this.pattern
-      };
+      return toInspectedObjects(this.pattern);
     },
     isPassThrough: function() {
       return this._passThroughRuleName;
