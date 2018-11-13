@@ -17,9 +17,9 @@ module.exports = suite:
           ]
           end: '/\n|$/'
 
-          lineEnd: Extensions.IndentBlocks.getPropsToSubparseToEol rule: "word", allowPartialMatch: true
-          lineLabel: /[0-9]+\: */
-          word: /[a-z]+/
+          lineEnd:    Extensions.IndentBlocks.getPropsToSubparseToEol rule: "word", allowPartialMatch: true
+          lineLabel:  /[0-9]+\: */
+          word:       /[a-z]+/
 
     test "simple expression", ->
       MyParser.parse "1: hi"
@@ -29,6 +29,49 @@ module.exports = suite:
 
     test "extra nesting", ->
       MyParser.parse "((1: hi))"
+
+  ifThenElseWithPartialSubBlocks: ->
+    IfThenElseParser = null
+    setup ->
+      class IfThenElseParser extends Parser
+
+        @rule
+          root: [
+            {pattern: 'ifThenElse', toTestStructure: -> @ifThenElse.toTestStructure()}
+            pattern: 'words', toTestStructure: -> @words.toTestStructure()
+          ]
+          ifThenElse:
+            pattern: '/if/ _ testBody:expression _ /then/ _ thenBody:expression _ /else/ _ elseBody:expression'
+            toTestStructure: ->
+              test: @testBody.toTestStructure()
+              then: @thenBody.toTestStructure()
+              else: @elseBody.toTestStructure()
+
+          expression:
+            pattern: Extensions.IndentBlocks.getPropsToSubparseToEol rule: "words", allowPartialMatch: true
+            toTestStructure: -> @matches[0].toTestStructure()
+
+          words:
+            pattern: "word*"
+            toTestStructure: ->
+              for word in @words
+                word.toString().trim()
+
+          word:  "_? !/(if|then|else)\\b/ /[a-z]+/"
+          _: /\ +/
+
+    test "simple words", ->
+      IfThenElseParser.parse "hi there"
+
+    test "simple if-then-else", ->
+      IfThenElseParser.parse "if a then b else c"
+
+    test "more if-then-else", ->
+      result = IfThenElseParser.parse "if a b then c d else e f"
+      assert.eq result.toTestStructure(),
+        test: ["a", "b"]
+        then: ["c", "d"]
+        else: ["e", "f"]
 
   absoluteOffset: ->
     MyBlockParser = null

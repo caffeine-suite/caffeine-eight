@@ -1,7 +1,7 @@
 RuleVariant = require './RuleVariant'
 Stats = require './Stats'
 
-{merge, upperCamelCase, objectName, log} = require 'art-standard-lib'
+{toInspectedObjects, merge, upperCamelCase, objectName, log} = require 'art-standard-lib'
 
 module.exports = class Rule extends require("art-class-system").BaseClass
 
@@ -18,8 +18,8 @@ module.exports = class Rule extends require("art-class-system").BaseClass
     v
 
   @getter
-    inspectObjects: ->
-      [{inspect: => "<Rule: #{@_name}>"}, @_variants]
+    inspectedObjects: ->
+      toInspectedObjects @_variants
 
   clone: ->
     new Rule @_name, @_parserClass, @_variants.slice()
