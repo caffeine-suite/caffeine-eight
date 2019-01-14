@@ -130,15 +130,36 @@ defineModule module, -> class IndentBlocks
       matchLength:  matchLength
 
   @getParseFunction: (matcher, subparseOptions) ->
-    parse: (parentNode) ->
-      {nextOffset:offset, source} = parentNode
-      if block = matcher source, offset
-        {subsource, matchLength, sourceMap} = block
+    parse:
+      # for debugging
+      if subparseOptions.verbose
+        (parentNode) ->
+          {nextOffset:offset, source} = parentNode
+          log IndentBlocks_parse_verbose_matcher_attempt: {source, offset}
 
-        parentNode.subparse subsource, merge subparseOptions,
-          originalOffset:       offset
-          originalMatchLength:  matchLength
-          sourceMap:            sourceMap
+          if block = matcher source, offset
+            {subsource, matchLength, sourceMap} = block
+
+            log IndentBlocks_parse_verbose_matcher_matched: {subsource, matchLength}
+
+            parsed = parentNode.subparse subsource, merge subparseOptions,
+              originalOffset:       offset
+              originalMatchLength:  matchLength
+              sourceMap:            sourceMap
+
+            log IndentBlocks_parse_verbose_matcher_subparse: {subparseOptions, parsed}
+            parsed
+      else
+        (parentNode) ->
+          {nextOffset:offset, source} = parentNode
+
+          if block = matcher source, offset
+            {subsource, matchLength, sourceMap} = block
+
+            parentNode.subparse subsource, merge subparseOptions,
+              originalOffset:       offset
+              originalMatchLength:  matchLength
+              sourceMap:            sourceMap
 
   @getPropsToSubparseToEol: (subparseOptions = {}) => @getParseFunction @matchToEol, subparseOptions
 
