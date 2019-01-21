@@ -2,8 +2,12 @@
 {BaseClass} = require "art-class-system"
 
 defineModule module, class ScratchNode extends BaseClass
-  @_scatchNodes: []
-  @_scatchNodesInUse: 0
+
+  @resetAll: ->
+    @_scatchNodes = []
+    @_scatchNodesInUse = 0
+
+  @resetAll()
 
   @checkout: (parentNode, ruleVariant) ->
     if @_scatchNodesInUse >= @_scatchNodes.length

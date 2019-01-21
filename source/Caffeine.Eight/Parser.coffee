@@ -1,5 +1,5 @@
 Rule = require './Rule'
-{Node} = require './Nodes'
+{Node, ScratchNode} = require './Nodes'
 NonMatch = require './NonMatch'
 Stats = require './Stats'
 SourceLineColumnMap = require './SourceLineColumnMap'
@@ -241,21 +241,24 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     @_resetParserTracking()
     @_logParsingFailures = logParsingFailures
 
-    if (rootParseTreeNode = startRule.parse @) &&
-        (
-          rootParseTreeNode.matchLength == @_source.length ||
-          (allowPartialMatch && rootParseTreeNode.matchLength > 0)
-        )
-      rootParseTreeNode.applyLabels() unless isSubparse
-      rootParseTreeNode
-    else
-      unless isSubparse
-        if logParsingFailures
-          throw @generateCompileError merge @options, {rootParseTreeNode}
-        else
-          # rerun parse with parsing-failure-logging
-          # NOTE: we could speed this up by not completely trashing the cache
-          @parse @_source, merge @options, logParsingFailures: true
+    try
+      if (rootParseTreeNode = startRule.parse @) &&
+          (
+            rootParseTreeNode.matchLength == @_source.length ||
+            (allowPartialMatch && rootParseTreeNode.matchLength > 0)
+          )
+        rootParseTreeNode.applyLabels() unless isSubparse
+        rootParseTreeNode
+      else
+        unless isSubparse
+          if logParsingFailures
+            throw @generateCompileError merge @options, {rootParseTreeNode}
+          else
+            # rerun parse with parsing-failure-logging
+            # NOTE: we could speed this up by not completely trashing the cache
+            @parse @_source, merge @options, logParsingFailures: true
+    finally
+      ScratchNode.resetAll() unless isSubparse
 
   generateCompileError: (options) ->
       {message, info, rootParseTreeNode} = options
