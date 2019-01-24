@@ -172,7 +172,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.4"};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.5"};
 
 /***/ }),
 /* 5 */
@@ -508,14 +508,14 @@ module.exports = require('art-class-system' /* ABC - not inlining fellow NPM */)
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, SourceLineColumnMap, Stats, compactFlatten, firstLines, formattedInspect, inspect, inspectLean, isClass, isFunction, isNumber, isPlainArray, isPlainObject, lastLines, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, presentSourceLocation, pushIfNotPresent, ref, ref1, uniqueValues, upperCamelCase,
+var CaffeineEightCompileError, Node, NonMatch, Parser, Rule, ScratchNode, SourceLineColumnMap, Stats, compactFlatten, firstLines, formattedInspect, inspect, inspectLean, isClass, isFunction, isNumber, isPlainArray, isPlainObject, lastLines, log, max, merge, mergeInto, objectHasKeys, objectLength, objectWithout, peek, pluralize, presentSourceLocation, pushIfNotPresent, ref, ref1, ref2, uniqueValues, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty,
   slice = [].slice;
 
 Rule = __webpack_require__(/*! ./Rule */ 18);
 
-Node = __webpack_require__(/*! ./Nodes */ 21).Node;
+ref = __webpack_require__(/*! ./Nodes */ 21), Node = ref.Node, ScratchNode = ref.ScratchNode;
 
 NonMatch = __webpack_require__(/*! ./NonMatch */ 15);
 
@@ -523,9 +523,9 @@ Stats = __webpack_require__(/*! ./Stats */ 24);
 
 SourceLineColumnMap = __webpack_require__(/*! ./SourceLineColumnMap */ 27);
 
-ref = __webpack_require__(/*! art-standard-lib */ 8), isNumber = ref.isNumber, isFunction = ref.isFunction, peek = ref.peek, log = ref.log, isPlainObject = ref.isPlainObject, isPlainArray = ref.isPlainArray, merge = ref.merge, compactFlatten = ref.compactFlatten, objectLength = ref.objectLength, inspect = ref.inspect, inspectLean = ref.inspectLean, pluralize = ref.pluralize, isClass = ref.isClass, isPlainArray = ref.isPlainArray, upperCamelCase = ref.upperCamelCase, mergeInto = ref.mergeInto, objectWithout = ref.objectWithout, uniqueValues = ref.uniqueValues, formattedInspect = ref.formattedInspect, max = ref.max, inspect = ref.inspect, pushIfNotPresent = ref.pushIfNotPresent, uniqueValues = ref.uniqueValues, objectHasKeys = ref.objectHasKeys;
+ref1 = __webpack_require__(/*! art-standard-lib */ 8), isNumber = ref1.isNumber, isFunction = ref1.isFunction, peek = ref1.peek, log = ref1.log, isPlainObject = ref1.isPlainObject, isPlainArray = ref1.isPlainArray, merge = ref1.merge, compactFlatten = ref1.compactFlatten, objectLength = ref1.objectLength, inspect = ref1.inspect, inspectLean = ref1.inspectLean, pluralize = ref1.pluralize, isClass = ref1.isClass, isPlainArray = ref1.isPlainArray, upperCamelCase = ref1.upperCamelCase, mergeInto = ref1.mergeInto, objectWithout = ref1.objectWithout, uniqueValues = ref1.uniqueValues, formattedInspect = ref1.formattedInspect, max = ref1.max, inspect = ref1.inspect, pushIfNotPresent = ref1.pushIfNotPresent, uniqueValues = ref1.uniqueValues, objectHasKeys = ref1.objectHasKeys;
 
-ref1 = __webpack_require__(/*! ./Lib */ 13), firstLines = ref1.firstLines, lastLines = ref1.lastLines, presentSourceLocation = ref1.presentSourceLocation;
+ref2 = __webpack_require__(/*! ./Lib */ 13), firstLines = ref2.firstLines, lastLines = ref2.lastLines, presentSourceLocation = ref2.presentSourceLocation;
 
 CaffeineEightCompileError = __webpack_require__(/*! ./CaffeineEightCompileError */ 14);
 
@@ -570,7 +570,7 @@ module.exports = Parser = (function(superClass) {
   });
 
   Parser.addRule = function(ruleName, definitions, nodeBaseClass) {
-    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref2, ref3, results, rule;
+    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref3, ref4, results, rule;
     if (nodeBaseClass == null) {
       nodeBaseClass = this.getNodeBaseClass();
     }
@@ -584,8 +584,8 @@ module.exports = Parser = (function(superClass) {
     if (!isPlainArray(array = definitions)) {
       definitions = [definitions];
     }
-    if (definitions.length > 1 && isPlainObject(last = peek(definitions)) && !((ref2 = last.pattern) != null ? ref2 : last.parse)) {
-      ref3 = definitions, definitions = 2 <= ref3.length ? slice.call(ref3, 0, i = ref3.length - 1) : (i = 0, []), commonNodeProps = ref3[i++];
+    if (definitions.length > 1 && isPlainObject(last = peek(definitions)) && !((ref3 = last.pattern) != null ? ref3 : last.parse)) {
+      ref4 = definitions, definitions = 2 <= ref4.length ? slice.call(ref4, 0, i = ref4.length - 1) : (i = 0, []), commonNodeProps = ref4[i++];
     } else {
       commonNodeProps = {};
     }
@@ -673,8 +673,8 @@ module.exports = Parser = (function(superClass) {
       return 0;
     },
     rootParser: function() {
-      var ref2;
-      return ((ref2 = this.parentParser) != null ? ref2.rootParser : void 0) || this;
+      var ref3;
+      return ((ref3 = this.parentParser) != null ? ref3.rootParser : void 0) || this;
     },
     rootSource: function() {
       return this.rootParser.source;
@@ -732,7 +732,7 @@ module.exports = Parser = (function(superClass) {
    */
 
   Parser.prototype.subparse = function(subsource, options) {
-    var failureIndex, k, match, matchLength, nonMatch, offset, originalMatchLength, originalOffset, parentNode, parser, ref2, rootNode, source, sourceMap, subparser;
+    var failureIndex, k, match, matchLength, nonMatch, offset, originalMatchLength, originalOffset, parentNode, parser, ref3, rootNode, source, sourceMap, subparser;
     if (options == null) {
       options = {};
     }
@@ -769,9 +769,9 @@ module.exports = Parser = (function(superClass) {
       return match;
     } else {
       failureIndex = subparser.failureIndexInParentParser;
-      ref2 = subparser._nonMatches;
-      for (k in ref2) {
-        nonMatch = ref2[k];
+      ref3 = subparser._nonMatches;
+      for (k in ref3) {
+        nonMatch = ref3[k];
         rootNode = nonMatch.node;
         while (rootNode !== parentNode && rootNode.parent instanceof Node) {
           rootNode = rootNode.parent;
@@ -790,8 +790,8 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype.offsetInParentParserSource = function(suboffset) {
-    var originalOffset, ref2, ref3, sourceMap;
-    ref2 = this.options, sourceMap = ref2.sourceMap, originalOffset = (ref3 = ref2.originalOffset) != null ? ref3 : 0;
+    var originalOffset, ref3, ref4, sourceMap;
+    ref3 = this.options, sourceMap = ref3.sourceMap, originalOffset = (ref4 = ref3.originalOffset) != null ? ref4 : 0;
     if (sourceMap) {
       if (!(suboffset <= this.source.length)) {
         throw new Error("suboffset (" + suboffset + ") > source.length (" + this.source.length + ")");
@@ -836,29 +836,35 @@ module.exports = Parser = (function(superClass) {
    */
 
   Parser.prototype.parse = function(_source, options1) {
-    var allowPartialMatch, isSubparse, logParsingFailures, ref2, rootParseTreeNode, rule, startRule;
+    var allowPartialMatch, isSubparse, logParsingFailures, ref3, rootParseTreeNode, rule, startRule;
     this._source = _source;
     this.options = options1 != null ? options1 : {};
-    ref2 = this.options, this.parentParser = ref2.parentParser, allowPartialMatch = ref2.allowPartialMatch, rule = ref2.rule, isSubparse = ref2.isSubparse, logParsingFailures = ref2.logParsingFailures;
+    ref3 = this.options, this.parentParser = ref3.parentParser, allowPartialMatch = ref3.allowPartialMatch, rule = ref3.rule, isSubparse = ref3.isSubparse, logParsingFailures = ref3.logParsingFailures;
     startRule = this.getRule(rule);
     this._resetParserTracking();
     this._logParsingFailures = logParsingFailures;
-    if ((rootParseTreeNode = startRule.parse(this)) && (rootParseTreeNode.matchLength === this._source.length || (allowPartialMatch && rootParseTreeNode.matchLength > 0))) {
-      if (!isSubparse) {
-        rootParseTreeNode.applyLabels();
-      }
-      return rootParseTreeNode;
-    } else {
-      if (!isSubparse) {
-        if (logParsingFailures) {
-          throw this.generateCompileError(merge(this.options, {
-            rootParseTreeNode: rootParseTreeNode
-          }));
-        } else {
-          return this.parse(this._source, merge(this.options, {
-            logParsingFailures: true
-          }));
+    try {
+      if ((rootParseTreeNode = startRule.parse(this)) && (rootParseTreeNode.matchLength === this._source.length || (allowPartialMatch && rootParseTreeNode.matchLength > 0))) {
+        if (!isSubparse) {
+          rootParseTreeNode.applyLabels();
         }
+        return rootParseTreeNode;
+      } else {
+        if (!isSubparse) {
+          if (logParsingFailures) {
+            throw this.generateCompileError(merge(this.options, {
+              rootParseTreeNode: rootParseTreeNode
+            }));
+          } else {
+            return this.parse(this._source, merge(this.options, {
+              logParsingFailures: true
+            }));
+          }
+        }
+      }
+    } finally {
+      if (!isSubparse) {
+        ScratchNode.resetAll();
       }
     }
   };
@@ -882,11 +888,11 @@ module.exports = Parser = (function(superClass) {
   };
 
   addToExpectingInfo = function(node, into, value) {
-    var m, name1, p, pm, ref2;
+    var m, name1, p, pm, ref3;
     if (node.parent) {
       into = addToExpectingInfo(node.parent, into);
     }
-    return into[name1 = node.parseInfo] || (into[name1] = value ? value : (p = {}, ((ref2 = (pm = node.presentMatches)) != null ? ref2.length : void 0) > 0 ? p.matches = (function() {
+    return into[name1 = node.parseInfo] || (into[name1] = value ? value : (p = {}, ((ref3 = (pm = node.presentMatches)) != null ? ref3.length : void 0) > 0 ? p.matches = (function() {
       var i, len, results;
       results = [];
       for (i = 0, len = pm.length; i < len; i++) {
@@ -916,14 +922,14 @@ module.exports = Parser = (function(superClass) {
       }, this.getLineColumn(this._failureIndex));
     },
     parseFailureInfo: function(options) {
-      var errorType, failureIndex, failureOffset, out, ref2, ref3, verbose;
+      var errorType, failureIndex, failureOffset, out, ref3, ref4, verbose;
       if (options == null) {
         options = {};
       }
       if (!this._source) {
         return;
       }
-      failureOffset = options.failureOffset, failureIndex = (ref2 = options.failureIndex) != null ? ref2 : this._failureIndex, verbose = options.verbose, errorType = (ref3 = options.errorType) != null ? ref3 : "Parsing";
+      failureOffset = options.failureOffset, failureIndex = (ref3 = options.failureIndex) != null ? ref3 : this._failureIndex, verbose = options.verbose, errorType = (ref4 = options.errorType) != null ? ref4 : "Parsing";
       if (failureOffset != null) {
         throw new Error("DEPRICATED: failureOffset");
       }
@@ -948,11 +954,11 @@ module.exports = Parser = (function(superClass) {
       }
       expectingInfoTree = {};
       this._partialParseTreeNodes = (function() {
-        var ref2, ref3, results;
-        ref2 = this._nonMatches;
+        var ref3, ref4, results;
+        ref3 = this._nonMatches;
         results = [];
-        for (k in ref2) {
-          ref3 = ref2[k], patternElement = ref3.patternElement, node = ref3.node;
+        for (k in ref3) {
+          ref4 = ref3[k], patternElement = ref4.patternElement, node = ref4.node;
           addToExpectingInfo(node, expectingInfoTree, patternElement.pattern.toString());
           n = new Node(node);
           n.pattern = patternElement;
@@ -964,7 +970,7 @@ module.exports = Parser = (function(superClass) {
       return this._partialParseTree = rootNode;
     },
     expectingInfo: function() {
-      var child, couldMatchRuleNames, expecting, firstPartialMatchParent, i, j, l, len, len1, len2, node, out, partialMatchingParents, pmp, ref2, ref3, ruleName, v;
+      var child, couldMatchRuleNames, expecting, firstPartialMatchParent, i, j, l, len, len1, len2, node, out, partialMatchingParents, pmp, ref3, ref4, ruleName, v;
       if (!(objectLength(this._nonMatches) > 0)) {
         return null;
       }
@@ -980,9 +986,9 @@ module.exports = Parser = (function(superClass) {
         - it may be time to do a custom inspect
        */
       partialMatchingParents = [];
-      ref2 = this.partialParseTreeLeafNodes;
-      for (i = 0, len = ref2.length; i < len; i++) {
-        node = ref2[i];
+      ref3 = this.partialParseTreeLeafNodes;
+      for (i = 0, len = ref3.length; i < len; i++) {
+        node = ref3[i];
         firstPartialMatchParent = node.firstPartialMatchParent;
         pushIfNotPresent(partialMatchingParents, firstPartialMatchParent);
       }
@@ -990,9 +996,9 @@ module.exports = Parser = (function(superClass) {
       expecting = {};
       for (j = 0, len1 = partialMatchingParents.length; j < len1; j++) {
         pmp = partialMatchingParents[j];
-        ref3 = pmp.matches;
-        for (l = 0, len2 = ref3.length; l < len2; l++) {
-          child = ref3[l];
+        ref4 = pmp.matches;
+        for (l = 0, len2 = ref4.length; l < len2; l++) {
+          child = ref4[l];
           if (!(child.isNonMatch && child.nonMatchingLeaf)) {
             continue;
           }
@@ -1006,7 +1012,7 @@ module.exports = Parser = (function(superClass) {
         }
       }
       return this._expectingInfo = (function() {
-        var len3, len4, o, q, ref4;
+        var len3, len4, o, q, ref5;
         if (objectHasKeys(expecting)) {
           out = {
             expecting: expecting
@@ -1015,9 +1021,9 @@ module.exports = Parser = (function(superClass) {
             out.rules = {};
             for (o = 0, len3 = couldMatchRuleNames.length; o < len3; o++) {
               ruleName = couldMatchRuleNames[o];
-              ref4 = this.rules[ruleName]._variants;
-              for (q = 0, len4 = ref4.length; q < len4; q++) {
-                v = ref4[q];
+              ref5 = this.rules[ruleName]._variants;
+              for (q = 0, len4 = ref5.length; q < len4; q++) {
+                v = ref5[q];
                 out.rules[ruleName] = v.patternString;
               }
             }
@@ -1047,8 +1053,8 @@ module.exports = Parser = (function(superClass) {
   };
 
   Parser.prototype.getLineColumnString = function(offset, into) {
-    var a, column, line, ref2;
-    ref2 = a = this.getLineColumn(offset, into), line = ref2.line, column = ref2.column;
+    var a, column, line, ref3;
+    ref3 = a = this.getLineColumn(offset, into), line = ref3.line, column = ref3.column;
     return (line + 1) + ":" + (column + 1);
   };
 
@@ -2325,9 +2331,12 @@ BaseClass = __webpack_require__(/*! art-class-system */ 16).BaseClass;
 defineModule(module, ScratchNode = (function(superClass) {
   extend(ScratchNode, superClass);
 
-  ScratchNode._scatchNodes = [];
+  ScratchNode.resetAll = function() {
+    this._scatchNodes = [];
+    return this._scatchNodesInUse = 0;
+  };
 
-  ScratchNode._scatchNodesInUse = 0;
+  ScratchNode.resetAll();
 
   ScratchNode.checkout = function(parentNode, ruleVariant) {
     if (this._scatchNodesInUse >= this._scatchNodes.length) {
@@ -2693,7 +2702,37 @@ defineModule(module, function() {
 
     IndentBlocks.getParseFunction = function(matcher, subparseOptions) {
       return {
-        parse: function(parentNode) {
+        parse: subparseOptions.verbose ? function(parentNode) {
+          var block, matchLength, offset, parsed, source, sourceMap, subsource;
+          offset = parentNode.nextOffset, source = parentNode.source;
+          log({
+            IndentBlocks_parse_verbose_matcher_attempt: {
+              source: source,
+              offset: offset
+            }
+          });
+          if (block = matcher(source, offset)) {
+            subsource = block.subsource, matchLength = block.matchLength, sourceMap = block.sourceMap;
+            log({
+              IndentBlocks_parse_verbose_matcher_matched: {
+                subsource: subsource,
+                matchLength: matchLength
+              }
+            });
+            parsed = parentNode.subparse(subsource, merge(subparseOptions, {
+              originalOffset: offset,
+              originalMatchLength: matchLength,
+              sourceMap: sourceMap
+            }));
+            log({
+              IndentBlocks_parse_verbose_matcher_subparse: {
+                subparseOptions: subparseOptions,
+                parsed: parsed
+              }
+            });
+            return parsed;
+          }
+        } : function(parentNode) {
           var block, matchLength, offset, source, sourceMap, subsource;
           offset = parentNode.nextOffset, source = parentNode.source;
           if (block = matcher(source, offset)) {
