@@ -163,6 +163,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     subparser = new @class
     {originalMatchLength, parentNode, sourceMap, originalOffset} = options
     options.parentParser = @
+    options.sourceFile = @options.sourceFile
     if match = subparser.parse subsource, merge(options, isSubparse: true, logParsingFailures: @_logParsingFailures)
       {offset, matchLength, source, parser} = match
       match.subparseInfo = {offset, matchLength, source, parser}
@@ -263,6 +264,22 @@ module.exports = class Parser extends require("art-class-system").BaseClass
   generateCompileError: (options) ->
       {message, info, rootParseTreeNode} = options
 
+      # log generateCompileError: {
+      #   options
+      #   getParseFailureInfo: @getParseFailureInfo options
+      #   out:
+      #     message:
+      #       compactFlatten([
+      #         if rootParseTreeNode?.matchLength < @_source.length
+      #           @colorString "gray", "#{@class.name} only parsed: " +
+      #             @colorString "black", "#{rootParseTreeNode.matchLength} of #{@_source.length} " +
+      #             @colorString "gray", "characters"
+      #         @getParseFailureInfo options
+      #         message
+      #       ]).join "\n"
+      #     info: merge @getParseFailureInfoObject(options), info
+      # }
+
       new CaffeineEightCompileError(
         compactFlatten([
           if rootParseTreeNode?.matchLength < @_source.length
@@ -321,25 +338,32 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       {failureOffset, failureIndex = @_failureIndex, verbose, errorType = "Parsing"} = options
       throw new Error "DEPRICATED: failureOffset" if failureOffset?
 
-      out = compactFlatten [
-        ""
-        @colorString "gray", "#{errorType} error at #{@colorString "red", @getFailureUrl failureIndex}"
-        ""
-        @colorString "gray", "Source:"
-        @colorString "gray", "..."
+      if @parentParser
+        @rootParser.getParseFailureInfo {
+          failureIndex: @offsetInRootParserSource failureIndex
+          verbose
+          errorType
+        }
 
-        presentSourceLocation @_source,
-          failureIndex
-          @options
+      else
+        compactFlatten([
+          ""
+          @colorString "gray", "#{errorType} error at #{@colorString "red", @getFailureUrl failureIndex}"
+          ""
+          @colorString "gray", "Source:"
+          @colorString "gray", "..."
 
-        @colorString "gray", "..."
-        ""
-        formattedInspect @expectingInfo, options
-        if verbose
-          formattedInspect ("partial-parse-tree": @partialParseTree), options
-        ""
-      ]
-      out.join "\n"
+          presentSourceLocation @_source,
+            failureIndex
+            @options
+
+          @colorString "gray", "..."
+          ""
+          formattedInspect @expectingInfo, options
+          if verbose
+            formattedInspect ("partial-parse-tree": @partialParseTree), options
+          ""
+        ]).join "\n"
 
     partialParseTreeLeafNodes: ->
       return @_partialParseTreeNodes if @_partialParseTreeNodes
