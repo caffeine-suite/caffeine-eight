@@ -262,6 +262,7 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
   generateCompileError: (options) ->
       {message, info, rootParseTreeNode} = options
+
       new CaffeineEightCompileError(
         compactFlatten([
           if rootParseTreeNode?.matchLength < @_source.length
@@ -305,13 +306,14 @@ module.exports = class Parser extends require("art-class-system").BaseClass
     failureUrl: (failureIndex = @_failureIndex) ->
       "#{@options.sourceFile || ''}:#{@getLineColumnString failureIndex}"
 
-    parseFailureInfoObject: ->
+    parseFailureInfoObject: (options) ->
+      failureIndex = options?.failureIndex ? @_failureIndex
       merge {
         sourceFile: @options.sourceFile
-        failureIndex: @_failureIndex
-        location: @getFailureUrl @_failureIndex
-        @expectingInfo
-      }, @getLineColumn @_failureIndex
+        failureIndex
+        location: @getFailureUrl failureIndex
+        expectingInfo: if failureIndex == @_failureIndex then @expectingInfo
+      }, @getLineColumn failureIndex
 
     parseFailureInfo: (options = {})->
       return unless @_source
