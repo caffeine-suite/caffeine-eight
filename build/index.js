@@ -740,6 +740,7 @@ module.exports = Parser = (function(superClass) {
     subparser = new this["class"];
     originalMatchLength = options.originalMatchLength, parentNode = options.parentNode, sourceMap = options.sourceMap, originalOffset = options.originalOffset;
     options.parentParser = this;
+    options.sourceFile = this.options.sourceFile;
     if (match = subparser.parse(subsource, merge(options, {
       isSubparse: true,
       logParsingFailures: this._logParsingFailures
@@ -924,7 +925,7 @@ module.exports = Parser = (function(superClass) {
       }, this.getLineColumn(failureIndex));
     },
     parseFailureInfo: function(options) {
-      var errorType, failureIndex, failureOffset, out, ref3, ref4, verbose;
+      var errorType, failureIndex, failureOffset, ref3, ref4, verbose;
       if (options == null) {
         options = {};
       }
@@ -935,12 +936,19 @@ module.exports = Parser = (function(superClass) {
       if (failureOffset != null) {
         throw new Error("DEPRICATED: failureOffset");
       }
-      out = compactFlatten([
-        "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), presentSourceLocation(this._source, failureIndex, this.options), this.colorString("gray", "..."), "", formattedInspect(this.expectingInfo, options), verbose ? formattedInspect({
-          "partial-parse-tree": this.partialParseTree
-        }, options) : void 0, ""
-      ]);
-      return out.join("\n");
+      if (this.parentParser) {
+        return this.rootParser.getParseFailureInfo({
+          failureIndex: this.offsetInRootParserSource(failureIndex),
+          verbose: verbose,
+          errorType: errorType
+        });
+      } else {
+        return compactFlatten([
+          "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), presentSourceLocation(this._source, failureIndex, this.options), this.colorString("gray", "..."), "", formattedInspect(this.expectingInfo, options), verbose ? formattedInspect({
+            "partial-parse-tree": this.partialParseTree
+          }, options) : void 0, ""
+        ]).join("\n");
+      }
     },
     partialParseTreeLeafNodes: function() {
       if (this._partialParseTreeNodes) {
