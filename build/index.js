@@ -172,7 +172,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.7"};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.8"};
 
 /***/ }),
 /* 5 */
@@ -917,12 +917,18 @@ module.exports = Parser = (function(superClass) {
     parseFailureInfoObject: function(options) {
       var failureIndex, ref3;
       failureIndex = (ref3 = options != null ? options.failureIndex : void 0) != null ? ref3 : this._failureIndex;
-      return merge({
-        sourceFile: this.options.sourceFile,
-        failureIndex: failureIndex,
-        location: this.getFailureUrl(failureIndex),
-        expectingInfo: failureIndex === this._failureIndex ? this.expectingInfo : void 0
-      }, this.getLineColumn(failureIndex));
+      if (this.parentParser) {
+        return this.rootParser.getParseFailureInfoObject({
+          failureIndex: this.offsetInRootParserSource(failureIndex)
+        });
+      } else {
+        return merge({
+          sourceFile: this.options.sourceFile,
+          failureIndex: failureIndex,
+          location: this.getFailureUrl(failureIndex),
+          expectingInfo: failureIndex === this._failureIndex ? this.expectingInfo : void 0
+        }, this.getLineColumn(failureIndex));
+      }
     },
     parseFailureInfo: function(options) {
       var errorType, failureIndex, failureOffset, ref3, ref4, verbose;
@@ -944,7 +950,7 @@ module.exports = Parser = (function(superClass) {
         });
       } else {
         return compactFlatten([
-          "", this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), presentSourceLocation(this._source, failureIndex, this.options), this.colorString("gray", "..."), "", formattedInspect(this.expectingInfo, options), verbose ? formattedInspect({
+          this.colorString("gray", errorType + " error at " + (this.colorString("red", this.getFailureUrl(failureIndex)))), "", this.colorString("gray", "Source:"), this.colorString("gray", "..."), presentSourceLocation(this._source, failureIndex, this.options), this.colorString("gray", "..."), "", formattedInspect(this.expectingInfo, options), verbose ? formattedInspect({
             "partial-parse-tree": this.partialParseTree
           }, options) : void 0, ""
         ]).join("\n");
