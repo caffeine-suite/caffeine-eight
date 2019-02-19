@@ -172,7 +172,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.5"};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.6"};
 
 /***/ }),
 /* 5 */
@@ -913,13 +913,15 @@ module.exports = Parser = (function(superClass) {
       }
       return (this.options.sourceFile || '') + ":" + (this.getLineColumnString(failureIndex));
     },
-    parseFailureInfoObject: function() {
+    parseFailureInfoObject: function(options) {
+      var failureIndex, ref3;
+      failureIndex = (ref3 = options != null ? options.failureIndex : void 0) != null ? ref3 : this._failureIndex;
       return merge({
         sourceFile: this.options.sourceFile,
-        failureIndex: this._failureIndex,
-        location: this.getFailureUrl(this._failureIndex),
-        expectingInfo: this.expectingInfo
-      }, this.getLineColumn(this._failureIndex));
+        failureIndex: failureIndex,
+        location: this.getFailureUrl(failureIndex),
+        expectingInfo: failureIndex === this._failureIndex ? this.expectingInfo : void 0
+      }, this.getLineColumn(failureIndex));
     },
     parseFailureInfo: function(options) {
       var errorType, failureIndex, failureOffset, out, ref3, ref4, verbose;
