@@ -325,12 +325,17 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
     parseFailureInfoObject: (options) ->
       failureIndex = options?.failureIndex ? @_failureIndex
-      merge {
-        sourceFile: @options.sourceFile
-        failureIndex
-        location: @getFailureUrl failureIndex
-        expectingInfo: if failureIndex == @_failureIndex then @expectingInfo
-      }, @getLineColumn failureIndex
+
+      if @parentParser
+        @rootParser.getParseFailureInfoObject
+          failureIndex: @offsetInRootParserSource failureIndex
+      else
+        merge {
+          sourceFile: @options.sourceFile
+          failureIndex
+          location: @getFailureUrl failureIndex
+          expectingInfo: if failureIndex == @_failureIndex then @expectingInfo
+        }, @getLineColumn failureIndex
 
     parseFailureInfo: (options = {})->
       return unless @_source
@@ -347,7 +352,6 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
       else
         compactFlatten([
-          ""
           @colorString "gray", "#{errorType} error at #{@colorString "red", @getFailureUrl failureIndex}"
           ""
           @colorString "gray", "Source:"
