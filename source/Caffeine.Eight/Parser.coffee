@@ -128,7 +128,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
   @_pluralNames = {}
   @pluralize: (name) ->
-    @_pluralNames[name] ||= pluralize name
+    unless pluralName = @_pluralNames[name]
+      pluralName = pluralize name
+      if pluralName == name
+        pluralName += "s"
+      @_pluralNames[name] = pluralName
+    pluralName
 
   pluralize: (name) ->
     @class.pluralize name
