@@ -172,7 +172,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.8"};
+module.exports = {"author":"Shane Brinkman-Davis Delamore, Imikimi LLC","dependencies":{"art-build-configurator":"*"},"description":"a 'runtime' parsing expression grammar parser","license":"ISC","name":"caffeine-eight","scripts":{"build":"webpack --progress","start":"webpack-dev-server --hot --inline --progress","test":"nn -s;mocha -u tdd","testInBrowser":"webpack-dev-server --progress"},"version":"2.5.9"};
 
 /***/ }),
 /* 5 */
@@ -699,8 +699,15 @@ module.exports = Parser = (function(superClass) {
   Parser._pluralNames = {};
 
   Parser.pluralize = function(name) {
-    var base;
-    return (base = this._pluralNames)[name] || (base[name] = pluralize(name));
+    var pluralName;
+    if (!(pluralName = this._pluralNames[name])) {
+      pluralName = pluralize(name);
+      if (pluralName === name) {
+        pluralName += "s";
+      }
+      this._pluralNames[name] = pluralName;
+    }
+    return pluralName;
   };
 
   Parser.prototype.pluralize = function(name) {
