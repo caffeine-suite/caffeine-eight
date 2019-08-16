@@ -10,9 +10,10 @@ defineModule module, class Repl
         try
           result = parsed = parser.parse command.trim()
           try
-            log result = parsed.evaluate?() || parsed
+            log if undefined == result = parsed.evaluate?() then parsed else result
             callback()
           catch e
             callback e
         catch e
-          callback parser.getParseFailureInfo(color: true).replace "<HERE>", "<HERE>".red
+          log parser.getParseFailureInfo(color: true).replace "<HERE>", "<HERE>".red
+          callback()

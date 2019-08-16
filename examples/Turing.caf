@@ -1,0 +1,100 @@
+import &ArtStandardLib
+
+class TuringParser extends &CaffeineEight.Parser
+
+  @rule
+    root:
+      :statements
+      evaluate: ->
+        @parser.turingStore ?= []
+        @statements.evaluate()
+
+    statements:
+      "" statement+
+      evaluate: ->
+        last = null
+        each statement in @statements
+          last = statement.evaluate()
+
+        last ? 0
+
+    statement:
+      "" endline? expression endline?
+      evaluate: -> @expression.evaluate()
+
+    expressionOrStatements:
+      :statements
+      :wrappedExpression
+      evaluate: -> @matches[0].evaluate()
+
+    wrappedExpression:
+      "" _ expression _endLine?
+      evaluate: -> @expression.evaluate()
+
+    expression:
+      :ifExpression
+      :whileExpression
+      :operatorExpression
+      :parentheticalExpression
+      :storeSet
+      :storeGet
+      :value
+      evaluate: -> @matches[0].evaluate()
+
+    parentheticalExpression:
+      "" '(' _? expression _? ')'
+      evaluate: -> @expression.evaluate()
+
+    ifExpression:
+      "" 'if' _ expression _ 'then' expressionOrStatements elseClause 'end'
+      "" 'if' _ expression _ 'then' expressionOrStatements 'end'
+      evaluate: ->
+        if @expression.evaluate() != 0
+          @expressionOrStatements.evaluate() ? 0
+        else
+          @elseClause?.evaluate() ? 0
+
+    whileExpression:
+      "" 'while' _ expression _ 'do' expressionOrStatements 'end'
+      evaluate: ->
+        last = null
+        while @expression.evaluate() != 0
+          last = @expressionOrStatements.evaluate()
+        last ? 0
+
+    elseClause:
+      "" 'else' expressionOrStatements
+      evaluate: -> @expressionOrStatements.evaluate()
+
+    operatorExpression:
+      "" operator _? left:expression _? right:expression
+      evaluate: ->
+        eval "#{@left.evaluate()} #{@operator} #{@right.evaluate()}"
+
+    value:
+      /[-]?[0-9]+/
+      evaluate: ->
+        eval "#{@}"
+
+    storeSet:
+      "" '[' _? index:expression _? ']' _? '=' _? value:expression
+      evaluate: ->
+        @parser.turingStore[@index.evaluate() | 0] = @value.evaluate()
+
+    storeGet:
+      "" '[' _? expression _? ']'
+      evaluate: ->
+        @parser.turingStore[@expression.evaluate() | 0]
+        ? 0
+
+    _:        /\ +/
+
+    operator: /[-+*\/<>]|<=|>=|==/
+
+    endline:  /// \ * ( \n | $ ) [\n\ ]*
+
+    _endLine:
+      :_
+      :endline
+
+.repl()
