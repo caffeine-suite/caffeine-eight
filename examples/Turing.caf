@@ -1,5 +1,7 @@
 import &ArtStandardLib
 
+log {} process.argv
+
 class TuringParser extends &CaffeineEight.Parser
 
   @rule
@@ -7,7 +9,9 @@ class TuringParser extends &CaffeineEight.Parser
       :statements
       evaluate: ->
         @parser.turingStore ?= []
-        @statements.evaluate()
+        out = @statements.evaluate()
+        log store: @parser.turingStore
+        out
 
     statements:
       "" statement+
@@ -46,30 +50,34 @@ class TuringParser extends &CaffeineEight.Parser
       evaluate: -> @expression.evaluate()
 
     ifExpression:
-      "" 'if' _ expression _ 'then' expressionOrStatements elseClause 'end'
-      "" 'if' _ expression _ 'then' expressionOrStatements 'end'
+      "" 'if' _ expression _ 'then' body:expressionOrStatements elseClause 'end'
+      "" 'if' _ expression _ 'then' body:expressionOrStatements 'end'
       evaluate: ->
         if @expression.evaluate() != 0
-          @expressionOrStatements.evaluate() ? 0
+          @body.evaluate() ? 0
         else
           @elseClause?.evaluate() ? 0
 
     whileExpression:
-      "" 'while' _ expression _ 'do' expressionOrStatements 'end'
+      "" 'while' _ expression _ 'do' body:expressionOrStatements 'end'
       evaluate: ->
         last = null
         while @expression.evaluate() != 0
-          last = @expressionOrStatements.evaluate()
+          last = @body.evaluate()
         last ? 0
 
     elseClause:
-      "" 'else' expressionOrStatements
-      evaluate: -> @expressionOrStatements.evaluate()
+      "" 'else' body:expressionOrStatements
+      evaluate: -> @body.evaluate()
 
     operatorExpression:
       "" operator _? left:expression _? right:expression
       evaluate: ->
-        eval "#{@left.evaluate()} #{@operator} #{@right.evaluate()}"
+        v = eval "#{@left.evaluate()} #{@operator} #{@right.evaluate()}"
+        switch
+        when v is Number then v
+        when v is true then 1
+        else 0
 
     value:
       /[-]?[0-9]+/
