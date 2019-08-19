@@ -1,0 +1,24 @@
+&Turing
+.parse
+  """
+    maxPrime = 30
+
+    [0] = 0
+    i = 1
+    while < i maxPrime do
+      [i] = i
+      i = + i 1
+    end
+
+    i = 2
+    while < i maxPrime do
+      if [i] then
+        j = * i 2
+        while < j maxPrime do
+          [j] = 0
+          j = + j i
+        end
+      end
+      i = + i 1
+    end
+.evaluate()

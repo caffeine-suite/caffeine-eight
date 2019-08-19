@@ -74,5 +74,3 @@ class TuringParser extends &CaffeineEight.Parser
     variable: ///i (?!(if|while|else|end|do|then)\b) [_a-z] \w*
     operator: ///  <= | >= | == | [ - + * / < > ]
     _:        ///  (\ |\n|$) [\n\ ]*
-
-.repl()
