@@ -161,7 +161,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, dependencies, description, devDependencies, license, name, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"dependencies\":{\"art-build-configurator\":\"*\"},\"description\":\"a 'runtime' parsing expression grammar parser\",\"devDependencies\":{\"art-testbench\":\"*\",\"case-sensitive-paths-webpack-plugin\":\"^2.1.2\",\"chai\":\"^4.2.0\",\"mocha\":\"^6.2.0\",\"mock-fs\":\"^4.10.0\",\"webpack\":\"^4.39.1\",\"webpack-cli\":\"*\",\"webpack-dev-server\":\"^3.4.1\",\"webpack-merge\":\"^4.2.1\",\"webpack-node-externals\":\"^1.7.2\",\"webpack-stylish\":\"^0.1.8\"},\"license\":\"ISC\",\"name\":\"caffeine-eight\",\"scripts\":{\"build\":\"webpack --progress\",\"start\":\"webpack-dev-server --hot --inline --progress --env.devServer\",\"test\":\"nn -s;mocha -u tdd\",\"testInBrowser\":\"webpack-dev-server --progress --env.devServer\"},\"version\":\"2.5.10\"}");
+module.exports = JSON.parse("{\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"dependencies\":{\"art-build-configurator\":\"*\"},\"description\":\"a 'runtime' parsing expression grammar parser\",\"devDependencies\":{\"art-testbench\":\"*\",\"case-sensitive-paths-webpack-plugin\":\"^2.2.0\",\"chai\":\"^4.2.0\",\"mocha\":\"^6.2.0\",\"mock-fs\":\"^4.10.0\",\"webpack\":\"^4.39.1\",\"webpack-cli\":\"*\",\"webpack-dev-server\":\"^3.7.2\",\"webpack-merge\":\"^4.2.1\",\"webpack-node-externals\":\"^1.7.2\",\"webpack-stylish\":\"^0.1.8\"},\"license\":\"ISC\",\"name\":\"caffeine-eight\",\"scripts\":{\"build\":\"webpack --progress\",\"start\":\"webpack-dev-server --hot --inline --progress --env.devServer\",\"test\":\"nn -s;mocha -u tdd\",\"testInBrowser\":\"webpack-dev-server --progress --env.devServer\"},\"version\":\"2.5.11\"}");
 
 /***/ }),
 /* 5 */
@@ -241,13 +241,16 @@ ref = __webpack_require__(/*! art-standard-lib */ 8), defineModule = ref.defineM
 defineModule(module, Repl = (function() {
   function Repl() {}
 
-  Repl.caffeineEightRepl = function(parser) {
+  Repl.caffeineEightRepl = function(parser, options) {
     if (isClass(parser)) {
       parser = new parser;
     }
     try {
       __webpack_require__(/*! colors */ 11);
     } catch (error) {}
+    if (options != null ? options.load : void 0) {
+      log("TODO: load, parse and evaluate these files: " + (options.load.join(', ')));
+    }
     return __webpack_require__(/*! repl */ 12).start({
       prompt: ((parser.getClassName()) + "> ").grey,
       "eval": function(command, context, filename, callback) {
@@ -510,8 +513,8 @@ module.exports = Parser = (function(superClass) {
 
   extend(Parser, superClass);
 
-  Parser.repl = function() {
-    return (__webpack_require__(/*! ./Repl */ 9)).caffeineEightRepl(this);
+  Parser.repl = function(options) {
+    return (__webpack_require__(/*! ./Repl */ 9)).caffeineEightRepl(this, options);
   };
 
   Parser.parse = function(_source, options) {
