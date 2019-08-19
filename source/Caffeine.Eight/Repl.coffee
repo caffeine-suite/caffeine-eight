@@ -1,9 +1,14 @@
 {defineModule, formattedInspect, isClass, log} = require 'art-standard-lib'
 
 defineModule module, class Repl
-  @caffeineEightRepl: (parser) ->
+  @caffeineEightRepl: (parser, options) ->
     parser = new parser if isClass parser
+
     try require 'colors'
+
+    if options?.load
+      log "TODO: load, parse and evaluate these files: #{options.load.join ', '}"
+
     require('repl').start
       prompt: "#{parser.getClassName()}> ".grey
       eval: (command, context, filename, callback) ->

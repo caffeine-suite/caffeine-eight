@@ -28,8 +28,8 @@ SourceLineColumnMap = require './SourceLineColumnMap'
 CaffeineEightCompileError = require './CaffeineEightCompileError'
 
 module.exports = class Parser extends require("art-class-system").BaseClass
-  @repl: ->
-    (require './Repl').caffeineEightRepl @
+  @repl: (options) ->
+    (require './Repl').caffeineEightRepl @, options
 
   @parse: (@_source, options = {})->
     (new @).parse @_source, options

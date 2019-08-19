@@ -1,108 +1,78 @@
 import &ArtStandardLib
 
-log {} process.argv
-
 class TuringParser extends &CaffeineEight.Parser
 
   @rule
     root:
       :statements
       evaluate: ->
-        @parser.turingStore ?= []
+        @parser.turingStore ?= {}
         out = @statements.evaluate()
         log store: @parser.turingStore
         out
 
     statements:
-      "" statement+
+      "" _expression+ _?
       evaluate: ->
         last = null
-        each statement in @statements
-          last = statement.evaluate()
+        each expression in @_expressions
+          last = expression.evaluate()
 
         last ? 0
 
-    statement:
-      "" endline? expression endline?
-      evaluate: -> @expression.evaluate()
-
-    expressionOrStatements:
-      :statements
-      :wrappedExpression
-      evaluate: -> @matches[0].evaluate()
-
-    wrappedExpression:
-      "" _ expression _endLine?
+    _expression:
+      "" _? expression
       evaluate: -> @expression.evaluate()
 
     expression:
       :ifExpression
       :whileExpression
       :operatorExpression
-      :parentheticalExpression
       :storeSet
       :storeGet
       :value
       evaluate: -> @matches[0].evaluate()
 
-    parentheticalExpression:
-      "" '(' _? expression _? ')'
-      evaluate: -> @expression.evaluate()
-
     ifExpression:
-      "" 'if' _ expression _ 'then' body:expressionOrStatements elseClause 'end'
-      "" 'if' _ expression _ 'then' body:expressionOrStatements 'end'
+      "" 'if' test:statements 'then' body:statements 'else' elseBody:statements 'end'
+      "" 'if' test:statements 'then' body:statements 'end'
       evaluate: ->
-        if @expression.evaluate() != 0
-          @body.evaluate() ? 0
-        else
-          @elseClause?.evaluate() ? 0
+        if @test.evaluate() != 0
+              @body.evaluate() ? 0
+        else  @elseBody?.evaluate() ? 0
 
     whileExpression:
-      "" 'while' _ expression _ 'do' body:expressionOrStatements 'end'
+      "" 'while' test:statements 'do' body:statements 'end'
       evaluate: ->
-        last = null
-        while @expression.evaluate() != 0
-          last = @body.evaluate()
-        last ? 0
-
-    elseClause:
-      "" 'else' body:expressionOrStatements
-      evaluate: -> @body.evaluate()
+        while @test.evaluate() != 0
+          @body.evaluate()
+        ? 0
 
     operatorExpression:
-      "" operator _? left:expression _? right:expression
+      "" operator left:_expression right:_expression
       evaluate: ->
         v = eval "#{@left.evaluate()} #{@operator} #{@right.evaluate()}"
         switch
         when v is Number then v
-        when v is true then 1
+        when v is true   then 1
         else 0
+
+    storeSet:
+      "" '[' index:statements ']' _? '=' value:_expression
+      "" variable _? '=' value:_expression
+      evaluate: -> @parser.turingStore[@variable ? @index.evaluate() | 0] = @value.evaluate()
+
+    storeGet:
+      "" '[' index:statements ']'
+      "" variable
+      evaluate: -> @parser.turingStore[@variable ? @index.evaluate() | 0] ? 0
 
     value:
       /[-]?[0-9]+/
-      evaluate: ->
-        eval "#{@}"
+      evaluate: -> eval @toString()
 
-    storeSet:
-      "" '[' _? index:expression _? ']' _? '=' _? value:expression
-      evaluate: ->
-        @parser.turingStore[@index.evaluate() | 0] = @value.evaluate()
-
-    storeGet:
-      "" '[' _? expression _? ']'
-      evaluate: ->
-        @parser.turingStore[@expression.evaluate() | 0]
-        ? 0
-
-    _:        /\ +/
-
-    operator: /[-+*\/<>]|<=|>=|==/
-
-    endline:  /// \ * ( \n | $ ) [\n\ ]*
-
-    _endLine:
-      :_
-      :endline
+    variable: ///i (?!(if|while|else|end|do|then)\b) [_a-z] \w*
+    operator: ///  <= | >= | == | [ - + * / < > ]
+    _:        ///  (\ |\n|$) [\n\ ]*
 
 .repl()
