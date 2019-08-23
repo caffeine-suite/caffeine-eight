@@ -60,7 +60,8 @@ class TuringParser extends &CaffeineEight.Parser
     storeSet:
       "" '[' index:statements ']' _? '=' value:_expression
       "" variable _? '=' value:_expression
-      evaluate: -> @parser.turingStore[@variable ? @index.evaluate() | 0] = @value.evaluate()
+      evaluate: ->
+        @parser.turingStore[@variable ? @index.evaluate() | 0] = @value.evaluate()
 
     storeGet:
       "" '[' index:statements ']'
