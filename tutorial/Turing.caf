@@ -28,8 +28,8 @@ class TuringParser extends &CaffeineEight.Parser
       :ifExpression
       :whileExpression
       :operatorExpression
-      :storeSet
-      :storeGet
+      :setExpression
+      :getExpression
       :value
       evaluate: -> @matches[0].evaluate()
 
@@ -57,21 +57,23 @@ class TuringParser extends &CaffeineEight.Parser
         when v is true   then 1
         else 0
 
-    storeSet:
-      "" '[' index:statements ']' _? '=' value:_expression
-      "" variable _? '=' value:_expression
-      evaluate: ->
-        @parser.turingStore[@variable ? @index.evaluate() | 0] = @value.evaluate()
+    setExpression:
+      "" address _? '=' value:_expression
+      evaluate: -> @parser.turingStore[@address.getAddress()] = @value.evaluate()
 
-    storeGet:
+    getExpression:
+      "" address
+      evaluate: -> @parser.turingStore[@address.getAddress()]
+
+    address:
       "" '[' index:statements ']'
       "" variable
-      evaluate: -> @parser.turingStore[@variable ? @index.evaluate() | 0] ? 0
+      getAddress: -> [@variable ? @index.evaluate() | 0]
 
     value:
       /[-]?[0-9]+/
       evaluate: -> eval @toString()
 
     variable: ///i (?!(if|while|else|end|do|then)\b) [_a-z] \w*
-    operator: ///  <= | >= | == | [ - + * / < > ]
+    operator: ///  <= | >= | == | && | \|\| | [ - + * / < > ]
     _:        ///  (\ |\n|$) [\n\ ]*
