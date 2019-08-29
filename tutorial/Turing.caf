@@ -1,6 +1,6 @@
 import &ArtStandardLib
 
-class TuringParser extends &CaffeineEight.Parser
+class Turing extends &CaffeineEight.Parser
 
   @rule
     root:
