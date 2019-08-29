@@ -4,20 +4,11 @@
 > by Shane Brinkman-Davis
 in association with GenUI.co, Imikimi.com
 
-### Setup
+### Tutorial Setup
 
 Install NodeJS.org if you haven't already.
 
-If you are familiar with nodejs and npm, this is all you need to know:
-```shell
-# install
-npm install caffeine-eight
-
-# run your Turing.caf
-npx caf Turing.caf
-```
-
-Otherwise, you can copy and run these commands to get setup:
+Otherwise, you can copy and run these commands to get set up:
 ```shell
 mkdir tutorial
 cd tutorial
@@ -29,6 +20,29 @@ echo "console.log :hello" > Turing.caf
 npx caf Turing.caf
 # > hello
 ```
+
+If you want to jump to the end and just try the language:
+```shell
+git clone https://github.com/caffeine-suite/caffeine-eight.git
+cd caffeine-eight
+npm install
+cd tutorial
+
+npx caf TuringRepl.caf
+# Turing>
+# (Control-D to exit)
+
+npx caf TuringTest.caf
+# store:
+#   0:        0
+#   1:        1
+#   2:        2
+#   3:        3
+#   4:        0
+#   5:        5
+# ...
+```
+
 
 ### Tools
 
