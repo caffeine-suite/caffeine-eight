@@ -1,42 +1,34 @@
+## Basic CsvParser
 class CsvParser extends &CaffeineEight.Parser
 
   @rule
-    root:       :line+
-    line:       "" field* endl
-    endl:       /// \ * \r? (\n|$)
+    root:           :line+
+    line:           "" field* endl
+    field:          "" fieldContents /,/?
+    fieldContents:  :quotedField :unquotedField
+    endl:           /// \ * \r? (\n|$)
+    unquotedField:  /// [^"\n,]*
+    quotedField:    /// " ( [^"] | "" )* "
 
-    field:
-      "" fieldContents /,/?
-
-    fieldContents:
-      :quotedField
-      :unquotedField
-
-    unquotedField: /// [^"\n,]*
-
-    quotedField:
-      ///
-        "
-        (
-          [^"]
-          |
-          ""
-        )*
-        "
-
+##
+  Now add a custom parser which requires parenthesis
+  to be matched within a field.
 class CustomCsvParser extends CsvParser
 
+  # unquotedField no longer allowed to have parens
   @replaceRule
     unquotedField: /// [^"\n,()]*
 
+  # fieldContents can now also be parentheticalFields
   @priorityRule
-    fieldContents: :parentheticalField
+    fieldContents:      :parentheticalField
+
+  @rule
+    parentheticalField: "" '(' parentheticalContents? ')'
 
     parentheticalContents:
       /// [^"\n()]+
       :quotedField
-      # parentheticalField
+      :parentheticalField
 
-    parentheticalField:
-      "" '(' parentheticalContents? ')'
 .repl()
