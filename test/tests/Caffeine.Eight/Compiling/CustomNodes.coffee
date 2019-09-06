@@ -16,12 +16,11 @@ module.exports = suite: ->
   test "multi-pattern type 1", ->
     class MyParser extends Parser
       @rule
-        root:
-          pattern: [
+        root: [
             /boo/
             /bad/
+            myMember: -> 123
           ]
-          myMember: -> 123
 
     mainNode = MyParser.parse "boo"
     assert.eq mainNode.myMember(), 123
@@ -47,8 +46,11 @@ module.exports = suite: ->
 
   test "simple math", ->
     class MyParser extends Parser
+      @rule root:
+        pattern: "expression"
+        compute: -> @expression.compute()
+
       @rule expression:
-        root: true
         pattern: "n:number '+' expression"
         compute: -> @n.compute() + @expression.compute()
 

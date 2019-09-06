@@ -64,3 +64,19 @@ module.exports = suite:
         .parse "fooo"
         .matches.length
         "MyPrioritySubParser"
+
+  replaceRule: ->
+
+    test "parsers are extensible", ->
+      class MyParser extends Parser
+        @rule root: /foo/
+
+      class MyReplaceSubParser extends MyParser
+        @replaceRule root: /bar/
+
+      (new MyParser).parse "foo"
+      assert.throws -> (new MyParser).parse "bar"
+
+      (new MyReplaceSubParser).parse "bar"
+      assert.throws -> (new MyReplaceSubParser).parse "foo"
+

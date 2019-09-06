@@ -49,74 +49,27 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         extendableRules
     }
 
-  ## Fetch or add ruleName to @rules, but be sure to clone
-  ## the existing rule if we are a parser sub-class
-  @_extendRule: (ruleName) ->
-    _rules = @rules
-    rules = @extendRules()
-
-    if rule = rules[ruleName]
-      if _rules != rules
-        rules[ruleName] = rule.clone()
-      else rule
-    else
-      rules[ruleName] = new Rule ruleName, @
-
-  @addRule: (ruleName, definitions, nodeBaseClass = @getNodeBaseClass(), addPriorityRule = false) ->
-
-    rule = @_extendRule ruleName
-    if definitions.root
-      throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
-      @_rootRuleName = ruleName
-
-    definitions = [definitions] unless isPlainArray array = definitions
-    if definitions.length > 1 && isPlainObject(last = peek definitions) &&
-        !(last.pattern ? last.parse)
-      [definitions..., commonNodeProps] = definitions
-    else
-      commonNodeProps = {}
-
-    commonNodeProps.nodeBaseClass ||= nodeBaseClass
-
-    for definition in definitions
-      definition = pattern: definition unless isPlainObject definition
-      if isPlainArray patterns = definition.pattern
-        for pattern in patterns
-          rule.addVariant merge(commonNodeProps, definition, {pattern}), addPriorityRule
-      else
-        rule.addVariant merge(commonNodeProps, definition), addPriorityRule
-
-
-  @normalizeRuleDefinition: (a, b) ->
-    if isClass a
-      sharedNodeBaseClass = a
-      rules = b
-    else
-      rules = a
-      sharedNodeBaseClass = b
-
-    if isPlainObject sharedNodeBaseClass
-      sharedNodeBaseClass = @getNodeBaseClass().createSubclass sharedNodeBaseClass
-    {rules, sharedNodeBaseClass}
-
   ###
   IN:
-    rules: plain object mapping rule-names to definitions
+    rules: plain object mapping rule-names to variantDefinitions
     nodeClass: optional, must extend Caffeine.Eight.Node or be a plain object
   ###
   @rule: rulesFunction = (a, b)->
-    {rules, sharedNodeBaseClass} = @normalizeRuleDefinition a, b
-
-    for ruleName, definition of rules
-      @addRule ruleName, definition, sharedNodeBaseClass || @getNodeBaseClass()
+    # log rule:
+    #   inputs: [a, b]
+    #   noramlized: @_normalizeRuleDefinition a, b
+    for ruleName, definition of @_normalizeRuleDefinition a, b
+      @_addRule ruleName, definition
 
   @rules: rulesFunction
 
-  @priorityRule: rulesFunction = (a, b)->
-    {rules, sharedNodeBaseClass} = @normalizeRuleDefinition a, b
+  @replaceRule: (a, b) ->
+    for ruleName, definition of @_normalizeRuleDefinition a, b
+      @_replaceRule @_newRule(ruleName), ruleName, definition, true
 
-    for ruleName, definition of rules
-      @addRule ruleName, definition, sharedNodeBaseClass || @getNodeBaseClass(), true
+  @priorityRule: (a, b) ->
+    for ruleName, definition of @_normalizeRuleDefinition a, b
+      @_addRule ruleName, definition, true
 
   rule: instanceRulesFunction = (a, b) -> @class.rule a, b
   rules: instanceRulesFunction
@@ -535,3 +488,82 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       @_nonMatches = {}
 
     @_nonMatches[nonMatch] = nonMatch
+
+
+  ## Fetch or add ruleName to @rules, but be sure to clone
+  ## the existing rule if we are a parser sub-class
+  @_extendRule: (ruleName) ->
+    if rule = @extendRules()[ruleName]
+      if rule.definedInClass != @
+        rule.clone()
+      else rule
+    else
+      @_newRule ruleName
+
+  @_newRule: (ruleName) -> new Rule ruleName, @
+
+  @_addRule: (ruleName, variantDefinitions, addPriorityVariants) ->
+
+    if variantDefinitions.root
+      throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
+      unless ruleName == "root"
+        log.warn "DEPRICATED: root rule should always be called 'root' now"
+
+      @_rootRuleName = ruleName
+
+    @_replaceRule @_extendRule(ruleName), ruleName, variantDefinitions, addPriorityVariants
+
+  ### _replaceRule
+    IN:
+      rule: <Rule>
+      ruleName: <String>
+      variantDefinitions: <Array<Object:definition>>
+
+    definition:
+      pattern: <String|RegExp>
+      ... additional props are added to the Rule's Node class
+  ###
+  @_replaceRule: (rule, ruleName, variantDefinitions, addPriorityVariants) ->
+    @extendRules()[ruleName] = rule
+
+    for definition in variantDefinitions
+      rule.addVariant definition, addPriorityVariants
+
+  normalizeVariantDefinitions = (variantDefinitions, nodeBaseClass) ->
+    variantDefinitions = [variantDefinitions] unless isPlainArray array = variantDefinitions
+    if variantDefinitions.length > 1 && isPlainObject(last = peek variantDefinitions) &&
+        !(last.pattern ? last.parse)
+      [variantDefinitions..., commonNodeProps] = variantDefinitions
+    else
+      commonNodeProps = {}
+
+    commonNodeProps.nodeBaseClass ||= nodeBaseClass
+
+    out = []
+    for definition in compactFlatten variantDefinitions
+      unless isPlainObject definition
+        definition = pattern: definition
+
+      if isPlainArray patterns = definition.pattern
+        for pattern in patterns
+          out.push merge commonNodeProps, definition, {pattern}
+      else
+        out.push merge commonNodeProps, definition
+    out
+
+  @_normalizeRuleDefinition: (a, b) ->
+    if isClass a
+      nodeBaseClass = a
+      _rules = b
+    else
+      _rules = a
+      nodeBaseClass = b
+
+    if isPlainObject nodeBaseClass
+      nodeBaseClass = @getNodeBaseClass().createSubclass nodeBaseClass
+    else nodeBaseClass ?= @getNodeBaseClass()
+
+    rules = {}
+    for ruleName, definition of _rules
+      rules[ruleName] = normalizeVariantDefinitions definition, nodeBaseClass
+    rules

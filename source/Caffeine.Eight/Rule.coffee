@@ -8,16 +8,16 @@ Stats = require './Stats'
 
 module.exports = class Rule extends require("art-class-system").BaseClass
 
-  constructor: (@_name, @_parserClass, @_variants = [])->
+  constructor: (@_name, @_definedInClass, @_variants = [])->
 
-  @getter "nodeClassName name variantNodeClasses",
+  @getter "nodeClassName name variantNodeClasses definedInClass",
     numVariants: -> @_variants.length
 
   addVariant: (options, addPriorityVariant) ->
     v = new RuleVariant merge options,
       variantNumber: @_variants.length + 1
       rule: @
-      parserClass: @_parserClass
+      parserClass: @_definedInClass
 
     if addPriorityVariant
       @_variants = compactFlattenAll v, @_variants
@@ -30,7 +30,7 @@ module.exports = class Rule extends require("art-class-system").BaseClass
       toInspectedObjects @_variants
 
   clone: ->
-    new Rule @_name, @_parserClass, @_variants.slice()
+    new Rule @_name, @_definedInClass, @_variants.slice()
 
   ###
   IN:
