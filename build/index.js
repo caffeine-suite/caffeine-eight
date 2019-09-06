@@ -161,7 +161,7 @@ module.exports = require('neptune-namespaces' /* ABC - not inlining fellow NPM *
 /*! exports provided: author, bugs, dependencies, description, devDependencies, homepage, license, name, repository, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"bugs\":\"https:/github.com/caffeine-suite/caffeine-eight/issues\",\"dependencies\":{\"art-build-configurator\":\"*\"},\"description\":\"a 'runtime' parsing expression grammar parser\",\"devDependencies\":{\"art-testbench\":\"*\",\"case-sensitive-paths-webpack-plugin\":\"^2.2.0\",\"chai\":\"^4.2.0\",\"coffee-loader\":\"^0.7.3\",\"css-loader\":\"^3.0.0\",\"json-loader\":\"^0.5.7\",\"mocha\":\"^6.2.0\",\"mock-fs\":\"^4.10.0\",\"script-loader\":\"^0.7.2\",\"style-loader\":\"^1.0.0\",\"webpack\":\"^4.39.1\",\"webpack-cli\":\"*\",\"webpack-dev-server\":\"^3.7.2\",\"webpack-merge\":\"^4.2.1\",\"webpack-node-externals\":\"^1.7.2\",\"webpack-stylish\":\"^0.1.8\"},\"homepage\":\"https://github.com/caffeine-suite/caffeine-eight\",\"license\":\"ISC\",\"name\":\"caffeine-eight\",\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/caffeine-suite/caffeine-eight.git\"},\"scripts\":{\"build\":\"webpack --progress\",\"start\":\"webpack-dev-server --hot --inline --progress --env.devServer\",\"test\":\"nn -s;mocha -u tdd\",\"testInBrowser\":\"webpack-dev-server --progress --env.devServer\"},\"version\":\"2.5.13\"}");
+module.exports = JSON.parse("{\"author\":\"Shane Brinkman-Davis Delamore, Imikimi LLC\",\"bugs\":\"https:/github.com/caffeine-suite/caffeine-eight/issues\",\"dependencies\":{\"art-build-configurator\":\"*\"},\"description\":\"a 'runtime' parsing expression grammar parser\",\"devDependencies\":{\"art-testbench\":\"*\",\"case-sensitive-paths-webpack-plugin\":\"^2.2.0\",\"chai\":\"^4.2.0\",\"coffee-loader\":\"^0.7.3\",\"css-loader\":\"^3.0.0\",\"json-loader\":\"^0.5.7\",\"mocha\":\"^6.2.0\",\"mock-fs\":\"^4.10.0\",\"script-loader\":\"^0.7.2\",\"style-loader\":\"^1.0.0\",\"webpack\":\"^4.39.1\",\"webpack-cli\":\"*\",\"webpack-dev-server\":\"^3.7.2\",\"webpack-merge\":\"^4.2.1\",\"webpack-node-externals\":\"^1.7.2\",\"webpack-stylish\":\"^0.1.8\"},\"homepage\":\"https://github.com/caffeine-suite/caffeine-eight\",\"license\":\"ISC\",\"name\":\"caffeine-eight\",\"repository\":{\"type\":\"git\",\"url\":\"https://github.com/caffeine-suite/caffeine-eight.git\"},\"scripts\":{\"build\":\"webpack --progress\",\"start\":\"webpack-dev-server --hot --inline --progress --env.devServer\",\"test\":\"nn -s;mocha -u tdd\",\"testInBrowser\":\"webpack-dev-server --progress --env.devServer\"},\"version\":\"2.6.0\"}");
 
 /***/ }),
 /* 5 */
@@ -509,7 +509,7 @@ ref2 = __webpack_require__(/*! ./Lib */ 13), firstLines = ref2.firstLines, lastL
 CaffeineEightCompileError = __webpack_require__(/*! ./CaffeineEightCompileError */ 14);
 
 module.exports = Parser = (function(superClass) {
-  var addToExpectingInfo, instanceRulesFunction, rulesFunction;
+  var addToExpectingInfo, instanceRulesFunction, normalizeVariantDefinitions, rulesFunction;
 
   extend(Parser, superClass);
 
@@ -548,82 +548,47 @@ module.exports = Parser = (function(superClass) {
     }
   });
 
-  Parser.addRule = function(ruleName, definitions, nodeBaseClass) {
-    var array, base, commonNodeProps, definition, i, j, last, len, pattern, patterns, ref3, ref4, results, rule;
-    if (nodeBaseClass == null) {
-      nodeBaseClass = this.getNodeBaseClass();
-    }
-    rule = (base = this.extendRules())[ruleName] || (base[ruleName] = new Rule(ruleName, this));
-    if (definitions.root) {
-      if (this._rootRuleName) {
-        throw new Error("root rule already defined! was: " + this._rootRuleName + ", wanted: " + ruleName);
-      }
-      this._rootRuleName = ruleName;
-    }
-    if (!isPlainArray(array = definitions)) {
-      definitions = [definitions];
-    }
-    if (definitions.length > 1 && isPlainObject(last = peek(definitions)) && !((ref3 = last.pattern) != null ? ref3 : last.parse)) {
-      ref4 = definitions, definitions = 2 <= ref4.length ? slice.call(ref4, 0, i = ref4.length - 1) : (i = 0, []), commonNodeProps = ref4[i++];
-    } else {
-      commonNodeProps = {};
-    }
-    commonNodeProps.nodeBaseClass || (commonNodeProps.nodeBaseClass = nodeBaseClass);
-    results = [];
-    for (j = 0, len = definitions.length; j < len; j++) {
-      definition = definitions[j];
-      if (!isPlainObject(definition)) {
-        definition = {
-          pattern: definition
-        };
-      }
-      if (isPlainArray(patterns = definition.pattern)) {
-        results.push((function() {
-          var l, len1, results1;
-          results1 = [];
-          for (l = 0, len1 = patterns.length; l < len1; l++) {
-            pattern = patterns[l];
-            results1.push(rule.addVariant(merge(commonNodeProps, definition, {
-              pattern: pattern
-            })));
-          }
-          return results1;
-        })());
-      } else {
-        results.push(rule.addVariant(merge(commonNodeProps, definition)));
-      }
-    }
-    return results;
-  };
-
 
   /*
   IN:
-    rules: plain object mapping rule-names to definitions
+    rules: plain object mapping rule-names to variantDefinitions
     nodeClass: optional, must extend Caffeine.Eight.Node or be a plain object
    */
 
   Parser.rule = rulesFunction = function(a, b) {
-    var definition, results, ruleName, rules, sharedNodeBaseClass;
-    if (isClass(a)) {
-      sharedNodeBaseClass = a;
-      rules = b;
-    } else {
-      rules = a;
-      sharedNodeBaseClass = b;
-    }
-    if (isPlainObject(sharedNodeBaseClass)) {
-      sharedNodeBaseClass = this.getNodeBaseClass().createSubclass(sharedNodeBaseClass);
-    }
+    var definition, ref3, results, ruleName;
+    ref3 = this._normalizeRuleDefinition(a, b);
     results = [];
-    for (ruleName in rules) {
-      definition = rules[ruleName];
-      results.push(this.addRule(ruleName, definition, sharedNodeBaseClass || this.getNodeBaseClass()));
+    for (ruleName in ref3) {
+      definition = ref3[ruleName];
+      results.push(this._addRule(ruleName, definition));
     }
     return results;
   };
 
   Parser.rules = rulesFunction;
+
+  Parser.replaceRule = function(a, b) {
+    var definition, ref3, results, ruleName;
+    ref3 = this._normalizeRuleDefinition(a, b);
+    results = [];
+    for (ruleName in ref3) {
+      definition = ref3[ruleName];
+      results.push(this._replaceRule(this._newRule(ruleName), ruleName, definition, true));
+    }
+    return results;
+  };
+
+  Parser.priorityRule = function(a, b) {
+    var definition, ref3, results, ruleName;
+    ref3 = this._normalizeRuleDefinition(a, b);
+    results = [];
+    for (ruleName in ref3) {
+      definition = ref3[ruleName];
+      results.push(this._addRule(ruleName, definition, true));
+    }
+    return results;
+  };
 
   Parser.prototype.rule = instanceRulesFunction = function(a, b) {
     return this["class"].rule(a, b);
@@ -1132,6 +1097,117 @@ module.exports = Parser = (function(superClass) {
     return this._nonMatches[nonMatch] = nonMatch;
   };
 
+  Parser._extendRule = function(ruleName) {
+    var rule;
+    if (rule = this.extendRules()[ruleName]) {
+      if (rule.definedInClass !== this) {
+        return rule.clone();
+      } else {
+        return rule;
+      }
+    } else {
+      return this._newRule(ruleName);
+    }
+  };
+
+  Parser._newRule = function(ruleName) {
+    return new Rule(ruleName, this);
+  };
+
+  Parser._addRule = function(ruleName, variantDefinitions, addPriorityVariants) {
+    if (variantDefinitions.root) {
+      if (this._rootRuleName) {
+        throw new Error("root rule already defined! was: " + this._rootRuleName + ", wanted: " + ruleName);
+      }
+      if (ruleName !== "root") {
+        log.warn("DEPRICATED: root rule should always be called 'root' now");
+      }
+      this._rootRuleName = ruleName;
+    }
+    return this._replaceRule(this._extendRule(ruleName), ruleName, variantDefinitions, addPriorityVariants);
+  };
+
+
+  /* _replaceRule
+    IN:
+      rule: <Rule>
+      ruleName: <String>
+      variantDefinitions: <Array<Object:definition>>
+  
+    definition:
+      pattern: <String|RegExp>
+      ... additional props are added to the Rule's Node class
+   */
+
+  Parser._replaceRule = function(rule, ruleName, variantDefinitions, addPriorityVariants) {
+    var definition, i, len, results;
+    this.extendRules()[ruleName] = rule;
+    results = [];
+    for (i = 0, len = variantDefinitions.length; i < len; i++) {
+      definition = variantDefinitions[i];
+      results.push(rule.addVariant(definition, addPriorityVariants));
+    }
+    return results;
+  };
+
+  normalizeVariantDefinitions = function(variantDefinitions, nodeBaseClass) {
+    var array, commonNodeProps, definition, i, j, l, last, len, len1, out, pattern, patterns, ref3, ref4, ref5;
+    if (!isPlainArray(array = variantDefinitions)) {
+      variantDefinitions = [variantDefinitions];
+    }
+    if (variantDefinitions.length > 1 && isPlainObject(last = peek(variantDefinitions)) && !((ref3 = last.pattern) != null ? ref3 : last.parse)) {
+      ref4 = variantDefinitions, variantDefinitions = 2 <= ref4.length ? slice.call(ref4, 0, i = ref4.length - 1) : (i = 0, []), commonNodeProps = ref4[i++];
+    } else {
+      commonNodeProps = {};
+    }
+    commonNodeProps.nodeBaseClass || (commonNodeProps.nodeBaseClass = nodeBaseClass);
+    out = [];
+    ref5 = compactFlatten(variantDefinitions);
+    for (j = 0, len = ref5.length; j < len; j++) {
+      definition = ref5[j];
+      if (!isPlainObject(definition)) {
+        definition = {
+          pattern: definition
+        };
+      }
+      if (isPlainArray(patterns = definition.pattern)) {
+        for (l = 0, len1 = patterns.length; l < len1; l++) {
+          pattern = patterns[l];
+          out.push(merge(commonNodeProps, definition, {
+            pattern: pattern
+          }));
+        }
+      } else {
+        out.push(merge(commonNodeProps, definition));
+      }
+    }
+    return out;
+  };
+
+  Parser._normalizeRuleDefinition = function(a, b) {
+    var _rules, definition, nodeBaseClass, ruleName, rules;
+    if (isClass(a)) {
+      nodeBaseClass = a;
+      _rules = b;
+    } else {
+      _rules = a;
+      nodeBaseClass = b;
+    }
+    if (isPlainObject(nodeBaseClass)) {
+      nodeBaseClass = this.getNodeBaseClass().createSubclass(nodeBaseClass);
+    } else {
+      if (nodeBaseClass == null) {
+        nodeBaseClass = this.getNodeBaseClass();
+      }
+    }
+    rules = {};
+    for (ruleName in _rules) {
+      definition = _rules[ruleName];
+      rules[ruleName] = normalizeVariantDefinitions(definition, nodeBaseClass);
+    }
+    return rules;
+  };
+
   return Parser;
 
 })(__webpack_require__(/*! art-class-system */ 16).BaseClass);
@@ -1145,7 +1221,7 @@ module.exports = Parser = (function(superClass) {
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-var Rule, RuleVariant, Stats, log, merge, objectName, ref, toInspectedObjects, upperCamelCase,
+var Rule, RuleVariant, Stats, compactFlattenAll, log, merge, objectName, ref, toInspectedObjects, upperCamelCase,
   extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
   hasProp = {}.hasOwnProperty;
 
@@ -1153,30 +1229,35 @@ RuleVariant = __webpack_require__(/*! ./RuleVariant */ 19);
 
 Stats = __webpack_require__(/*! ./Stats */ 24);
 
-ref = __webpack_require__(/*! art-standard-lib */ 8), toInspectedObjects = ref.toInspectedObjects, merge = ref.merge, upperCamelCase = ref.upperCamelCase, objectName = ref.objectName, log = ref.log;
+ref = __webpack_require__(/*! art-standard-lib */ 8), toInspectedObjects = ref.toInspectedObjects, merge = ref.merge, upperCamelCase = ref.upperCamelCase, objectName = ref.objectName, log = ref.log, compactFlattenAll = ref.compactFlattenAll;
 
 module.exports = Rule = (function(superClass) {
   extend(Rule, superClass);
 
-  function Rule(_name, _parserClass, _variants) {
+  function Rule(_name, _definedInClass, _variants) {
     this._name = _name;
-    this._parserClass = _parserClass;
+    this._definedInClass = _definedInClass;
     this._variants = _variants != null ? _variants : [];
   }
 
-  Rule.getter("nodeClassName name variantNodeClasses", {
+  Rule.getter("nodeClassName name variantNodeClasses definedInClass", {
     numVariants: function() {
       return this._variants.length;
     }
   });
 
-  Rule.prototype.addVariant = function(options) {
+  Rule.prototype.addVariant = function(options, addPriorityVariant) {
     var v;
-    this._variants.push(v = new RuleVariant(merge(options, {
+    v = new RuleVariant(merge(options, {
       variantNumber: this._variants.length + 1,
       rule: this,
-      parserClass: this._parserClass
-    })));
+      parserClass: this._definedInClass
+    }));
+    if (addPriorityVariant) {
+      this._variants = compactFlattenAll(v, this._variants);
+    } else {
+      this._variants.push(v);
+    }
     return v;
   };
 
@@ -1187,7 +1268,7 @@ module.exports = Rule = (function(superClass) {
   });
 
   Rule.prototype.clone = function() {
-    return new Rule(this._name, this._parserClass, this._variants.slice());
+    return new Rule(this._name, this._definedInClass, this._variants.slice());
   };
 
 
