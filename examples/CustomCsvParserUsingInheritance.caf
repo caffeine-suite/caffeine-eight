@@ -1,0 +1,42 @@
+class CsvParser extends &CaffeineEight.Parser
+
+  @rule
+    root:       :line+
+    line:       "" field* endl
+    endl:       /// \ * \r? (\n|$)
+
+    field:
+      "" fieldContents /,/?
+
+    fieldContents:
+      :quotedField
+      :unquotedField
+
+    unquotedField: /// [^"\n,]*
+
+    quotedField:
+      ///
+        "
+        (
+          [^"]
+          |
+          ""
+        )*
+        "
+
+class CustomCsvParser extends CsvParser
+
+  @replaceRule
+    unquotedField: /// [^"\n,()]*
+
+  @priorityRule
+    fieldContents: :parentheticalField
+
+    parentheticalContents:
+      /// [^"\n()]+
+      :quotedField
+      # parentheticalField
+
+    parentheticalField:
+      "" '(' parentheticalContents? ')'
+.repl()
