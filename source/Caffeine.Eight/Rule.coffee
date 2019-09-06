@@ -1,7 +1,10 @@
 RuleVariant = require './RuleVariant'
 Stats = require './Stats'
 
-{toInspectedObjects, merge, upperCamelCase, objectName, log} = require 'art-standard-lib'
+{
+  toInspectedObjects, merge, upperCamelCase, objectName, log,
+  compactFlattenAll
+} = require 'art-standard-lib'
 
 module.exports = class Rule extends require("art-class-system").BaseClass
 
@@ -10,11 +13,16 @@ module.exports = class Rule extends require("art-class-system").BaseClass
   @getter "nodeClassName name variantNodeClasses",
     numVariants: -> @_variants.length
 
-  addVariant: (options) ->
-    @_variants.push v = new RuleVariant merge options,
+  addVariant: (options, addPriorityVariant) ->
+    v = new RuleVariant merge options,
       variantNumber: @_variants.length + 1
       rule: @
       parserClass: @_parserClass
+
+    if addPriorityVariant
+      @_variants = compactFlattenAll v, @_variants
+    else
+      @_variants.push v
     v
 
   @getter

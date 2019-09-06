@@ -49,9 +49,22 @@ module.exports = class Parser extends require("art-class-system").BaseClass
         extendableRules
     }
 
-  @addRule: (ruleName, definitions, nodeBaseClass = @getNodeBaseClass()) ->
+  ## Fetch or add ruleName to @rules, but be sure to clone
+  ## the existing rule if we are a parser sub-class
+  @_extendRule: (ruleName) ->
+    _rules = @rules
+    rules = @extendRules()
 
-    rule = @extendRules()[ruleName] ||= new Rule ruleName, @
+    if rule = rules[ruleName]
+      if _rules != rules
+        rules[ruleName] = rule.clone()
+      else rule
+    else
+      rules[ruleName] = new Rule ruleName, @
+
+  @addRule: (ruleName, definitions, nodeBaseClass = @getNodeBaseClass(), addPriorityRule = false) ->
+
+    rule = @_extendRule ruleName
     if definitions.root
       throw new Error "root rule already defined! was: #{@_rootRuleName}, wanted: #{ruleName}" if @_rootRuleName
       @_rootRuleName = ruleName
@@ -69,16 +82,12 @@ module.exports = class Parser extends require("art-class-system").BaseClass
       definition = pattern: definition unless isPlainObject definition
       if isPlainArray patterns = definition.pattern
         for pattern in patterns
-          rule.addVariant merge commonNodeProps, definition, {pattern}
+          rule.addVariant merge(commonNodeProps, definition, {pattern}), addPriorityRule
       else
-        rule.addVariant merge commonNodeProps, definition
+        rule.addVariant merge(commonNodeProps, definition), addPriorityRule
 
-  ###
-  IN:
-    rules: plain object mapping rule-names to definitions
-    nodeClass: optional, must extend Caffeine.Eight.Node or be a plain object
-  ###
-  @rule: rulesFunction = (a, b)->
+
+  @normalizeRuleDefinition: (a, b) ->
     if isClass a
       sharedNodeBaseClass = a
       rules = b
@@ -88,11 +97,26 @@ module.exports = class Parser extends require("art-class-system").BaseClass
 
     if isPlainObject sharedNodeBaseClass
       sharedNodeBaseClass = @getNodeBaseClass().createSubclass sharedNodeBaseClass
+    {rules, sharedNodeBaseClass}
+
+  ###
+  IN:
+    rules: plain object mapping rule-names to definitions
+    nodeClass: optional, must extend Caffeine.Eight.Node or be a plain object
+  ###
+  @rule: rulesFunction = (a, b)->
+    {rules, sharedNodeBaseClass} = @normalizeRuleDefinition a, b
 
     for ruleName, definition of rules
       @addRule ruleName, definition, sharedNodeBaseClass || @getNodeBaseClass()
 
   @rules: rulesFunction
+
+  @priorityRule: rulesFunction = (a, b)->
+    {rules, sharedNodeBaseClass} = @normalizeRuleDefinition a, b
+
+    for ruleName, definition of rules
+      @addRule ruleName, definition, sharedNodeBaseClass || @getNodeBaseClass(), true
 
   rule: instanceRulesFunction = (a, b) -> @class.rule a, b
   rules: instanceRulesFunction
